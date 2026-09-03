@@ -10,3 +10,7 @@ Sammlung von Produktideen und zugehörigen Prototypen.
 - Demo-Formular: baut clientseitig einen `mailto:`-Link. Die Zieladresse steht als `DEMO_MAIL` am Anfang des Skriptblocks und muss ersetzt werden.
 - Light/Dark-Mode: folgt der Systemeinstellung, Umschalter in der Navigation, Auswahl wird in `localStorage` gespeichert.
 - Alle Beispieldaten in den Mockups (Firmen, Personen, Zahlen, Registernummern) sind frei erfunden.
+
+## Deployment
+
+Jeder Push auf den Default-Branch veröffentlicht die Seite automatisch über GitHub Pages (Workflow `.github/workflows/deploy-pages.yml`). Die Root-URL leitet auf `signum/` weiter.
