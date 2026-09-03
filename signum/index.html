@@ -146,6 +146,8 @@ img, svg { max-width: 100%; display: block; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
 .container { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+/* Sprungmarken nicht unter der klebenden Navigation enden lassen */
+section[id] { scroll-margin-top: 84px; }
 .section { padding: 104px 0; }
 .section-tight { padding: 72px 0; }
 .eyebrow {
@@ -154,7 +156,7 @@ img, svg { max-width: 100%; display: block; }
   color: var(--accent);
 }
 .eyebrow::before { content: ""; flex: none; width: 18px; height: 1px; margin-top: 0.62em; background: var(--accent); opacity: 0.7; }
-.h2 { font-size: clamp(30px, 4vw, 44px); margin-top: 16px; max-width: 760px; }
+.h2 { font-size: clamp(28px, 3.5vw, 40px); margin-top: 16px; max-width: 760px; text-wrap: balance; }
 .h2 em, .h1 em { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -0.01em; }
 .lead { font-size: 18px; color: var(--text-2); max-width: 680px; margin-top: 18px; }
 .muted { color: var(--text-3); }
@@ -250,8 +252,8 @@ img, svg { max-width: 100%; display: block; }
   background: radial-gradient(closest-side, var(--glow), transparent 70%);
   pointer-events: none; filter: blur(20px);
 }
-.hero-grid { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; }
-.h1 { font-size: clamp(38px, 5.4vw, 64px); letter-spacing: -0.03em; line-height: 1.05; margin-top: 20px; }
+.hero-grid { position: relative; display: grid; grid-template-columns: 1.12fr 1fr; gap: 52px; align-items: center; }
+.h1 { font-size: clamp(34px, 4.3vw, 54px); letter-spacing: -0.025em; line-height: 1.1; margin-top: 20px; text-wrap: balance; }
 .hero .lead { font-size: 19px; margin-top: 22px; }
 .hero-cta { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
 .hero-trust { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: 13.5px; color: var(--text-2); }
@@ -672,6 +674,123 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
   .bench-row .val { text-align: left; }
   .axis { margin: 0; }
 }
+
+/* ============================================================
+   Pain – der Schmerz des Käufers
+   ============================================================ */
+.pain { background: var(--bg-2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pain-lead { font-family: var(--serif); font-size: clamp(26px, 3.4vw, 40px); line-height: 1.25; letter-spacing: -0.01em; max-width: 900px; }
+.pain-lead span { color: var(--text-3); }
+.beats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 48px; border-top: 1px solid var(--border); }
+.beat { padding: 28px 28px 28px 0; border-right: 1px solid var(--border); }
+.beat:last-child { border-right: none; padding-right: 0; }
+.beat:not(:first-child) { padding-left: 28px; }
+.beat .n { font-family: var(--mono); font-size: 12px; color: var(--accent); margin-bottom: 12px; display: block; }
+.beat h3 { font-size: 17px; margin-bottom: 8px; }
+.beat p { font-size: 14.5px; color: var(--text-2); }
+
+/* ============================================================
+   Mechanik – drei Schritte
+   ============================================================ */
+.steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; counter-reset: step; }
+.step { position: relative; padding: 28px 26px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+.step::before {
+  counter-increment: step; content: counter(step);
+  position: absolute; top: -14px; left: 26px; width: 28px; height: 28px; border-radius: 8px;
+  background: var(--text); color: var(--bg); display: grid; place-items: center;
+  font-size: 13px; font-weight: 600; font-family: var(--mono);
+}
+.step h3 { font-size: 17px; margin: 6px 0 10px; }
+.step p { font-size: 14.5px; color: var(--text-2); }
+.step .meta { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--border); font-size: 12.5px; color: var(--text-3); font-family: var(--mono); }
+.steps-note { margin-top: 24px; font-size: 14.5px; color: var(--text-2); max-width: 720px; }
+
+/* ============================================================
+   Pillars – die zwei tragenden Module
+   ============================================================ */
+.pillars { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.pillar { padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface); position: relative; overflow: hidden; }
+.pillar::after { content: ""; position: absolute; inset: 0; background: radial-gradient(500px 160px at 0% 0%, var(--accent-soft), transparent 70%); pointer-events: none; }
+.pillar .role { font-size: 12px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; display: block; }
+.pillar h3 { font-size: 21px; margin-bottom: 10px; }
+.pillar p { font-size: 15px; color: var(--text-2); }
+.pillar .refs { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 18px; position: relative; }
+.pillar .refs span { font-family: var(--mono); font-size: 10.5px; color: var(--text-3); border: 1px solid var(--border); border-radius: 5px; padding: 2px 6px; }
+.modindex { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-2); padding: 22px 26px; }
+.modindex h4 { font-size: 13px; font-weight: 600; color: var(--text-2); margin-bottom: 14px; }
+.modindex ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 24px; }
+.modindex li { font-size: 13.5px; color: var(--text-2); display: flex; gap: 10px; align-items: baseline; }
+.modindex li b { color: var(--text); font-weight: 600; }
+.modindex li i { font-family: var(--mono); font-style: normal; font-size: 11px; color: var(--text-3); flex: none; }
+
+/* ============================================================
+   Gap – warum es das bisher nicht gab
+   ============================================================ */
+.gap { display: grid; gap: 0; max-width: 900px; }
+.gap-item { display: grid; grid-template-columns: 120px 1fr; gap: 32px; padding: 34px 0; border-top: 1px solid var(--border); }
+.gap-item:last-child { border-bottom: 1px solid var(--border); }
+.gap-item .k { font-family: var(--mono); font-size: 12px; color: var(--accent); padding-top: 4px; }
+.gap-item h3 { font-size: 20px; margin-bottom: 10px; }
+.gap-item p { font-size: 15px; color: var(--text-2); }
+.gap-item p + p { margin-top: 10px; }
+.gap-item .law { font-family: var(--mono); font-size: 12px; color: var(--text); background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; white-space: nowrap; }
+
+/* ============================================================
+   Gründer
+   ============================================================ */
+.founders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.founder { display: grid; grid-template-columns: 64px 1fr; gap: 20px; padding: 28px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+.avatar { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-3); color: var(--text-2); font-family: var(--serif); font-size: 24px; border: 1px solid var(--border); }
+.founder h3 { font-size: 17px; }
+.founder .rolle { font-size: 13px; color: var(--accent); font-weight: 500; margin: 2px 0 12px; }
+.founder p { font-size: 14.5px; color: var(--text-2); }
+.founder ul { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 5px; }
+.founder li { font-size: 13px; color: var(--text-3); display: flex; gap: 8px; }
+.founder li::before { content: "·"; color: var(--accent); }
+
+/* ============================================================
+   Fit – für wen, für wen nicht
+   ============================================================ */
+.fit { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.fit-card { padding: 30px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface); }
+.fit-card.no { background: var(--surface-2); }
+.fit-card h3 { font-size: 17px; display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.fit-card ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.fit-card li { display: flex; gap: 12px; align-items: flex-start; font-size: 14.5px; color: var(--text-2); }
+.fit-card li svg { width: 17px; height: 17px; flex: none; margin-top: 3px; }
+.fit-card li b { color: var(--text); font-weight: 600; display: block; }
+.fit-card.yes li svg { color: var(--ok); }
+.fit-card.no li svg { color: var(--text-3); }
+
+/* CTA-Auswahl: Demo oder Beispielreport */
+.intent { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; grid-column: 1 / -1; }
+.intent label {
+  display: block; cursor: pointer; padding: 12px 14px; border: 1px solid var(--border-strong); border-radius: 10px;
+  background: var(--bg-2); transition: border-color .15s, background .15s;
+}
+.intent label:hover { border-color: var(--text-3); }
+.intent input { position: absolute; opacity: 0; pointer-events: none; }
+.intent label b { display: block; font-size: 14px; font-weight: 600; }
+.intent label span { display: block; font-size: 12.5px; color: var(--text-3); margin-top: 2px; }
+.intent input:checked + b { color: var(--accent); }
+.intent label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+.intent input:focus-visible + b { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+
+@media (max-width: 1024px) {
+  .beats, .steps, .modindex ul { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pillars, .founders, .fit { grid-template-columns: minmax(0, 1fr); }
+  .beat { border-right: none; border-bottom: 1px solid var(--border); padding: 24px 0; }
+  .beat:not(:first-child) { padding-left: 0; }
+  .beat:last-child { border-bottom: none; }
+}
+@media (max-width: 860px) {
+  .gap-item { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 26px 0; }
+}
+@media (max-width: 560px) {
+  .beats, .steps, .modindex ul, .intent { grid-template-columns: minmax(0, 1fr); }
+  .founder { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .pain-lead { font-size: 24px; }
+}
 </style>
 </head>
 <body>
@@ -686,11 +805,11 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
       <span class="brand-name">Signum</span>
     </a>
     <nav class="nav-links" aria-label="Hauptnavigation">
-      <a href="#problem">Warum Signum</a>
+      <a href="#anlass">Der Anlass</a>
+      <a href="#mechanik">So funktioniert es</a>
       <a href="#produkt">Produkt</a>
-      <a href="#module">Module</a>
-      <a href="#vergleich">Vergleich</a>
-      <a href="#zielgruppen">Für wen</a>
+      <a href="#recht">Recht &amp; Daten</a>
+      <a href="#gruender">Gründer</a>
       <a href="#faq">FAQ</a>
     </nav>
     <div class="nav-actions">
@@ -705,11 +824,11 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
     </div>
   </div>
   <div class="mobile-menu" id="mobileMenu">
-    <a href="#problem">Warum Signum</a>
+    <a href="#anlass">Der Anlass</a>
+    <a href="#mechanik">So funktioniert es</a>
     <a href="#produkt">Produkt</a>
-    <a href="#module">Module</a>
-    <a href="#vergleich">Vergleich</a>
-    <a href="#zielgruppen">Für wen</a>
+    <a href="#recht">Recht &amp; Daten</a>
+    <a href="#gruender">Gründer</a>
     <a href="#faq">FAQ</a>
     <a href="#demo" style="color: var(--accent)">Demo buchen →</a>
   </div>
@@ -721,14 +840,14 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
 <section class="hero">
   <div class="container hero-grid">
     <div>
-      <span class="eyebrow">Betriebssystem für Mandatsentwicklung · WP · StB · RA · Beratung</span>
-      <h1 class="h1">Wer den fachlichen Anlass zuerst kennt, <em>gewinnt das Mandat.</em></h1>
-      <p class="lead">Signum erkennt aus öffentlichen Registerdaten, wann bei einem Unternehmen Prüfungspflicht, Prüferwechsel, Umwandlung oder NIS2-Betroffenheit eintritt – und spiegelt das gegen Ihre eigene Mandantenliste. Ohne E-Mail-Zugriff, ohne Kalenderauswertung, ohne automatisierte Ansprache.</p>
+      <span class="eyebrow">Mandantengewinnung aus öffentlichen Registerdaten</span>
+      <h1 class="h1">Wer nächstes Jahr prüfungspflichtig wird, <em>steht heute schon im Register.</em></h1>
+      <p class="lead">Signum liest Handelsregister, Bundesanzeiger und Insolvenzbekanntmachungen, erkennt daraus fachliche Anlässe – eintretende Prüfungspflicht, Prüferrotation, Umwandlung, NIS2 – und spiegelt sie gegen Ihre eigene Mandantenliste. Für Wirtschaftsprüfer, Steuerberater und Rechtsanwälte im deutschsprachigen Raum.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="#demo">Demo buchen
+        <a class="btn btn-primary" href="#demo">Signale für meine Region sehen
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a class="btn btn-ghost" href="#produkt">Die 8 Module ansehen</a>
+        <a class="btn btn-ghost" href="#mechanik">So funktioniert es</a>
       </div>
       <div class="hero-trust" aria-label="Grundprinzipien">
         <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Nur öffentliche Registerdaten</span>
@@ -766,7 +885,6 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
     </div>
   </div>
 </section>
-
 <!-- ============================================================ SOURCES -->
 <div class="sources">
   <div class="container sources-inner">
@@ -780,63 +898,83 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
   </div>
 </div>
 
-<!-- ============================================================ PROBLEM -->
-<section class="section" id="problem">
+<!-- ============================================================ PAIN -->
+<section class="section pain" id="anlass">
   <div class="container">
-    <div class="section-head reveal">
-      <span class="eyebrow">Das Problem</span>
-      <h2 class="h2">Mandatsentwicklung läuft heute über Netzwerk und Zufall. Die Werkzeuge, die das ändern könnten, sind hier <em>nicht zulässig.</em></h2>
-      <p class="lead">US-Relationship-CRMs lesen den E-Mail- und Kalenderverkehr der Mitarbeitenden aus, um Beziehungen zu kartieren. Für Wirtschaftsprüfer, Steuerberater und Anwälte in Deutschland scheitert dieser Ansatz an drei Stellen.</p>
+    <div class="reveal">
+      <span class="eyebrow">Der Anlass</span>
+      <p class="pain-lead" style="margin-top: 22px;">Die Prüfung war neu zu vergeben. Der Anlass stand seit acht Monaten im Bundesanzeiger. <span>Erfahren haben Sie davon, als die Entscheidung längst gefallen war.</span></p>
     </div>
-
-    <div class="problem-grid">
-      <div class="card reveal" data-delay="1">
-        <span class="law">§ 87 Abs. 1 Nr. 6 BetrVG</span>
-        <h3>Mitbestimmung</h3>
-        <p>Systeme, die geeignet sind, Verhalten oder Leistung von Beschäftigten zu überwachen, sind mitbestimmungspflichtig. Wer Mailverkehr auswertet, um „Beziehungsstärke“ zu messen, misst unvermeidlich auch Mitarbeiterverhalten.</p>
+    <div class="beats">
+      <div class="beat reveal" data-delay="1">
+        <span class="n">01</span>
+        <h3>Der Anlass ist öffentlich – nur liest ihn niemand</h3>
+        <p>Prüfungspflicht, Rotationsfristen, Umwandlungen und Sacheinlagen werden veröffentlicht. Aber niemand in der Kanzlei liest täglich tausend Jahresabschlüsse, um die drei zu finden, die relevant sind.</p>
       </div>
-      <div class="card reveal" data-delay="2">
-        <span class="law">§ 203 StGB</span>
-        <h3>Berufsgeheimnis</h3>
-        <p>Mandantenkorrespondenz von WP, StB und RA darf die Kanzlei nicht in ein externes Tool verlassen. Ein CRM, das Postfächer synchronisiert, macht aus jedem Mandantennamen im Betreff ein Offenbarungsrisiko.</p>
+      <div class="beat reveal" data-delay="2">
+        <span class="n">02</span>
+        <h3>Der Zugang existiert – nur kennt ihn niemand</h3>
+        <p>Zu vielen Zielunternehmen besteht längst eine Verbindung: ein Mandant sitzt dort im Aufsichtsrat, ein Beirat überschneidet sich. Diese Wege stehen im Handelsregister – aber in keinem Kopf vollständig.</p>
       </div>
-      <div class="card reveal" data-delay="3">
-        <span class="law">§ 7 UWG</span>
-        <h3>Keine Kaltakquise</h3>
-        <p>Automatisierte Ansprache-Sequenzen an Zielpersonen sind für die Berufsgruppen ohnehin keine Option. Signum versendet deshalb nichts – die Hinweise bleiben bei Ihnen, die Ansprache bleibt persönlich.</p>
-      </div>
-    </div>
-
-    <div class="twocol">
-      <div class="list-card reads reveal" data-delay="1">
-        <h3><span class="badge badge-ok">Was Signum liest</span></h3>
-        <ul>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Handelsregister-Eintragungen und -Bekanntmachungen (Organe, Umwandlungen, Kapitalmaßnahmen)</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Jahresabschlüsse und Anhänge im Bundesanzeiger / Unternehmensregister (Größenklassen, Bestätigungsvermerke, Prüfungshonorare)</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Insolvenzbekanntmachungen und Fusionskontroll-Veröffentlichungen</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Ihre eigene Mandanten- und Kontaktliste – nur als Abgleichsschlüssel, in Ihrer Instanz</li>
-        </ul>
-      </div>
-      <div class="list-card never reveal" data-delay="2">
-        <h3><span class="badge badge-bad">Was Signum nie anfasst</span></h3>
-        <ul>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>E-Mail-Postfächer, Kalender oder Chat-Verläufe Ihrer Mitarbeitenden</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Mandantenakten, Arbeitspapiere oder Korrespondenz (§ 203 StGB)</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Verhaltens- oder Aktivitätsdaten einzelner Personen (§ 87 BetrVG)</li>
-          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Gescrapte Social-Media-Profile – keine LinkedIn-Auswertung als Signalquelle</li>
-        </ul>
+      <div class="beat reveal" data-delay="3">
+        <span class="n">03</span>
+        <h3>Der Bestand verliert leise</h3>
+        <p>Die eigene Rotationsfrist, ein abberufener Ansprechpartner, die Insolvenz einer Tochter, ein Mandat das an einem einzigen Partner hängt: Auch das steht im Register – und fällt meist erst auf, wenn es zu spät ist.</p>
       </div>
     </div>
   </div>
 </section>
 
+<!-- ============================================================ MECHANIK -->
+<section class="section" id="mechanik">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">So funktioniert es</span>
+      <h2 class="h2">Drei Schritte. <em>Keine Blackbox.</em></h2>
+      <p class="lead">Signum bezieht keine Daten aus Ihrer Kanzlei außer der Liste, die Sie ohnehin führen – und gibt nichts nach außen.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal" data-delay="1">
+        <h3>Register lesen</h3>
+        <p>Täglicher Abgleich von Handelsregister-Bekanntmachungen, Jahresabschlüssen und Anhängen im Bundesanzeiger, Insolvenzbekanntmachungen und Fusionskontroll-Veröffentlichungen.</p>
+        <div class="meta">öffentliche Quellen · täglich</div>
+      </div>
+      <div class="step reveal" data-delay="2">
+        <h3>Gegen Ihren Bestand spiegeln</h3>
+        <p>Ihre Mandanten- und Kontaktliste dient als Abgleichsschlüssel: Wer ist Mandant, wer ist es nicht, welche Organverflechtung führt zu wem. Verarbeitung in einer Instanz, die nur Ihrer Kanzlei gehört.</p>
+        <div class="meta">Import aus Excel oder CSV</div>
+      </div>
+      <div class="step reveal" data-delay="3">
+        <h3>Anlass und Zugang an den zuständigen Partner</h3>
+        <p>Der Treffer landet bei der Person in Ihrem Haus, die ihn verwerten kann – mit Fundstelle, Rechtsgrundlage und dem glaubwürdigsten Weg über eine bestehende Beziehung.</p>
+        <div class="meta">intern · kein Versand an Dritte</div>
+      </div>
+    </div>
+    <p class="steps-note reveal">Was dabei nicht passiert: kein Zugriff auf Postfächer oder Kalender, keine Auswertung von Mitarbeiterverhalten, keine Nachricht an ein Zielunternehmen. Warum das so gebaut ist, steht <a href="#recht" style="color: var(--accent); text-decoration: underline; text-underline-offset: 3px;">weiter unten</a>.</p>
+  </div>
+</section>
 <!-- ============================================================ PRODUCT MOCKUP -->
 <section class="section product" id="produkt">
   <div class="container">
     <div class="section-head reveal">
       <span class="eyebrow">Das Produkt</span>
-      <h2 class="h2">Acht Module, eine Datenbasis: Register lesen, gegen den Bestand spiegeln, <em>Anlässe erkennen.</em></h2>
-      <p class="lead">Ein Blick in die Oberfläche. Alle Unternehmen, Personen und Zahlen sind frei erfunden.</p>
+      <h2 class="h2">Zwei Module tragen die Entscheidung. <em>Sechs bauen aus.</em></h2>
+      <p class="lead">Alles arbeitet auf derselben Datenbasis. Der Einstieg ist in der Regel eines dieser beiden Module – das eine schafft den Anlass, das andere erfüllt eine Pflicht, die Sie ohnehin haben.</p>
+    </div>
+
+    <div class="pillars">
+      <div class="pillar reveal" data-delay="1">
+        <span class="role">Der Anlass</span>
+        <h3>Signale</h3>
+        <p>Erkennt fachliche Anlässe aus Registern und Bekanntmachungen: eintretende Prüfungspflicht, Prüferrotation, Umwandlungen, Sacheinlagen, NIS2-Betroffenheit, Wegfall der Konzernbefreiung – jeder Treffer mit Fundstelle, Rechtsgrundlage und Abgleich gegen Ihre Mandantenliste.</p>
+        <div class="refs"><span>§ 267 / § 316 HGB</span><span>VO 537/2014</span><span>§ 318 HGB</span><span>UmwG</span><span>§ 183 AktG</span><span>NIS2UmsuCG</span><span>§ 264 Abs. 3 HGB</span></div>
+      </div>
+      <div class="pillar reveal" data-delay="2">
+        <span class="role">Die Pflicht</span>
+        <h3>Konfliktprüfung</h3>
+        <p>Unabhängigkeits- und Konfliktprüfung über den gesamten Konzernverbund vor Mandatsannahme. Ein Prozess, den Sie ohnehin durchlaufen und dokumentieren müssen – hier in Minuten statt Stunden, mit nachvollziehbarer Ableitung für Ihr Qualitätsmanagement.</p>
+        <div class="refs"><span>§ 319 ff. HGB</span><span>§ 319b HGB</span><span>IDW QMS 1</span></div>
+      </div>
     </div>
 
     <div class="app reveal" id="app" data-delay="1">
@@ -858,7 +996,7 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>Konfliktprüfung<span class="num">03</span><span class="bar"></span>
           </button>
           <button class="tab" role="tab" aria-selected="false" aria-controls="s-whitespace" id="t-whitespace" data-tab="whitespace">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>Whitespace-Karte<span class="num">04</span><span class="bar"></span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg>Leistungslücken<span class="num">04</span><span class="bar"></span>
           </button>
           <button class="tab" role="tab" aria-selected="false" aria-controls="s-honorar" id="t-honorar" data-tab="honorar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>Honorar-Benchmark<span class="num">05</span><span class="bar"></span>
@@ -890,10 +1028,10 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
                 <table class="tbl">
                   <thead><tr><th>Unternehmen</th><th>Signal</th><th>Abgleich</th><th>Prio</th></tr></thead>
                   <tbody>
-                    <tr class="sel"><td><span class="c">Nordmuster Logistik AG</span><span class="s">Hamburg · HRB 00001 (fiktiv)</span></td><td>Prüfungspflicht tritt ein<span class="s">§ 267 Abs. 2, § 316 HGB · Bundesanzeiger JA 2025</span></td><td><span class="badge badge-ok">Mandant Tax</span><span class="s">Whitespace: Audit</span></td><td><span class="prio prio-hi"><i></i>Hoch</span></td></tr>
+                    <tr class="sel"><td><span class="c">Nordmuster Logistik AG</span><span class="s">Hamburg · HRB 00001 (fiktiv)</span></td><td>Prüfungspflicht tritt ein<span class="s">§ 267 Abs. 2, § 316 HGB · Bundesanzeiger JA 2025</span></td><td><span class="badge badge-ok">Mandant Tax</span><span class="s">Offen: Audit</span></td><td><span class="prio prio-hi"><i></i>Hoch</span></td></tr>
                     <tr><td><span class="c">Exempla Systems SE</span><span class="s">München · HRB 00002 (fiktiv)</span></td><td>Prüferrotation fällig<span class="s">Art. 17 VO 537/2014, § 318 Abs. 1a HGB · BV 2016–2025</span></td><td><span class="badge badge-neutral">Kein Mandant</span><span class="s">Beziehung: 2 Schritte</span></td><td><span class="prio prio-hi"><i></i>Hoch</span></td></tr>
                     <tr><td><span class="c">Fiktiva Energie GmbH</span><span class="s">Leipzig · HRB 00003 (fiktiv)</span></td><td>NIS2-Betroffenheit<span class="s">NIS2UmsuCG · Sektor Energie, Beschäftigte &gt; 50</span></td><td><span class="badge badge-neutral">Kein Mandant</span><span class="s">Beziehung: 3 Schritte</span></td><td><span class="prio prio-mid"><i></i>Mittel</span></td></tr>
-                    <tr><td><span class="c">Beispielbau Süd GmbH</span><span class="s">Stuttgart · HRB 00004 (fiktiv)</span></td><td>Verschmelzung angemeldet<span class="s">§ 16 UmwG · Handelsregister-Bekanntmachung</span></td><td><span class="badge badge-ok">Mandant Legal</span><span class="s">Whitespace: Tax, Audit</span></td><td><span class="prio prio-mid"><i></i>Mittel</span></td></tr>
+                    <tr><td><span class="c">Beispielbau Süd GmbH</span><span class="s">Stuttgart · HRB 00004 (fiktiv)</span></td><td>Verschmelzung angemeldet<span class="s">§ 16 UmwG · Handelsregister-Bekanntmachung</span></td><td><span class="badge badge-ok">Mandant Legal</span><span class="s">Offen: Tax, Audit</span></td><td><span class="prio prio-mid"><i></i>Mittel</span></td></tr>
                     <tr><td><span class="c">Probeland Holding GmbH</span><span class="s">Köln · HRB 00005 (fiktiv)</span></td><td>Befreiung § 264 Abs. 3 HGB entfällt<span class="s">Konzernabschluss der Mutter nicht mehr offengelegt</span></td><td><span class="badge badge-neutral">Kein Mandant</span><span class="s">Beziehung: keine</span></td><td><span class="prio prio-mid"><i></i>Mittel</span></td></tr>
                     <tr><td><span class="c">Musterhafen Werft AG</span><span class="s">Kiel · HRB 00006 (fiktiv)</span></td><td>Kapitalerhöhung gegen Sacheinlage<span class="s">§ 183 AktG · Sacheinlageprüfung</span></td><td><span class="badge badge-ok">Mandant Audit</span><span class="s">Bestandsmandat</span></td><td><span class="prio prio-lo"><i></i>Niedrig</span></td></tr>
                   </tbody>
@@ -955,14 +1093,15 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
                 <div class="legend"><span><i class="firm"></i>Ihre Kanzlei</span><span><i class="person"></i>Person (Organ)</span><span><i></i>Unternehmen</span><span><i class="hi"></i>Empfohlener Pfad</span></div>
               </div>
               <div class="panel">
-                <h4>Glaubwürdigster Zugang <span class="badge badge-ok">Score 92</span></h4>
+                <h4>Glaubwürdigster Zugang <span class="badge badge-ok">2 Schritte</span></h4>
+                <p style="font-size: 12px; color: var(--text-3); margin-bottom: 12px;">Gereiht nach Länge des Pfades, Dauer der Mandatsbeziehung und Aktualität des Organverhältnisses – jeder Schritt ist unten belegt.</p>
                 <div class="path">
                   <div class="path-step"><i>1</i><div><b>Dr. M. Mustermann</b><span>Partner Ihrer Kanzlei, betreut das Mandat seit 2019</span></div></div>
                   <div class="path-step"><i>2</i><div><b>Dr. A. Beispiel</b><span>Steuerberatungsmandant · seit 2022 Aufsichtsrat der Nordmuster Logistik AG (HR-Eintrag)</span></div></div>
                   <div class="path-step"><i>3</i><div><b>Nordmuster Logistik AG</b><span>Anlass: Prüfungspflicht ab GJ 2026 · Entscheider: K. Probe (GF)</span></div></div>
                 </div>
                 <dl class="kv" style="margin-top: 8px;">
-                  <dt>Alternativen</dt><dd>2 weitere Pfade (Score 61, 44)</dd>
+                  <dt>Alternativen</dt><dd>2 weitere Pfade über 3 bzw. 4 Schritte</dd>
                   <dt>Quelle</dt><dd>Handelsregister + Ihre Mandatshistorie</dd>
                 </dl>
                 <div class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Beziehungen entstehen aus Registerdaten und Mandaten – nicht aus E-Mail- oder Kalenderverkehr.</div>
@@ -1011,12 +1150,12 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
           <!-- 04 Whitespace -->
           <div class="screen" id="s-whitespace" role="tabpanel" aria-labelledby="t-whitespace">
             <div class="screen-head">
-              <div><h3>Whitespace-Karte</h3><p>Mandant × Leistungsbereich – wo bezieht ein Mandant nur einen Teil dessen, was Sie anbieten?</p></div>
-              <span class="badge badge-mono badge-neutral">142 Mandanten · 61 Whitespace-Felder</span>
+              <div><h3>Leistungslücken</h3><p>Mandant × Leistungsbereich – wo bezieht ein Mandant nur einen Teil dessen, was Sie anbieten?</p></div>
+              <span class="badge badge-mono badge-neutral">142 Mandanten · 61 offene Felder</span>
             </div>
             <div class="kpis">
               <div class="kpi"><div class="v">38 %</div><div class="l">Mandanten mit nur einem Leistungsbereich</div></div>
-              <div class="kpi"><div class="v">12</div><div class="l">Felder mit aktuellem Signal (hohe Priorität)</div></div>
+              <div class="kpi"><div class="v">12</div><div class="l">Offene Felder mit aktuellem Anlass</div></div>
               <div class="kpi"><div class="v">4</div><div class="l">Abteilungen im Abgleich</div></div>
             </div>
             <div class="tbl-wrap">
@@ -1032,7 +1171,7 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
                 </tbody>
               </table>
             </div>
-            <div class="legend" style="margin-top: 12px;"><span><span class="cell on" style="width: 22px; height: 20px; font-size: 9px;">●</span>bezogen</span><span><span class="cell off" style="width: 22px; height: 20px; font-size: 9px;">○</span>Whitespace</span><span><span class="cell hot" style="width: 22px; height: 20px; font-size: 9px;">!</span>Whitespace mit aktuellem Anlass</span></div>
+            <div class="legend" style="margin-top: 12px;"><span><span class="cell on" style="width: 22px; height: 20px; font-size: 9px;">●</span>bezogen</span><span><span class="cell off" style="width: 22px; height: 20px; font-size: 9px;">○</span>nicht bezogen</span><span><span class="cell hot" style="width: 22px; height: 20px; font-size: 9px;">!</span>nicht bezogen, mit aktuellem Anlass</span></div>
           </div>
 
           <!-- 05 Honorar-Benchmark -->
@@ -1164,172 +1303,157 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
         </div><!-- /app-main -->
       </div><!-- /app-body -->
     </div><!-- /app -->
-    <p class="muted reveal" style="font-size: 13px; margin-top: 14px; text-align: center;">Alle gezeigten Unternehmen, Personen, Register-Nummern und Zahlen sind frei erfunden und dienen nur der Illustration.</p>
-  </div>
-</section>
+    <p class="muted reveal" style="font-size: 13px; margin: 14px 0 40px; text-align: center;">Alle gezeigten Unternehmen, Personen, Register-Nummern und Zahlen sind frei erfunden und dienen nur der Illustration.</p>
 
-<!-- ============================================================ MODULE GRID -->
-<section class="section" id="module">
-  <div class="container">
-    <div class="section-head reveal">
-      <span class="eyebrow">Die Module</span>
-      <h2 class="h2">Von der ersten Registermeldung bis zur Nachfolgeplanung – <em>ein System.</em></h2>
-      <p class="lead">Jedes Modul arbeitet auf denselben öffentlichen Daten und derselben Mandantenliste. Kein Ausschreibungs- oder Angebotsmodul – Signum endet dort, wo Ihr Gespräch beginnt.</p>
-    </div>
-    <div class="modules">
-      <div class="module reveal" data-delay="1">
-        <span class="idx">01</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
-        <h3>Signale</h3>
-        <p>Erkennt fachliche Anlässe aus Registerdaten und Bekanntmachungen: eintretende Prüfungspflicht, NIS2-Betroffenheit, Prüferrotation, Umwandlungen, Sacheinlagen, Wegfall der Konzernbefreiung – abgeglichen mit Ihrer Mandantenliste.</p>
-        <div class="refs"><span>§ 267 / § 316 HGB</span><span>NIS2UmsuCG</span><span>VO 537/2014</span><span>§ 318 HGB</span><span>UmwG</span><span>§§ 33 / 183 AktG</span><span>§ 264 Abs. 3 HGB</span></div>
-      </div>
-      <div class="module reveal" data-delay="2">
-        <span class="idx">02</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7 7.5 10.5 16M17 7.5 13.5 16M7.5 6h9"/></svg></div>
-        <h3>Beziehungsgraph</h3>
-        <p>Organverflechtungen – wer sitzt wo in Vorstand, Aufsichtsrat oder Beirat – aus dem Handelsregister, verknüpft mit Ihrer Mandatshistorie. Zeigt, über welche bestehende Beziehung ein Kontakt glaubwürdig erreichbar ist.</p>
-        <div class="refs"><span>Handelsregister</span><span>Mandatshistorie</span></div>
-      </div>
-      <div class="module reveal" data-delay="3">
-        <span class="idx">03</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div>
-        <h3>Konfliktprüfung</h3>
-        <p>Automatisierte Unabhängigkeits- und Konfliktprüfung über den gesamten Konzernverbund vor Mandatsannahme – ein ohnehin verpflichtender Prozess, jetzt dokumentiert und reproduzierbar.</p>
-        <div class="refs"><span>§ 319 ff. HGB</span><span>§ 319b HGB</span><span>IDW QMS 1</span></div>
-      </div>
-      <div class="module reveal" data-delay="4">
-        <span class="idx">04</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg></div>
-        <h3>Whitespace-Karte</h3>
-        <p>Matrix Mandant × Leistungsbereich: Welche Mandanten beziehen nur Audit, obwohl Sie auch Tax, Advisory oder Legal anbieten? Cross-Selling über Abteilungsgrenzen hinweg – mit aktuellem Anlass.</p>
-        <div class="refs"><span>Audit</span><span>Tax</span><span>Advisory</span><span>Legal</span></div>
-      </div>
-      <div class="module reveal" data-delay="1">
-        <span class="idx">05</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></div>
-        <h3>Honorar-Benchmark</h3>
-        <p>Marktpreise für vergleichbare Prüfungsmandate, aufgebaut aus der Pflichtangabe der Abschlussprüferhonorare im Anhang großer Kapitalgesellschaften.</p>
-        <div class="refs"><span>§ 285 Nr. 17 HGB</span><span>§ 314 Abs. 1 Nr. 9 HGB</span></div>
-      </div>
-      <div class="module reveal" data-delay="2">
-        <span class="idx">06</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20zM9 4v13.5M15 6.5V20"/></svg></div>
-        <h3>Marktkarte</h3>
-        <p>„Wer prüft wen“: Marktanteile, Prüferwechsel und Wechselmuster nach Region, Branche und Größenklasse – aus mehrjährigen Bestätigungsvermerken.</p>
-        <div class="refs"><span>§ 322 HGB</span><span>Bundesanzeiger</span></div>
-      </div>
-      <div class="module reveal" data-delay="3">
-        <span class="idx">07</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg></div>
-        <h3>Frühwarnung &amp; Nachfolge</h3>
-        <p>Dieselbe Signal-Logik nach innen: Insolvenznähe, eigene Rotationsfristen, ausgeschiedene Ansprechpartner – und eine Nachfolgerisiko-Karte von Mandat über tragende Beziehung bis zum Alter des Partners.</p>
-        <div class="refs"><span>Insolvenzbekanntmachungen</span><span>§ 318 Abs. 1a HGB</span></div>
-      </div>
-      <div class="module reveal" data-delay="4">
-        <span class="idx">08</span>
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4M21 7H9a4 4 0 0 0-4 4v1M7 21l-4-4 4-4M3 17h12a4 4 0 0 0 4-4v-1"/></svg></div>
-        <h3>Empfehlungsnetzwerk</h3>
-        <p>Wer spielt Ihrer Kanzlei Mandate zu – Banken, Anwälte, Beiräte, andere Kanzleien – und wird diese Beziehung erwidert? Saldo, letzter Anlass, offene Revanche.</p>
-        <div class="refs"><span>Eigene Erfassung</span><span>Registerabgleich</span></div>
-      </div>
+    <div class="modindex reveal">
+      <h4>Die übrigen sechs Module – im Mockup oben enthalten</h4>
+      <ul>
+        <li><i>02</i><span><b>Beziehungsgraph</b> – über welche bestehende Beziehung ein Kontakt erreichbar ist</span></li>
+        <li><i>04</i><span><b>Leistungslücken</b> – welche Mandanten nur einen Teil Ihres Angebots beziehen</span></li>
+        <li><i>05</i><span><b>Honorar-Benchmark</b> – Marktpreise aus den Anhangangaben nach § 285 Nr. 17 HGB</span></li>
+        <li><i>06</i><span><b>Marktkarte</b> – wer prüft wen, und wer verliert gerade Mandate</span></li>
+        <li><i>07</i><span><b>Frühwarnung &amp; Nachfolge</b> – dieselbe Logik nach innen, auf den eigenen Bestand</span></li>
+        <li><i>08</i><span><b>Empfehlungsnetzwerk</b> – wer Ihnen Mandate zuspielt und ob das erwidert wird</span></li>
+      </ul>
     </div>
   </div>
 </section>
 
-<!-- ============================================================ COMPARISON -->
-<section class="section product" id="vergleich">
+<!-- ============================================================ RECHT & DATEN -->
+<section class="section" id="recht">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow">Vergleich</span>
-      <h2 class="h2">Relationship Intelligence – <em>gebaut für deutsches Berufsrecht.</em></h2>
-      <p class="lead">Die Idee hinter US-Relationship-CRMs ist richtig. Die Datenbasis ist es hierzulande nicht. Signum tauscht sie aus.</p>
+      <span class="eyebrow">Recht &amp; Daten</span>
+      <h2 class="h2">Warum es das <em>bisher nicht gab.</em></h2>
+      <p class="lead">Die Idee, Mandatsentwicklung auf Daten zu stützen, ist nicht neu. Der übliche Weg dorthin ist in Deutschland nur verschlossen – und der offene Weg wird nicht genutzt.</p>
     </div>
-    <div class="compare-wrap reveal" data-delay="1">
-      <table class="compare">
-        <thead>
-          <tr><th>Kriterium</th><th>Typische US-Relationship-CRMs</th><th class="sig">Signum</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>Datenbasis</td>
-            <td><span class="ic no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>E-Mail- und Kalenderverkehr der Mitarbeitenden, synchronisiert in die Cloud des Anbieters</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Öffentliche Register und Bekanntmachungen, gespiegelt gegen Ihre eigene Mandantenliste</td>
-          </tr>
-          <tr>
-            <td>Mitbestimmung<small>§ 87 Abs. 1 Nr. 6 BetrVG</small></td>
-            <td><span class="ic no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>In der Regel mitbestimmungspflichtig – das System ist zur Verhaltens- und Leistungskontrolle geeignet</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Keine Verarbeitung von Mitarbeiterverhalten – es gibt nichts zu überwachen</td>
-          </tr>
-          <tr>
-            <td>Berufsgeheimnis<small>§ 203 StGB</small></td>
-            <td><span class="ic no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>Mandantenkorrespondenz verlässt die Kanzlei</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Keine Korrespondenz, keine Akten – nur Ihre Mandantenliste als Abgleichsschlüssel in Ihrer Instanz</td>
-          </tr>
-          <tr>
-            <td>Ansprache<small>§ 7 UWG</small></td>
-            <td><span class="ic meh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/></svg></span>Häufig mit automatisierten Sequenzen und Nachfass-Automatik</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Kein Versand an Dritte. Hinweise bleiben intern, die Ansprache bleibt beim Partner</td>
-          </tr>
-          <tr>
-            <td>Fachliche Anlässe<small>HGB, UmwG, AktG, NIS2</small></td>
-            <td><span class="ic no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>Nicht abgebildet – Signale sind Kontaktfrequenz und Jobwechsel</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Kernfunktion: Prüfungspflicht, Rotation, Umwandlung, Sacheinlage, NIS2, Konzernbefreiung</td>
-          </tr>
-          <tr>
-            <td>Konfliktprüfung<small>§ 319 ff. HGB, IDW QMS 1</small></td>
-            <td><span class="ic no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>Nicht vorgesehen</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Integriert, über den gesamten Konzernverbund, mit Dokumentation</td>
-          </tr>
-          <tr>
-            <td>Honorar &amp; Markt<small>§ 285 Nr. 17 HGB, Bestätigungsvermerke</small></td>
-            <td><span class="ic no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>Nicht vorgesehen</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Honorar-Benchmark und Marktkarte „Wer prüft wen“</td>
-          </tr>
-          <tr>
-            <td>Social-Media-Daten</td>
-            <td><span class="ic meh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12h14"/></svg></span>Teilweise Anreicherung über Drittanbieter</td>
-            <td class="sig"><span class="ic yes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>Kein Scraping. Positionswechsel kommen aus dem Handelsregister; lizenzierte Drittquellen allenfalls als spätere Erweiterung</td>
-          </tr>
-        </tbody>
-      </table>
+
+    <div class="gap">
+      <div class="gap-item reveal">
+        <div class="k">Ausgangspunkt</div>
+        <div>
+          <h3>Der Ansatz existiert – im angelsächsischen Raum</h3>
+          <p>Relationship-Intelligence-Systeme kartieren dort, wer in einer Organisation welche Verbindung nach außen hält. Sie tun das, indem sie den E-Mail- und Kalenderverkehr der Mitarbeitenden auswerten. In der Beratungs- und Prüfungsbranche ist das etabliert.</p>
+        </div>
+      </div>
+      <div class="gap-item reveal">
+        <div class="k">Hindernis I</div>
+        <div>
+          <h3>Diese Datenbasis ist hier nicht verfügbar</h3>
+          <p><span class="law">§ 203 StGB</span> Mandantenkorrespondenz von Wirtschaftsprüfern, Steuerberatern und Rechtsanwälten darf die Kanzlei nicht in ein externes System verlassen. Ein Werkzeug, das Postfächer synchronisiert, macht aus jedem Mandantennamen im Betreff ein Offenbarungsrisiko.</p>
+          <p><span class="law">§ 87 Abs. 1 Nr. 6 BetrVG</span> Systeme, die geeignet sind, Verhalten oder Leistung von Beschäftigten zu überwachen, sind mitbestimmungspflichtig. Wer Kontaktfrequenzen auswertet, um Beziehungsstärke zu messen, misst zwangsläufig auch Mitarbeiterverhalten.</p>
+        </div>
+      </div>
+      <div class="gap-item reveal">
+        <div class="k">Hindernis II</div>
+        <div>
+          <h3>Und die automatisierte Ansprache ist ohnehin keine Option</h3>
+          <p><span class="law">§ 7 UWG</span> Kalte Ansprache-Sequenzen an Zielpersonen scheiden für diese Berufsgruppen aus – unabhängig davon, welche Daten dahinterstehen. Ein Werkzeug, dessen Nutzen am Ende einer Automatik hängt, ist hier wertlos.</p>
+        </div>
+      </div>
+      <div class="gap-item reveal">
+        <div class="k">Die Lücke</div>
+        <div>
+          <h3>Was übrig bleibt, liest praktisch niemand</h3>
+          <p>Deutschland hat eine der vollständigsten öffentlichen Registerlandschaften Europas: Offenlegungspflicht für Jahresabschlüsse, Bestätigungsvermerke mit Prüfernennung, Honorarangaben im Anhang, Organbestellungen im Handelsregister, Insolvenz- und Fusionskontrollbekanntmachungen.</p>
+          <p>Diese Daten sind vorhanden, frei zugänglich und rechtlich unbedenklich – und werden für Mandatsentwicklung so gut wie nicht ausgewertet, weil das von Hand niemand leisten kann. Genau dort setzt Signum an.</p>
+        </div>
+      </div>
     </div>
-    <p class="muted reveal" style="font-size: 13px; margin-top: 14px; max-width: 820px;">Darstellung typischer Funktionsprinzipien E-Mail-basierter Relationship-CRMs, keine Bewertung einzelner Anbieter. Die rechtliche Einordnung ersetzt keine Beratung im Einzelfall.</p>
+
+    <div class="twocol">
+      <div class="list-card reads reveal" data-delay="1">
+        <h3><span class="badge badge-ok">Was Signum liest</span></h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Handelsregister-Eintragungen und -Bekanntmachungen (Organe, Umwandlungen, Kapitalmaßnahmen)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Jahresabschlüsse und Anhänge im Bundesanzeiger / Unternehmensregister (Größenklassen, Bestätigungsvermerke, Prüfungshonorare)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Insolvenzbekanntmachungen und Fusionskontroll-Veröffentlichungen</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Ihre eigene Mandanten- und Kontaktliste – nur als Abgleichsschlüssel, in Ihrer Instanz</li>
+        </ul>
+      </div>
+      <div class="list-card never reveal" data-delay="2">
+        <h3><span class="badge badge-bad">Was Signum nie anfasst</span></h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>E-Mail-Postfächer, Kalender oder Chat-Verläufe Ihrer Mitarbeitenden</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Mandantenakten, Arbeitspapiere oder Korrespondenz (§ 203 StGB)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Verhaltens- oder Aktivitätsdaten einzelner Personen (§ 87 BetrVG)</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Gescrapte Social-Media-Profile – keine LinkedIn-Auswertung als Signalquelle</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- ============================================================ SEGMENTS -->
-<section class="section" id="zielgruppen">
+<!-- ============================================================ GRÜNDER
+     PLATZHALTER – die folgenden Personen, Werdegänge und Zahlen sind
+     erfunden und vor einer echten Veröffentlichung durch die tatsächlichen
+     Angaben zu ersetzen. Keine realen Arbeitgeber genannt.
+     ============================================================ -->
+<section class="section product" id="gruender">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow">Für wen</span>
-      <h2 class="h2">Für mittelgroße Häuser, die Mandate <em>aktiv entwickeln</em> wollen.</h2>
-      <p class="lead">Nicht Big Four, nicht Einzelkanzlei: Signum ist für Gesellschaften gebaut, die mehrere Leistungsbereiche haben, neue Mandate gewinnen und den Bestand über Abteilungsgrenzen hinweg ausbauen wollen.</p>
+      <span class="eyebrow">Wer dahintersteht</span>
+      <h2 class="h2">Gebaut von Leuten, die <em>den Annahmeprozess selbst durchlaufen haben.</em></h2>
+      <p class="lead">Signum entsteht nicht aus einer Marktlückenanalyse, sondern aus zwei Berufsbiografien, in denen genau dieses Problem täglich auftrat.</p>
     </div>
-    <div class="segments">
-      <div class="segment reveal" data-delay="1">
-        <div class="tag">WP</div>
-        <h3>Wirtschaftsprüfungsgesellschaften</h3>
-        <p>Prüfungspflicht und Rotation erkennen, bevor der Wettbewerb es tut – und die Annahme sauber dokumentieren.</p>
-        <ul><li>Signale: Prüfungspflicht, Rotation, § 264 Abs. 3</li><li>Konfliktprüfung § 319 ff. HGB</li><li>Honorar-Benchmark &amp; Marktkarte</li></ul>
+    <div class="founders">
+      <div class="founder reveal" data-delay="1">
+        <div class="avatar" aria-hidden="true">KR</div>
+        <div>
+          <h3>Dr. Katharina Reuter</h3>
+          <div class="rolle">Fachliche Leitung · Wirtschaftsprüferin</div>
+          <p>Elf Jahre in der Abschlussprüfung einer Big-Four-Gesellschaft, zuletzt Prüfungsleiterin für mittelständische Konzernmandate. Hat in dieser Zeit mehr Unabhängigkeitsprüfungen von Hand dokumentiert, als ihr lieb ist – und regelmäßig erlebt, dass ein Mandat zu spät auf dem Tisch lag.</p>
+          <ul>
+            <li>WP-Examen 2016, Steuerberaterexamen 2013</li>
+            <li>Schwerpunkt Konzernabschluss, Logistik und Industrie</li>
+            <li>Verantwortet Signalfachlichkeit und Prüflogik</li>
+          </ul>
+        </div>
       </div>
-      <div class="segment reveal" data-delay="2">
-        <div class="tag">StB</div>
-        <h3>Steuerberatungskanzleien</h3>
-        <p>Umwandlungen, Sacheinlagen und Konzernveränderungen im Bestand früh sehen – und Whitespace zu Audit und Advisory heben.</p>
-        <ul><li>Signale: UmwG, AktG, Konzernkreis</li><li>Whitespace-Karte je Mandant</li><li>Frühwarnung im Mandantenstamm</li></ul>
+      <div class="founder reveal" data-delay="2">
+        <div class="avatar" aria-hidden="true">ML</div>
+        <div>
+          <h3>Moritz Lindner</h3>
+          <div class="rolle">Produkt &amp; Technik · zuvor Strategieberatung</div>
+          <p>Sechs Jahre in einer internationalen Strategieberatung mit Schwerpunkt Professional Services – unter anderem Wachstums- und Cross-Selling-Projekte für Prüfungs- und Beratungshäuser im deutschsprachigen Raum. Davor Informatik; baut seit fünfzehn Jahren Datenpipelines.</p>
+          <ul>
+            <li>Diplom Informatik, Schwerpunkt Datenbanken</li>
+            <li>Zuvor Projektleiter für Vertriebssteuerung in Kanzleien</li>
+            <li>Verantwortet Registeranbindung und Datenqualität</li>
+          </ul>
+        </div>
       </div>
-      <div class="segment reveal" data-delay="3">
-        <div class="tag">RA</div>
-        <h3>Rechtsanwaltskanzleien</h3>
-        <p>Gesellschaftsrechtliche Anlässe aus dem Register, NIS2-Betroffenheit und Fusionskontrolle – über bestehende Organbeziehungen erreichbar.</p>
-        <ul><li>Signale: UmwG, NIS2, Fusionskontrolle</li><li>Beziehungsgraph über Organe</li><li>Empfehlungsnetzwerk mit WP/StB</li></ul>
+    </div>
+    <p class="muted reveal" style="font-size: 13px; margin-top: 18px;">Sitz in Deutschland. Betrieb und Datenhaltung ausschließlich in deutschen Rechenzentren.</p>
+  </div>
+</section>
+
+<!-- ============================================================ FIT -->
+<section class="section" id="passt">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Passt das?</span>
+      <h2 class="h2">Für wen Signum gebaut ist – <em>und für wen nicht.</em></h2>
+      <p class="lead">Wir sagen das lieber hier als nach 45 Minuten Demo.</p>
+    </div>
+    <div class="fit">
+      <div class="fit-card yes reveal" data-delay="1">
+        <h3><span class="badge badge-ok">Passt</span></h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Mittelgroße Häuser</b>Etwa 20 bis 300 Berufsträger, mehrere Partner, eigener Mandantenstamm mit Substanz.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Mehr als ein Leistungsbereich</b>Audit und Tax, Tax und Legal, Beratung daneben – erst dann entstehen echte Lücken im Bestand.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Jemand ist zuständig</b>Ein Partner, ein Gremium oder eine BD-Rolle, die Hinweise auch tatsächlich aufgreift.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><span><b>Wachstum ist ein Thema</b>Sie wollen Mandate gewinnen oder den Bestand ausbauen – nicht nur verwalten.</span></li>
+        </ul>
       </div>
-      <div class="segment reveal" data-delay="4">
-        <div class="tag">Adv.</div>
-        <h3>Beratungen</h3>
-        <p>Transaktions- und Restrukturierungsanlässe aus Insolvenzbekanntmachungen und Fusionskontrolle, plus Cross-Selling in Multi-Service-Häusern.</p>
-        <ul><li>Signale: Insolvenznähe, M&amp;A-Anmeldungen</li><li>Whitespace über Service-Lines</li><li>Nachfolgerisiko im Bestand</li></ul>
+      <div class="fit-card no reveal" data-delay="2">
+        <h3><span class="badge badge-neutral">Passt nicht</span></h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span><b>Einzelkanzleien</b>Bei einem überschaubaren Mandantenstamm ist Signum überdimensioniert – da genügt der eigene Überblick.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span><b>Die vier großen Gesellschaften</b>Dort existieren vergleichbare interne Systeme, meist mit eigener Datenanbindung.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span><b>Reine Deklarations- und Buchhaltungspraxen</b>Ohne Prüfungs-, Gestaltungs- oder Beratungsanteil laufen die meisten Signale ins Leere.</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span><b>Wer erwartet, dass die Software akquiriert</b>Signum liefert Anlass und Zugang. Das Gespräch führt weiterhin ein Mensch – das ist kein Übergangszustand, sondern die Konstruktion.</span></li>
+        </ul>
       </div>
     </div>
   </div>
@@ -1344,8 +1468,14 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
     </div>
     <div class="faq reveal" data-delay="1">
       <details>
-        <summary>Was kostet Signum?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
-        <div class="a"><p>Preise auf Anfrage. Der Umfang hängt von der Größe Ihrer Mandantenliste, der Zahl der Leistungsbereiche und den gewünschten Modulen ab. In der Demo besprechen wir Ihr Setup und machen Ihnen ein Angebot.</p></div>
+        <summary>Wie belastbar sind die Registerdaten wirklich?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="a">
+          <p>Das ist die berechtigte Frage, und die ehrliche Antwort hat zwei Teile.</p>
+          <p><strong>Belastbar sind:</strong> Handelsregister-Bekanntmachungen (Organbestellungen, Umwandlungen, Kapitalmaßnahmen), Insolvenzbekanntmachungen und Fusionskontroll-Veröffentlichungen. Sie erscheinen zeitnah und sind eindeutig. Ebenso die Bestätigungsvermerke offengelegter Abschlüsse – daraus lassen sich Prüferhistorie und Rotationsfristen sauber ableiten.</p>
+          <p><strong>Mit Verzug behaftet sind:</strong> Jahresabschlüsse. Die Offenlegungsfrist läuft bis zu einem Jahr nach Geschäftsjahresende, und nicht jedes Unternehmen hält sie ein. Ein Größenklassenwechsel wird deshalb typischerweise mit einigen Monaten Verzögerung sichtbar. Für die Prüfungspflicht ist das meist früh genug, weil sie ohnehin an zwei aufeinanderfolgende Geschäftsjahre anknüpft – aber es ist kein Echtzeitsignal, und wir stellen es auch nicht so dar.</p>
+          <p><strong>Nicht erkennbar sind:</strong> Sachverhalte, die nirgends veröffentlicht werden – interne Unzufriedenheit mit dem Prüfer, geplante Transaktionen vor der Anmeldung, mündliche Ausschreibungsabsichten. Wer das verspricht, wertet andere Daten aus, als er zugibt.</p>
+          <p>Jeder Treffer in Signum zeigt seine Fundstelle und sein Veröffentlichungsdatum. Sie sehen also immer, wie alt ein Signal ist, bevor Sie darauf reagieren.</p>
+        </div>
       </details>
       <details>
         <summary>Verschickt Signum Nachrichten an Zielunternehmen oder Mandanten?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
@@ -1364,20 +1494,20 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
         <div class="a"><p>Mandantenkorrespondenz und Akten verlassen Ihre Systeme nicht, weil Signum sie nicht benötigt. Ihre Mandantenliste wird in einer dedizierten Instanz für Ihre Kanzlei verarbeitet, Betrieb in deutschen Rechenzentren, Auftragsverarbeitung nach Art. 28 DSGVO. Die Registerdaten selbst sind gesetzlich öffentlich bekanntgemacht; Personendaten darin (Organmitglieder) verarbeitet Signum nur im Umfang der Veröffentlichung.</p></div>
       </details>
       <details>
-        <summary>Wertet Signum LinkedIn oder andere soziale Netzwerke aus?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
-        <div class="a"><p>Nein. Signum scrapt keine sozialen Netzwerke. Positions- und Organwechsel stammen aus dem Handelsregister, das Vorstand, Geschäftsführung, Prokura und Aufsichtsräte ohnehin abbildet. Eine Anreicherung über einen lizenzierten Drittanbieter ist allenfalls als spätere, optionale Erweiterung denkbar – nicht als Kernfunktion.</p></div>
-      </details>
-      <details>
         <summary>Wie kommt meine Mandantenliste in Signum?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
         <div class="a"><p>Per Import aus Excel oder CSV mit Mandantenname, Leistungsbereich, zuständigem Partner und Mandatsbeginn. Signum gleicht die Einträge mit den Registern ab und ordnet ihnen Konzernverbund, Organe und Bekanntmachungen zu. Weitere Schnittstellen zu Kanzleisoftware besprechen wir in der Demo.</p></div>
+      </details>
+      <details>
+        <summary>Wertet Signum LinkedIn oder andere soziale Netzwerke aus?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="a"><p>Nein. Signum scrapt keine sozialen Netzwerke. Positions- und Organwechsel stammen aus dem Handelsregister, das Vorstand, Geschäftsführung, Prokura und Aufsichtsräte ohnehin abbildet. Eine Anreicherung über einen lizenzierten Drittanbieter ist allenfalls als spätere, optionale Erweiterung denkbar – nicht als Kernfunktion.</p></div>
       </details>
       <details>
         <summary>Enthält Signum ein Ausschreibungs- oder Angebotsmodul?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
         <div class="a"><p>Nein, bewusst nicht. Signum erkennt Anlässe, zeigt Zugänge, prüft Konflikte und liefert Marktkontext. Angebot, Pitch und Mandatsvertrag bleiben in Ihren bestehenden Prozessen.</p></div>
       </details>
       <details>
-        <summary>Für welche Kanzleigröße ist Signum gedacht?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
-        <div class="a"><p>Für mittelgroße Häuser im deutschsprachigen Raum mit mehreren Partnern und idealerweise mehreren Leistungsbereichen – dort entfalten Whitespace-Karte, Konfliktprüfung und Nachfolgerisiko-Karte den größten Nutzen. Für Einzelkanzleien ist Signum überdimensioniert; die Big Four haben eigene Systeme.</p></div>
+        <summary>Was kostet Signum?<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+        <div class="a"><p>Preise auf Anfrage. Der Umfang hängt von der Größe Ihrer Mandantenliste, der Zahl der Leistungsbereiche und den gewünschten Modulen ab. In der Demo besprechen wir Ihr Setup und machen Ihnen ein Angebot.</p></div>
       </details>
     </div>
   </div>
@@ -1387,17 +1517,30 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
 <section class="section cta" id="demo">
   <div class="container cta-grid">
     <div class="reveal">
-      <span class="eyebrow">Demo buchen</span>
-      <h2 class="h2">Sehen Sie Signum auf <em>Ihrer</em> Mandantenliste.</h2>
-      <p class="lead">In 45 Minuten zeigen wir Ihnen die acht Module – auf Wunsch mit einem anonymisierten Ausschnitt Ihres Bestands. Kein Self-Signup, kein Checkout, keine Verpflichtung.</p>
+      <span class="eyebrow">Nächster Schritt</span>
+      <h2 class="h2">Sehen Sie die Signale <em>für Ihre Region.</em></h2>
+      <p class="lead">Zwei Wege, je nachdem wie viel Zeit Sie investieren wollen – ein Beispielreport per E-Mail oder eine Demo auf einem anonymisierten Ausschnitt Ihres Bestands.</p>
       <ul class="cta-points">
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Live-Signale für Ihre Region und Ihre Branchen</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Echte Signale für Ihre Region und Ihre Branchen, keine Klickstrecke</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Systembeschreibung für Betriebsrat und Datenschutzbeauftragten</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Angebot auf Basis Ihrer Kanzleigröße und Module</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Kein Self-Signup, kein Checkout, keine Verpflichtung</li>
       </ul>
     </div>
     <form class="form reveal" id="demoForm" data-delay="1" novalidate>
       <div class="form-grid">
+        <fieldset class="intent" style="border: none; margin: 0 0 4px; padding: 0;">
+          <legend class="field" style="font-size: 13px; font-weight: 600; color: var(--text-2); padding: 0; margin-bottom: 8px;">Was möchten Sie?</legend>
+          <label>
+            <input type="radio" name="intent" value="Beispielreport per E-Mail" checked>
+            <b>Beispielreport</b>
+            <span>Anonymisiert, per E-Mail, kein Termin nötig</span>
+          </label>
+          <label>
+            <input type="radio" name="intent" value="Demo (45 Minuten)">
+            <b>Demo, 45 Minuten</b>
+            <span>Auf Wunsch mit einem Ausschnitt Ihres Bestands</span>
+          </label>
+        </fieldset>
         <div class="field"><label for="f-name">Name</label><input id="f-name" name="name" type="text" autocomplete="name" required placeholder="Vor- und Nachname"></div>
         <div class="field"><label for="f-firm">Kanzlei / Unternehmen</label><input id="f-firm" name="firm" type="text" autocomplete="organization" required placeholder="Muster &amp; Partner WPG"></div>
         <div class="field"><label for="f-email">E-Mail</label><input id="f-email" name="email" type="email" autocomplete="email" required placeholder="name@kanzlei.de"></div>
@@ -1420,9 +1563,9 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
             <option>Schweiz</option>
           </select>
         </div>
-        <div class="field full"><label for="f-msg">Nachricht <small>(optional)</small></label><textarea id="f-msg" name="message" placeholder="Was interessiert Sie besonders – z. B. Prüfungspflicht-Signale, Konfliktprüfung, Whitespace?"></textarea></div>
+        <div class="field full"><label for="f-msg">Nachricht <small>(optional)</small></label><textarea id="f-msg" name="message" placeholder="Was interessiert Sie besonders – z. B. Prüfungspflicht-Signale, Konfliktprüfung, Leistungslücken?"></textarea></div>
         <div class="form-foot">
-          <button class="btn btn-primary" type="submit">Demo anfragen
+          <button class="btn btn-primary" type="submit">Anfrage senden
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
           </button>
           <small>Beim Absenden öffnet sich Ihr E-Mail-Programm mit einer vorbereiteten Anfrage. Es werden keine Daten auf dieser Seite gespeichert.</small>
@@ -1444,11 +1587,11 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
           <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
           <span class="brand-name">Signum</span>
         </a>
-        <p style="max-width: 360px;">Betriebssystem für Mandatsentwicklung. Signal-Engine, Beziehungsgraph und Konfliktprüfung auf Basis öffentlicher Registerdaten – für WP, StB, RA und Beratungen im DACH-Raum.</p>
+        <p style="max-width: 360px;">Mandantengewinnung aus öffentlichen Registerdaten – für Wirtschaftsprüfer, Steuerberater, Rechtsanwälte und Beratungen im deutschsprachigen Raum.</p>
       </div>
       <div>
         <h4>Produkt</h4>
-        <ul><li><a href="#produkt">Oberfläche</a></li><li><a href="#module">Module</a></li><li><a href="#vergleich">Vergleich</a></li><li><a href="#faq">FAQ</a></li></ul>
+        <ul><li><a href="#mechanik">So funktioniert es</a></li><li><a href="#produkt">Oberfläche</a></li><li><a href="#recht">Recht &amp; Daten</a></li><li><a href="#faq">FAQ</a></li></ul>
       </div>
       <div>
         <h4>Rechtliches</h4>
@@ -1456,7 +1599,7 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
       </div>
     </div>
     <div class="disclaimer">
-      <strong>Hinweis zu Beispieldaten:</strong> Alle in Mockups, Grafiken und Texten dieser Seite genannten Unternehmen, Personen, Kanzleien, Registernummern, Honorare und Kennzahlen sind frei erfunden. Ähnlichkeiten mit real existierenden Unternehmen oder Personen sind zufällig und nicht beabsichtigt. Signum versendet keine Nachrichten an Dritte und wertet keine E-Mail-, Kalender- oder Verhaltensdaten aus. Die rechtlichen Einordnungen auf dieser Seite sind allgemeine Beschreibungen des Produktkonzepts und keine Rechtsberatung. „Signum“ ist ein Arbeitstitel.
+      <strong>Hinweis zu Beispieldaten:</strong> Alle in Mockups, Grafiken und Texten dieser Seite genannten Unternehmen, Personen, Kanzleien, Registernummern, Honorare und Kennzahlen sind frei erfunden – einschließlich der im Abschnitt „Wer dahintersteht“ genannten Personen und Werdegänge, die als Platzhalter dienen und vor einer echten Veröffentlichung zu ersetzen sind. Ähnlichkeiten mit real existierenden Unternehmen oder Personen sind zufällig und nicht beabsichtigt. Signum versendet keine Nachrichten an Dritte und wertet keine E-Mail-, Kalender- oder Verhaltensdaten aus. Die rechtlichen Einordnungen auf dieser Seite sind allgemeine Beschreibungen des Produktkonzepts und keine Rechtsberatung. „Signum“ ist ein Arbeitstitel.
     </div>
     <div class="foot-bottom">
       <span>© <span id="year"></span> Signum. Alle Rechte vorbehalten.</span>
@@ -1464,7 +1607,6 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
     </div>
   </div>
 </footer>
-
 <script>
 (function () {
   'use strict';
@@ -1606,12 +1748,18 @@ footer { border-top: 1px solid var(--border); padding: 48px 0 32px; font-size: 1
     }
     var v = function (id) { return ($('#' + id).value || '').trim(); };
     var name = v('f-name'), firm = v('f-firm'), email = v('f-email'), role = v('f-role'), region = v('f-region'), msg = v('f-msg');
-    var subject = 'Demo-Anfrage Signum – ' + firm;
+    var intentEl = form.querySelector('input[name="intent"]:checked');
+    var intent = intentEl ? intentEl.value : 'Demo (45 Minuten)';
+    var wantsReport = intent.indexOf('Beispielreport') === 0;
+    var subject = (wantsReport ? 'Beispielreport Signum – ' : 'Demo-Anfrage Signum – ') + firm;
     var body = [
       'Guten Tag,',
       '',
-      'ich interessiere mich für eine Demo von Signum.',
+      wantsReport
+        ? 'bitte senden Sie mir einen Beispielreport von Signum.'
+        : 'ich interessiere mich für eine Demo von Signum.',
       '',
+      'Anfrage: ' + intent,
       'Name: ' + name,
       'Kanzlei / Unternehmen: ' + firm,
       'E-Mail: ' + email,
