@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-16T14:39:12 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-16T15:08:01 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -19,6 +19,8 @@ Erzeugt von `build_data.py` am 2026-09-16T14:39:12 aus `DataAct_Anforderungen.xl
 | legende | 8 |
 | qs_abschnitte | 8 |
 | testprofile | 6 |
+| zeitleiste | 10 |
+| begriffsmarkierungen | 964 |
 | warnungen | 6 |
 | hinweise | 146 |
 
@@ -275,6 +277,63 @@ Die 8 von keiner Frage erreichten Anforderungen sind genau die aus QS-Abschnitt 
 decken sich vollständig; „Geltungsbeginn“ und „Ab wann“ sind durchgängig gleich formuliert.
 Der Fragengraph ist zyklenfrei, jede Frage ist von einem Moduleinstieg erreichbar, jede
 Antwortoption hat genau ein widerspruchsfreies Ziel.
+
+**10 – Die Prüfstrecken und die Variablen haben in der Excel keinen Namen (mittel)**
+Das Blatt `Modulsteuerung` führt nur Modul, Startbedingung, Einstiegsfrage und Bemerkung;
+das Blatt `Variablen` nur Name, setzende Frage, Werte und Verwendung. Die Oberfläche braucht
+beides als Beschriftung. Für die Module steht eine Rückfallliste in `build_data.py`
+(`MODUL_KURZTITEL_RUECKFALL`) – der einzige angezeigte Text, der nicht aus der Excel stammt.
+Für die Variablen wurde bewusst **nichts** erfunden: Sie erscheinen mit ihrem technischen
+Namen, und der Hover erklärt sie vollständig aus der Excel (setzende Frage im Wortlaut,
+aktueller Wert samt Antworttext, mögliche Werte). Beide Stellen lassen sich ohne
+Code-Änderung auflösen: eine Spalte `Kurztitel` im Blatt `Modulsteuerung` und eine Spalte
+`Klartext` im Blatt `Variablen` werden automatisch übernommen, sobald sie da sind.
+
+**11 – Zuordnung der Anforderungen zu Geltungsbeginnen (niedrig)**
+Die Regel steht im Blatt `Fristen` selbst: Die Zeile zum 12.09.2025 trägt in der Spalte
+„Betroffene Anforderungen" keinen Req-ID-Bezug, sondern „Alle Anforderungen ohne abweichende
+Angabe". Genau so rechnet der Build – wer nirgends eigens genannt ist, fällt dorthin
+(147 von 189). Zwei Punkte dazu:
+- „Nach 12.09.2025" steht **zweimal** im Blatt (Kapitel III, Art. 50 UAbs. 4 und Kapitel IV,
+  Art. 50 UAbs. 5). Der Datumstext taugt deshalb nicht als Schlüssel; der Build vergibt
+  `FR-01` bis `FR-25` und rechnet damit. In der Zeitleiste stehen beide Zeilen getrennt.
+- Fristen ohne Kalenderdatum („Unverzüglich", „30 Arbeitstage", „Jährlich") sind
+  Handlungsfristen, kein Geltungsbeginn. Sie stehen nicht in der Zeitleiste, sondern an der
+  betroffenen Anforderung unter „Handlungsfristen".
+
+**12 – Begriffserkennung ist mechanisch, nicht redaktionell (niedrig)**
+Die 37 Einträge des Blattes `Begriffe` werden beim Build im Fließtext gesucht – nach einer
+festen Regel, nicht von Hand: längster Begriff zuerst, Beugungsendung am letzten Wort,
+Adjektivstamm bei vorangestellten Wörtern („Vernetztes Produkt" trifft „vernetzte Produkte"),
+Leerzeichen oder Bindestrich zwischen den Wörtern, „A / B" im Begriff als zwei Schreibweisen,
+und je Textblock nur das erste Vorkommen. Ergebnis: 929 Markierungen. `pruefe.js` prüft, dass
+alle Bereiche im Text liegen, sich nicht überlappen und auf einen Eintrag des Blattes
+verweisen – inhaltlich gelesen hat sie niemand. Falsche Treffer wären in der Excel durch eine
+präzisere Schreibweise des Begriffs zu beheben.
+
+**13 – Bezug der „Offenen Punkte" zum Ergebnis ist eine Heuristik (niedrig)**
+Das Blatt `Offene Punkte` nennt keine Req-IDs, nur Fundstellen. Das Ergebnisprofil zeigt
+deshalb die Einträge, deren Fundstelle **dieselbe Artikelnummer** nennt wie eine der
+ausgelösten Anforderungen. Das ist eine Näherung: Sie kann zu weit greifen (Art. 5 in einem
+anderen Absatz) und zu eng (Punkte ohne Artikelangabe). Eine Spalte „Betroffene Req-IDs" im
+Blatt `Offene Punkte`, wie sie das Blatt `Fristen` hat, würde das exakt machen.
+
+**14 – Dieselbe Vorschrift als Pflicht und als Recht kommt in dieser Excel nicht vor (Hinweis)**
+Geprüft: Keine Fundstelle trägt mehr als eine Req-ID, jede Req-ID hat genau einen Typ. Die
+Konstellation „einmal Pflicht, einmal Recht" kann in dieser Datenlage also nicht entstehen.
+Was sehr wohl vorkommt, ist dieselbe Anforderung, **ausgelöst über mehrere Rollenzweige** –
+etwa `DA-III-013` und `DA-III-021` bei einem Unternehmen, das zugleich Nutzer und Dritter ist.
+Das Profil weist solche Anforderungen aus (Marke „n Rollen betroffen"), gliedert die Herkunft
+nach Rolle und unterdrückt keine der Wirkungen. Die Rollen selbst stammen aus den
+Einstiegsbedingungen der Modulsteuerung („II-01 (bei ROLLE_PRODUKT), sonst II-09 …"), ihr
+Klartext aus den Antwortoptionen von EIN-01.
+
+**15 – Nur einschränkende Wirkungen ohne auslösende (niedrig)**
+Für einige Req-IDs enthält das Mapping im gegangenen Pfad ausschließlich „schränkt ein" und
+keine auslösende Wirkung. Nach der Rangfolge zählen sie weder zu den anwendbaren noch zu den
+ausgeschlossenen Anforderungen. Sie verschwinden nicht, sondern stehen im Ergebnisprofil im
+eigenen Abschnitt „Nur eingeschränkt berührt". Auch QS-Abschnitt 6 zählt sie in keiner der
+beiden Spalten – die Lesart deckt sich also mit der Quelle.
 <!-- MANUELL:END -->
 
 ### 4b Maschinell abgeleitet

@@ -812,6 +812,169 @@ def parse_gesetzte_variablen(roh: str, frage_id: str, optionen: list,
 
 
 # ===========================================================================
+# 5b  Begriffe im Fließtext markieren
+# ===========================================================================
+
+# Beugungsendungen, die an das letzte Wort eines Begriffs treten dürfen.
+_BEUGUNG = r"(?:e|en|s|es|n|er|em|ern)?"
+# Adjektivendungen, die beim Stamm vorangestellter Wörter entfallen.
+_ADJEKTIV_ENDE = re.compile(r"(?:es|er|em|en|e|s)$")
+
+
+def _begriffsmuster(begriff: str):
+    """Suchmuster für einen Begriff samt Beugung, Plural und Bindestrichform.
+
+    "A / B" im Begriff nennt zwei eigenständige Schreibweisen und wird zu zwei
+    Varianten. Innerhalb einer Variante darf zwischen den Wörtern ein
+    Leerzeichen oder ein Bindestrich stehen; vorangestellte Wörter (meist
+    Adjektive) werden auf ihren Stamm gekürzt, damit "Vernetztes Produkt" auch
+    "vernetzte Produkte" trifft.
+    """
+    varianten = []
+    for teil in re.split(r"\s*/\s*", begriff):
+        woerter = [w for w in re.split(r"[\s\-]+", teil.strip()) if w]
+        if not woerter:
+            continue
+        stuecke = []
+        for i, wort in enumerate(woerter):
+            if i == len(woerter) - 1:
+                stuecke.append(re.escape(wort) + _BEUGUNG)
+            else:
+                stamm = _ADJEKTIV_ENDE.sub("", wort) or wort
+                stuecke.append(re.escape(stamm) + r"\w{0,3}")
+        varianten.append(r"[\s\-]+".join(stuecke))
+    if not varianten:
+        return None
+    return re.compile(r"(?<![\wÄÖÜäöüß])(?:" + "|".join(varianten)
+                      + r")(?![\wÄÖÜäöüß])", re.IGNORECASE)
+
+
+def baue_begriffsindex(begriffe: list) -> list:
+    """Längste Begriffe zuerst, damit 'Personenbezogene Daten' vor 'Daten' greift."""
+    index = []
+    for b in sorted(begriffe, key=lambda b: -len(b["begriff"])):
+        muster = _begriffsmuster(b["begriff"])
+        if muster:
+            index.append((b["begriff"], muster))
+    return index
+
+
+def markiere_begriffe(text: str, index: list) -> list:
+    """Fundstellen der Begriffe im Text, je Begriff nur das erste Vorkommen.
+
+    Rückgabe: [{start, laenge, begriff}] – die Oberfläche schneidet den Text
+    danach auf, statt zur Laufzeit im DOM zu suchen.
+    """
+    if not text:
+        return []
+    belegt = bytearray(len(text))
+    spans = []
+    for name, muster in index:
+        for treffer in muster.finditer(text):
+            a, e = treffer.span()
+            if any(belegt[a:e]):
+                continue
+            belegt[a:e] = b"\x01" * (e - a)
+            spans.append({"start": a, "laenge": e - a, "begriff": name})
+            break
+    spans.sort(key=lambda s: s["start"])
+    return spans
+
+
+def markiere_feld(eintrag: dict, feld: str, index: list):
+    spans = markiere_begriffe(eintrag.get(feld) or "", index)
+    if spans:
+        eintrag[feld + "_begriffe"] = spans
+
+
+# ===========================================================================
+# 5c  Stichtage aus dem Blatt Fristen
+# ===========================================================================
+
+_DATUM_RE = re.compile(r"(\d{2})\.(\d{2})\.(\d{4})")
+
+
+def _sortdatum(text: str):
+    m = _DATUM_RE.search(text or "")
+    if not m:
+        return None
+    return f"{m.group(3)}-{m.group(2)}-{m.group(1)}"
+
+
+# Qualifizierer vor dem Datum ordnen die Zeitleiste innerhalb desselben Tages.
+_QUALIFIZIERER = (("vor ", 0), ("bis ", 1), ("nach ", 3), ("ab ", 3))
+
+
+def _tagesrang(datum: str) -> int:
+    klein = (datum or "").lower()
+    for wort, rang in _QUALIFIZIERER:
+        if klein.startswith(wort):
+            return rang
+    return 2
+
+
+def ordne_fristen_zu(daten: dict, warn) -> dict:
+    """Jede Anforderung ihrem Geltungsbeginn zuordnen.
+
+    Die Zuordnungsregel steht im Blatt selbst: Die Zeile zum allgemeinen
+    Geltungsbeginn trägt in der Spalte 'Betroffene Anforderungen' keinen
+    Req-ID-Bezug, sondern 'Alle Anforderungen ohne abweichende Angabe'. Genau
+    so wird gerechnet – Anforderungen ohne eigenen Eintrag fallen dorthin.
+    Fristen ohne Kalenderdatum (z. B. 'Unverzüglich', '30 Arbeitstage') sind
+    Handlungsfristen, kein Geltungsbeginn, und werden getrennt geführt.
+    """
+    alle_req = {a["req_id"] for a in daten["anforderungen"]}
+    stichtage = defaultdict(list)
+    handlungsfristen = defaultdict(list)
+    sammelregel = None
+
+    for nr, fr in enumerate(daten["fristen"], start=1):
+        # "Nach 12.09.2025" steht zweimal im Blatt (Kapitel III und IV) – der
+        # Text taugt deshalb nicht als Schlüssel.
+        fr["id"] = f"FR-{nr:02d}"
+        fr["sortdatum"] = _sortdatum(fr["datum"])
+        fr["datiert"] = fr["sortdatum"] is not None
+        fr["sammelregel"] = bool(fr["datiert"] and not fr["req_ids"]
+                                 and not ist_leer(fr.get("betroffene_req_ids")))
+        if fr["sammelregel"]:
+            if sammelregel is not None:
+                warn("Fristen", fr["datum"], "Betroffene Anforderungen",
+                     fr.get("betroffene_req_ids", ""),
+                     "zweite Sammelregel – die erste bleibt maßgeblich", "warnung")
+            else:
+                sammelregel = fr
+            continue
+        ziel = stichtage if fr["datiert"] else handlungsfristen
+        for req in fr["req_ids"]:
+            if req in alle_req:
+                ziel[req].append(fr["id"])
+
+    for a in daten["anforderungen"]:
+        eigene = stichtage.get(a["req_id"], [])
+        if eigene:
+            a["stichtage"] = eigene
+            a["stichtag_quelle"] = "Blatt Fristen"
+        elif sammelregel:
+            a["stichtage"] = [sammelregel["id"]]
+            a["stichtag_quelle"] = sammelregel["betroffene_req_ids"]
+        else:
+            a["stichtage"] = []
+            a["stichtag_quelle"] = None
+        a["handlungsfristen"] = handlungsfristen.get(a["req_id"], [])
+
+    zeitleiste = [{
+        "id": fr["id"], "datum": fr["datum"], "sortdatum": fr["sortdatum"],
+        "fundstelle": fr["fundstelle"], "bedeutung": fr["bedeutung"],
+        "sammelregel": fr["sammelregel"],
+        "req_ids": sorted({a["req_id"] for a in daten["anforderungen"]
+                           if fr["id"] in a["stichtage"]}),
+    } for fr in daten["fristen"] if fr["datiert"]]
+    zeitleiste.sort(key=lambda z: (z["sortdatum"], _tagesrang(z["datum"]), z["datum"]))
+    return {"zeitleiste": zeitleiste,
+            "handlungsfristen": [fr for fr in daten["fristen"] if not fr["datiert"]]}
+
+
+# ===========================================================================
 # 6  Blätter lesen
 # ===========================================================================
 
@@ -863,13 +1026,23 @@ def lese_einfach(ws, felder) -> list:
     return aus
 
 
+VARIABLE_KLARTEXT_SPALTEN = ("klartext", "bezeichnung", "name in klartext",
+                             "anzeigename")
+
+
 def lese_variablen(ws) -> list:
+    kopf = [norm(z).lower() for z in next(ws.iter_rows(max_row=1, values_only=True))]
+    klartext_spalte = next((i for i, k in enumerate(kopf)
+                            if any(k.startswith(s) for s in VARIABLE_KLARTEXT_SPALTEN)),
+                           None)
     aus = []
     for nr, row in zeilen(ws):
-        row = row + [""] * 4
+        row = row + [""] * 8
         name, frage, werte, verwendet = row[0], row[1], row[2], row[3]
+        klartext = (row[klartext_spalte] if klartext_spalte is not None else "")
         aus.append({
             "name": name,
+            "klartext": klartext if not ist_leer(klartext) else None,
             "gesetzt_durch": [f.strip() for f in split_top(frage, [", ", "; "]) if f.strip()],
             "werte": [w.strip() for w in split_top(werte, [" / "]) if w.strip()],
             "werte_roh": werte,
@@ -1470,6 +1643,95 @@ def baue(excel_pfad: str) -> tuple:
     for fr in fristen:
         fr["req_ids"] = _req_liste(fr.get("betroffene_req_ids", ""))
 
+    # Begriffe in allen angezeigten Fließtexten markieren
+    begriffsindex = baue_begriffsindex(begriffe)
+    for f in fragen:
+        markiere_feld(f, "frage", begriffsindex)
+        markiere_feld(f, "erklaertext", begriffsindex)
+        for k in f["kanten"]:
+            for feld in ("ergebnistext", "ergebnis_baustein", "hinweis"):
+                if k.get(feld):
+                    markiere_feld(k, feld, begriffsindex)
+    for e in ergebnisse:
+        markiere_feld(e, "beschreibung", begriffsindex)
+        markiere_feld(e, "naechste_schritte", begriffsindex)
+    for a in anforderungen:
+        for feld in ("anforderung", "ausloeser", "ausnahmen"):
+            markiere_feld(a, feld, begriffsindex)
+
+    # Rollen an den Moduleinstiegen: Das Blatt Modulsteuerung nennt die Variable
+    # ("II-01 (bei ROLLE_PRODUKT)"), den Klartext liefert die Antwortoption in
+    # EIN-01, die diese Variable auf Ja setzt.
+    frage_nach_id_roh = {f["id"]: f for f in fragen}
+    setzt_variable = {}
+    for f in fragen:
+        for gv in f["gesetzte_variablen"]:
+            if not gv.get("variable"):
+                continue
+            for zu in gv["zuordnung"]:
+                if zu["wert"] == "Ja":
+                    option = next((o for o in f["antwortoptionen"]
+                                   if o["schluessel"] == zu["antwort"]), None)
+                    setzt_variable[gv["variable"]] = {
+                        "frage_id": f["id"], "antwort": zu["antwort"],
+                        "text": option["text"] if option else zu["antwort"]}
+    def positive_rolle(knoten, verneint=False):
+        """Rechte, nicht verneinte Bedingung 'ROLLE_X = Ja' aus dem Ausdruck.
+
+        Die Einstiege stehen in Vorrangfolge, ihre Bedingungen tragen deshalb
+        die Verneinungen der vorangehenden mit: II-09 heißt
+        "nicht ROLLE_PRODUKT und ROLLE_NUTZER = Ja". Gesucht ist die eigene,
+        positive Rolle.
+        """
+        if not isinstance(knoten, dict):
+            return None
+        if knoten.get("op") == "nicht":
+            return positive_rolle(knoten.get("operand"), not verneint)
+        if knoten.get("op") in ("und", "oder"):
+            return (positive_rolle(knoten.get("rechts"), verneint)
+                    or positive_rolle(knoten.get("links"), verneint))
+        if (not verneint and knoten.get("op") == "=" and knoten.get("wert") == "Ja"
+                and str(knoten.get("variable", "")).startswith("ROLLE_")):
+            return knoten["variable"]
+        return None
+
+    for m in module:
+        for e in m["einstiegsfragen"]:
+            variable = positive_rolle((e.get("bedingung") or {}).get("ausdruck"))
+            if not variable:
+                # "… sonst VI-09" nennt keine eigene Rolle; dann steht sie in
+                # der Anzeigebedingung der Einstiegsfrage.
+                frage = frage_nach_id_roh.get(e["frage_id"])
+                a = (frage or {}).get("anzeigebedingung", {}).get("ausdruck") or {}
+                # Nur wenn die Anzeigebedingung aus genau einer Rolle besteht.
+                # Bei M-III etwa nennt sie mehrere Rollen und beschreibt damit
+                # keinen Rollenzweig.
+                if (a.get("op") == "=" and a.get("wert") == "Ja"
+                        and str(a.get("variable", "")).startswith("ROLLE_")):
+                    variable = a["variable"]
+            if variable:
+                quelle = setzt_variable.get(variable)
+                e["rolle"] = {"variable": variable,
+                              "beschreibung": quelle["text"] if quelle else None,
+                              "frage_id": quelle["frage_id"] if quelle else None}
+
+    # Herkunft je Variable für die Erklärung am Ergebnis
+    frage_nach_id = {f["id"]: f for f in fragen}
+    for v in variablen:
+        quelle = next((frage_nach_id[fid] for fid in v["gesetzt_durch"]
+                       if fid in frage_nach_id), None)
+        v["frage_text"] = quelle["frage"] if quelle else None
+        v["wert_texte"] = {}
+        if quelle:
+            for gv in quelle["gesetzte_variablen"]:
+                if gv.get("variable") != v["name"]:
+                    continue
+                for zu in gv["zuordnung"]:
+                    option = next((o for o in quelle["antwortoptionen"]
+                                   if o["schluessel"] == zu["antwort"]), None)
+                    if option:
+                        v["wert_texte"][zu["wert"]] = option["text"]
+
     daten = {
         "meta": {
             "quelle": os.path.basename(excel_pfad),
@@ -1496,6 +1758,9 @@ def baue(excel_pfad: str) -> tuple:
         "qs": qs,
     }
 
+    fristen_info = ordne_fristen_zu(daten, warn)
+    daten["zeitleiste"] = fristen_info["zeitleiste"]
+
     fehler = validiere(daten, warn)
     daten["auffaelligkeiten"] = pruefe_auffaelligkeiten(daten)
     daten["warnungen"] = warn.eintraege
@@ -1507,6 +1772,13 @@ def baue(excel_pfad: str) -> tuple:
         "begriffe": len(begriffe), "fristen": len(fristen),
         "offene_punkte": len(offene), "legende": len(legende),
         "qs_abschnitte": len(qs["abschnitte"]), "testprofile": len(qs["testfaelle"]),
+        "zeitleiste": len(daten["zeitleiste"]),
+        "begriffsmarkierungen": sum(
+            len(v) for gruppe in (fragen, ergebnisse, anforderungen)
+            for eintrag in gruppe
+            for k, v in eintrag.items() if k.endswith("_begriffe"))
+            + sum(len(v) for f in fragen for k in f["kanten"]
+                  for kk, v in k.items() if kk.endswith("_begriffe")),
         "warnungen": len(warn.nach_schwere("warnung")),
         "hinweise": len(warn.nach_schwere("hinweis")),
     }

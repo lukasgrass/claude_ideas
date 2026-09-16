@@ -153,6 +153,76 @@ pruefe('"Unsicher" führt bei allen ' + mitUnsicher + " Fragen weiter",
          "entfernt: " + bereinigt.entfernt.map(e => e.frage_id).join(", "));
 })();
 
+/* --- 4b Begriffsmarkierungen ------------------------------------------- */
+(function () {
+  const fehlerhaft = []; let gesamt = 0, ueberlappend = 0, doppelt = 0;
+  function pruefeSpans(text, spans, wo) {
+    if (!spans) return;
+    let letztesEnde = -1; const gesehen = {};
+    spans.forEach(s => {
+      gesamt++;
+      if (s.start < 0 || s.start + s.laenge > (text || "").length) {
+        fehlerhaft.push(wo + ": Bereich außerhalb des Textes");
+      }
+      if (s.start < letztesEnde) ueberlappend++;
+      if (gesehen[s.begriff]) doppelt++;
+      gesehen[s.begriff] = true;
+      letztesEnde = s.start + s.laenge;
+    });
+  }
+  DATEN.fragen.forEach(f => {
+    pruefeSpans(f.frage, f.frage_begriffe, f.id + "/frage");
+    pruefeSpans(f.erklaertext, f.erklaertext_begriffe, f.id + "/erklaertext");
+  });
+  DATEN.ergebnisse.forEach(e => {
+    pruefeSpans(e.beschreibung, e.beschreibung_begriffe, e.req_id);
+    pruefeSpans(e.naechste_schritte, e.naechste_schritte_begriffe, e.req_id);
+  });
+  DATEN.anforderungen.forEach(a => {
+    pruefeSpans(a.anforderung, a.anforderung_begriffe, a.req_id);
+    pruefeSpans(a.ausloeser, a.ausloeser_begriffe, a.req_id);
+    pruefeSpans(a.ausnahmen, a.ausnahmen_begriffe, a.req_id);
+  });
+  pruefe(gesamt + " Begriffsmarkierungen liegen im Text und überlappen nicht",
+         fehlerhaft.length === 0 && ueberlappend === 0,
+         fehlerhaft.slice(0, 3).join(" | ") + (ueberlappend ? ueberlappend + " überlappend" : ""));
+  pruefe("je Textblock höchstens ein Vorkommen pro Begriff", doppelt === 0,
+         doppelt + " Wiederholungen");
+  const ohneEintrag = [];
+  const pruefeNamen = spans => (spans || []).forEach(s => {
+    if (!idx.begriffe.has(s.begriff)) ohneEintrag.push(s.begriff);
+  });
+  DATEN.fragen.forEach(f => { pruefeNamen(f.frage_begriffe); pruefeNamen(f.erklaertext_begriffe); });
+  pruefe("jede Markierung verweist auf einen Eintrag im Blatt Begriffe",
+         ohneEintrag.length === 0, ohneEintrag.slice(0, 3).join(", "));
+})();
+
+/* --- 4c Baumansicht ----------------------------------------------------- */
+(function () {
+  const probleme = []; let gesamtKnoten = 0;
+  idx.module.forEach(m => {
+    const a = E.baueBaum(m.modul, {}, idx);
+    const b2 = E.baueBaum(m.modul, {}, idx);
+    if (!a) { probleme.push(m.modul + ": kein Baum"); return; }
+    gesamtKnoten += a.knoten.length;
+    const schluessel = x => x.knoten.map(k => k.id + ":" + k.x + ":" + k.y).join("|");
+    if (schluessel(a) !== schluessel(b2)) probleme.push(m.modul + ": Layout nicht stabil");
+    (idx.fragenJeModul.get(m.modul) || []).forEach(f => {
+      if (!a.knoten.some(k => k.id === f.id)) {
+        probleme.push(m.modul + ": " + f.id + " fehlt im Baum");
+      }
+    });
+    const tiefe = {};
+    a.knoten.forEach(k => { tiefe[k.id] = k.tiefe; });
+    a.kanten.forEach(e => {
+      if (tiefe[e.nach] <= tiefe[e.von]) probleme.push(m.modul + ": Rückkante " + e.von + "→" + e.nach);
+    });
+  });
+  pruefe("Baumlayout für alle " + idx.module.length + " Strecken deterministisch "
+         + "und vorwärtsgerichtet (" + gesamtKnoten + " Knoten)",
+         probleme.length === 0, probleme.slice(0, 4).join(" | "));
+})();
+
 /* --- 5 Profil: Rangfolge und Gegenprobe --------------------------------- */
 (function () {
   const leer = E.berechneProfil({}, idx);
@@ -164,20 +234,55 @@ pruefe('"Unsicher" führt bei allen ' + mitUnsicher + " Fragen weiter",
     return;
   }
   const soll = JSON.parse(fs.readFileSync(vergleich, "utf8"));
-  const abweichungen = [];
+  const abweichungen = [], gegenQS = [];
   soll.profile.forEach(p => {
-    const profil = E.berechneProfil(p.antworten, idx);
-    const ausgeloest = profil.ausgeloest.map(e => e.req_id).sort().join(",");
-    const ausgeschlossen = profil.ausgeschlossen.map(e => e.req_id).sort().join(",");
+    const erg = E.baueErgebnis(p.antworten, idx);
+    const ausgeloest = erg.ausgeloest.map(e => e.req_id).sort().join(",");
+    const ausgeschlossen = erg.ausgeschlossen.map(e => e.req_id).sort().join(",");
     if (ausgeloest !== p.ausgeloest.slice().sort().join(",")
         || ausgeschlossen !== p.ausgeschlossen.slice().sort().join(",")) {
-      abweichungen.push(p.profil_id + " (ausgelöst " + profil.ausgeloest.length
+      abweichungen.push(p.profil_id + " (ausgelöst " + erg.ausgeloest.length
         + "/" + p.ausgeloest.length + ", ausgeschlossen "
-        + profil.ausgeschlossen.length + "/" + p.ausgeschlossen.length + ")");
+        + erg.ausgeschlossen.length + "/" + p.ausgeschlossen.length + ")");
     }
+    gegenQS.push({
+      profil: p.profil_id,
+      erwAus: p.qs_erwartet_ausgeloest.length, berAus: erg.ausgeloest.length,
+      dAus: erg.ausgeloest.length - p.qs_erwartet_ausgeloest.length,
+      erwEx: p.qs_erwartet_ausgeschlossen.length, berEx: erg.ausgeschlossen.length,
+      dEx: erg.ausgeschlossen.length - p.qs_erwartet_ausgeschlossen.length,
+      fehlt: p.qs_erwartet_ausgeloest.filter(r => !erg.ausgeloest.some(e => e.req_id === r)),
+      zuviel: erg.ausgeloest.map(e => e.req_id).filter(r => p.qs_erwartet_ausgeloest.indexOf(r) < 0)
+    });
   });
-  pruefe("Profil stimmt mit verify_data.py überein (" + soll.profile.length
-         + " Testprofile)", abweichungen.length === 0, abweichungen.join(" | "));
+  pruefe("Profil im Werkzeug stimmt mit verify_data.py überein ("
+         + soll.profile.length + " Testprofile)", abweichungen.length === 0,
+         abweichungen.join(" | "));
+
+  console.log("\n  Testprofile aus QS-Abschnitt 6, im fertigen Werkzeug gerechnet:");
+  console.log("  Profil | erw.aus | ber.aus | Δ   | erw.ex | ber.ex | Δ");
+  console.log("  -------+---------+---------+-----+--------+--------+----");
+  let summe = 0;
+  gegenQS.forEach(z => {
+    summe += Math.abs(z.dAus) + Math.abs(z.dEx);
+    console.log("  " + z.profil.padEnd(6) + " | " + String(z.erwAus).padStart(7)
+      + " | " + String(z.berAus).padStart(7) + " | "
+      + ((z.dAus >= 0 ? "+" : "") + z.dAus).padEnd(3) + " | "
+      + String(z.erwEx).padStart(6) + " | " + String(z.berEx).padStart(6)
+      + " | " + (z.dEx >= 0 ? "+" : "") + z.dEx);
+  });
+  gegenQS.filter(z => z.fehlt.length || z.zuviel.length).forEach(z => {
+    if (z.fehlt.length) console.log("    " + z.profil + " fehlt: " + z.fehlt.join(", "));
+    if (z.zuviel.length) console.log("    " + z.profil + " zusätzlich: " + z.zuviel.join(", "));
+  });
+  console.log("  Summe der Abweichungen gegenüber QS-Abschnitt 6: " + summe);
+})();
+
+/* --- 6 Umfang der Auslieferungsdatei ------------------------------------ */
+(function () {
+  const bytes = fs.statSync(datei).size;
+  pruefe("Datei unter 5 MB (" + (bytes / 1024 / 1024).toFixed(2) + " MB)",
+         bytes < 5 * 1024 * 1024);
 })();
 
 console.log("\n" + (fehler ? fehler + " von " + geprueft + " Prüfungen fehlgeschlagen"

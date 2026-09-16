@@ -62,15 +62,49 @@ Kanten, QS-Blatt, Warnliste); Inhalte bleiben unverändert, und der Einbau wird
 vor dem Schreiben gegengelesen.
 
 `node pruefe.js` schneidet Daten und Ablauflogik aus der fertigen HTML-Datei
-heraus und prüft: keine externen URLs, kein `fetch`/`XMLHttpRequest`,
-`localStorage` nur in `try/catch`, alle 49 Fragen erreichbar, keine Frage
-zweimal, kein Zyklus, jeder Pfad endet in Ergebnis oder Modulende, „Unsicher"
-führt überall weiter, und das Anforderungsprofil stimmt mit `verify_data.py`
-überein.
+heraus und prüft 17 Punkte: keine externen URLs, kein `fetch`/`XMLHttpRequest`,
+`localStorage` nur in `try/catch`, Datei unter 5 MB, alle 49 Fragen erreichbar,
+keine Frage zweimal, kein Zyklus, jeder Pfad endet in Ergebnis oder Modulende,
+„Unsicher" führt überall weiter, Begriffsmarkierungen liegen im Text und
+überlappen nicht, das Baumlayout ist für alle Strecken deterministisch und
+vorwärtsgerichtet, und das Anforderungsprofil stimmt mit `verify_data.py`
+überein. Zum Schluss rechnet es die sechs Testprofile aus QS-Abschnitt 6 im
+fertigen Werkzeug nach und stellt sie den dort dokumentierten Zahlen gegenüber.
 
 Mit `--annahmen annahmen.json` werden zusätzlich die dort bestätigten
 Antwort-Wert-Zuordnungen eingesetzt (siehe NOTES.md, Punkt 1). Ohne diesen
 Schalter wird ausschließlich die Excel ausgewertet.
+
+### Was die Auslieferungsdatei enthält
+
+- **Einstieg und Modulübersicht** – sieben Fragen, danach die Prüfstrecken mit
+  Status, Fragenzahl und Startbedingung. Reihenfolge frei, Antworten jederzeit
+  korrigierbar; unerreichbar gewordene Folgeantworten werden sichtbar
+  zurückgesetzt.
+- **Geführter Modus** – eine Frage pro Bildschirm mit Erklärtext,
+  Rechtsgrundlage, Schritt-Leiste und Rücksprung. „Unsicher" ist überall eine
+  gleichwertige Antwort und führt zu einem Ergebnis mit dem Hinweis auf
+  Einzelfallprüfung.
+- **Baumansicht** – dieselbe Strecke als Diagramm, umschaltbar. Deterministisches
+  Schichtenlayout (Tiefe = längster Weg vom Einstieg, keine Physik, keine
+  Zufallspositionen). Zoom mit Mausrad, Trackpad-Pinch, Buttons und Tastatur
+  (`+`, `−`, `0`, Pfeiltasten), Pan per Ziehen oder Touch. Die Beschriftung
+  wird gestuft reduziert: Volltext, Kurztext, nur Frage-ID. Auf schmalen
+  Bildschirmen erscheint stattdessen eine Pfadliste.
+- **Ergebnisprofil** – Endwirkung je Req-ID nach der Rangfolge
+  *schließt aus > verschiebt Geltungsbeginn > löst aus > schränkt ein*,
+  gruppiert nach Kapitel und Typ, mit Zeitleiste der Geltungsbeginne, Filtern,
+  aufklappbaren Zeilen (Beschreibung, nächste Schritte, juristische Ebene,
+  Herkunft mit Sprung zurück zur Frage), einem eigenen Abschnitt „Nicht
+  anwendbar – mit Begründung" und den offenen Punkten für die juristische
+  Prüfung.
+- **Erklärungen** – Begriffe aus dem Blatt `Begriffe` sind beim Build im
+  Fließtext markiert (kein Laufzeit-Regex über den DOM) und zeigen bei Hover,
+  Fokus oder Tap ein Panel mit Fundstelle, Definition und Abgrenzung.
+  Variablen erklären, wodurch ihr Wert gesetzt wurde und wie er gerade lautet.
+- **Druckansicht** – `@media print` mit Deckzeile (Datum, beantwortete Fragen,
+  Anzahl Anforderungen), ohne Navigation, alle Zeilen aufgeklappt. Das ist der
+  Weg zum PDF für den Mandanten.
 
 `build_data.py` bricht mit Fehlerliste ab und schreibt keine `data.json`, wenn
 eine Frage-ID ins Leere zeigt, eine Req-ID aus dem Mapping fehlt, eine

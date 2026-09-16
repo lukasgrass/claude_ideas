@@ -522,10 +522,13 @@ def main(argv=None) -> int:
                 "erzeugt_durch": "verify_data.py",
                 "profile": [{
                     "profil_id": d["profil"],
+                    "bezeichnung": d["bezeichnung"],
                     "antworten": d["antwortsatz"],
                     "ausgeloest": d["berechnet_ausgeloest"],
                     "ausgeschlossen": d["berechnet_ausgeschlossen"],
-                } for d in details],
+                    "qs_erwartet_ausgeloest": t["erwartet_ausgeloest"],
+                    "qs_erwartet_ausgeschlossen": t["erwartet_ausgeschlossen"],
+                } for d, t in zip(details, daten["qs"]["testfaelle"])],
             }, fh, ensure_ascii=False, indent=1)
             fh.write("\n")
         print(f"\n{args.export} geschrieben "
