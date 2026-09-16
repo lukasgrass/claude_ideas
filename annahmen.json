@@ -1,0 +1,12 @@
+{
+  "beschreibung": "Prüfannahme zu IV-03: Die Excel sagt nicht, welche Antwortoption welchen Wert von VERTRAG_ALT setzt ('VERTRAG_ALT (Ja / Nein / Gemischt)' bei den Optionen A/B/C). Nach dem Wortlaut der Optionen bedeutet A ('Nach dem 12.09.2025') kein Altvertrag und B ('Am oder vor dem 12.09.2025') Altvertrag - also genau umgekehrt zur Reihenfolge. Diese Datei prueft diese Lesart, ohne die Excel zu aendern. Weitere Annahmen koennen nach demselben Muster ergaenzt werden.",
+  "gesetzte_variablen": {
+    "IV-03": {
+      "VERTRAG_ALT": {
+        "A": "Nein",
+        "B": "Ja",
+        "C": "Gemischt"
+      }
+    }
+  }
+}
