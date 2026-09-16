@@ -28,15 +28,49 @@ ausschließlich die Datengrundlage; HTML und Gestaltung folgen später.
 - `annahmen.json` – dokumentierte Prüfannahmen für Zuordnungen, die in der
   Excel nicht stehen. Ändert die Excel nicht; `verify_data.py` rechnet damit
   eine zweite Variante.
+- `template.html`, `app.js` – Gerüst/CSS und Ablauflogik der Auslieferungsdatei.
+  Nur diese beiden bearbeiten, nie `data-act-check.html` direkt.
+- `pruefe.js` – Abnahmeprüfung der erzeugten HTML-Datei (nur Node, keine Pakete).
 - `NOTES.md` – Warnliste, Testprofiltabelle und inhaltliche Auffälligkeiten.
   Wird bei jedem Lauf neu geschrieben; die Abschnitte zwischen den Markern
   `MANUELL` und `TESTPROFILE` bleiben erhalten.
 
 ```
 pip install openpyxl
-python3 build_data.py      # -> data.json + NOTES.md
-python3 verify_data.py     # -> Testprofiltabelle, aktualisiert NOTES.md
+python3 build_data.py --inline   # -> data.json, NOTES.md und data-act-check.html
+python3 verify_data.py           # -> Testprofiltabelle, aktualisiert NOTES.md
 ```
+
+### Auslieferungsdatei erzeugen
+
+`data-act-check.html` ist die Datei, die an Mandanten geht: eine einzige,
+eigenständige HTML-Datei mit CSS, JavaScript und allen Daten darin, rund
+730 KiB. Kein Build-Schritt, kein Framework, keine externen Verweise; sie wird
+per Doppelklick über `file://` geöffnet und funktioniert offline.
+
+Aus einer geänderten Excel wird sie mit **zwei Befehlen** neu erzeugt:
+
+```
+python3 build_data.py --inline   # Excel -> data.json -> data-act-check.html
+node pruefe.js                   # Abnahmeprüfung gegen die erzeugte HTML-Datei
+```
+
+`--inline` setzt `template.html` (Gerüst und CSS), `app.js` (Ablauflogik und
+Oberfläche) und die Daten zusammen. Die eingebetteten Daten sind gegenüber
+`data.json` um reine Herkunftsangaben erleichtert (Zeilennummern, Rohtexte der
+Kanten, QS-Blatt, Warnliste); Inhalte bleiben unverändert, und der Einbau wird
+vor dem Schreiben gegengelesen.
+
+`node pruefe.js` schneidet Daten und Ablauflogik aus der fertigen HTML-Datei
+heraus und prüft: keine externen URLs, kein `fetch`/`XMLHttpRequest`,
+`localStorage` nur in `try/catch`, alle 49 Fragen erreichbar, keine Frage
+zweimal, kein Zyklus, jeder Pfad endet in Ergebnis oder Modulende, „Unsicher"
+führt überall weiter, und das Anforderungsprofil stimmt mit `verify_data.py`
+überein.
+
+Mit `--annahmen annahmen.json` werden zusätzlich die dort bestätigten
+Antwort-Wert-Zuordnungen eingesetzt (siehe NOTES.md, Punkt 1). Ohne diesen
+Schalter wird ausschließlich die Excel ausgewertet.
 
 `build_data.py` bricht mit Fehlerliste ab und schreibt keine `data.json`, wenn
 eine Frage-ID ins Leere zeigt, eine Req-ID aus dem Mapping fehlt, eine

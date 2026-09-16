@@ -35,6 +35,9 @@ import sys
 
 RANG = {"schließt aus": 4, "verschiebt Geltungsbeginn": 3,
         "löst aus": 2, "schränkt ein": 1}
+
+# Variable gesetzt, Wert aus der Excel nicht ableitbar (III-01, IV-02).
+UNBEKANNT = "\u0000wert-unbekannt"
 RANG_NAME = {v: k for k, v in RANG.items()}
 
 MARKER_START = "<!-- TESTPROFILE:START -->"
@@ -77,6 +80,8 @@ def bewerte(knoten, zustand: dict, antworten: dict):
         wert = zustand.get(knoten["variable"])
         if wert is None:
             return False if op in ("=", "∈") else None
+        if wert == UNBEKANNT:
+            return None
         if op == "=":
             return wert == knoten["wert"]
         if op == "≠":
@@ -134,6 +139,8 @@ class Modell:
             treffer = [z["wert"] for z in gv["zuordnung"] if z["antwort"] in antwort]
             if treffer:
                 aus[var] = treffer[0]
+            elif gv.get("wert_unbekannt"):
+                aus[var] = UNBEKANNT
             elif gv.get("wert_sonst"):
                 aus[var] = gv["wert_sonst"]
         return aus
@@ -409,6 +416,9 @@ def lauf(daten: dict, annahmen: dict | None):
             "fehlend_ausgeschlossen": sorted(erw_ex - ex),
             "nur_eingeschraenkt": sorted(eing),
             "antworten": {f: "+".join(antworten[f]) for f in t["pfad"]},
+            "antwortsatz": {f: list(antworten[f]) for f in t["pfad"]},
+            "berechnet_ausgeloest": sorted(aus),
+            "berechnet_ausgeschlossen": sorted(ex),
             "offene_fragen": {f: [" + ".join(a) for a in raum[f]]
                               for f in t["pfad"] if len(raum[f]) > 1},
         })
@@ -472,6 +482,9 @@ def main(argv=None) -> int:
     p.add_argument("--annahmen", default="annahmen.json",
                    help="Datei mit angenommenen Antwort->Wert-Zuordnungen; "
                         "wird zusätzlich als zweite Variante gerechnet")
+    p.add_argument("--export", default="testprofile_antworten.json",
+                   help="Antwortsätze und berechnete Mengen der reinen "
+                        "Excel-Lesart für die Gegenprobe in pruefe.js")
     p.add_argument("--details", action="store_true",
                    help="auch Profile ohne Abweichung ausführlich ausgeben")
     args = p.parse_args(argv)
@@ -501,6 +514,22 @@ def main(argv=None) -> int:
                         "nennt je Profil nur den Pfad, nicht die Antworten. "
                         "Offene Antworten werden bestmöglich belegt; die "
                         "Abweichung ist damit eine Untergrenze.")]
+
+    if args.export:
+        with open(args.export, "w", encoding="utf-8") as fh:
+            json.dump({
+                "variante": "A – reine Excel-Lesart, ohne annahmen.json",
+                "erzeugt_durch": "verify_data.py",
+                "profile": [{
+                    "profil_id": d["profil"],
+                    "antworten": d["antwortsatz"],
+                    "ausgeloest": d["berechnet_ausgeloest"],
+                    "ausgeschlossen": d["berechnet_ausgeschlossen"],
+                } for d in details],
+            }, fh, ensure_ascii=False, indent=1)
+            fh.write("\n")
+        print(f"\n{args.export} geschrieben "
+              f"({len(details)} Antwortsätze für die Gegenprobe).")
 
     if os.path.exists(args.annahmen):
         annahmen = json.load(open(args.annahmen, encoding="utf-8"))

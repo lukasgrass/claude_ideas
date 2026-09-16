@@ -207,12 +207,17 @@ def _parse_expr(text: str):
 
 
 _ERREICHT_RE = re.compile(r"^erreicht über\s+(.*)$", re.IGNORECASE)
+_SONST_RE = re.compile(
+    r"sonst\s+(?:direkt\s+)?"
+    r"(ENDE-MODUL|ENDE|(?:EIN|II|III|IV|V|VI|VII|VIII|IX|X)-\d{2})",
+    re.IGNORECASE)
 
 
 def parse_bedingung(roh) -> dict:
     """Fließtext-Bedingung -> {roh, ausdruck, vollstaendig, klartext[]}."""
     text = norm(roh)
-    erg = {"roh": text, "ausdruck": None, "vollstaendig": True, "klartext": []}
+    erg = {"roh": text, "ausdruck": None, "vollstaendig": True, "klartext": [],
+           "sonst_ziel": None}
     if ist_leer(text):
         return erg
 
@@ -236,6 +241,12 @@ def parse_bedingung(roh) -> dict:
     if m:
         erg["klartext"].append(m.group(1))
         rest = rest[: m.start()].strip()
+
+    m = _SONST_RE.search(" ".join(erg["klartext"]))
+    if m:
+        # "… (sonst direkt II-11)" – ausdrückliches Sprungziel, wenn die Frage
+        # wegen ihrer Anzeigebedingung übersprungen wird.
+        erg["sonst_ziel"] = m.group(1).upper()
 
     erg["ausdruck"] = _parse_expr(rest)
     unklar = sammle_unklar(erg["ausdruck"])
@@ -783,11 +794,20 @@ def parse_gesetzte_variablen(roh: str, frage_id: str, optionen: list,
                  + " – bitte bestätigen", "warnung")
             continue
 
+        # Das Blatt schreibt die Variable der Frage zu, nicht einzelnen
+        # Antworten. Der Wert bleibt darum unbekannt – die Variable gilt aber
+        # als gesetzt, sobald die Frage beantwortet ist. Bedingungen der Form
+        # "VAR gesetzt" sind damit erfüllbar, Wertvergleiche liefern
+        # "unbekannt" statt "falsch".
         ergebnis.append({"variable": var, "zuordnung": [],
+                         "wert_unbekannt": True, "moegliche_werte": elemente,
                          "herleitung": None, "sicher": False, "roh": teil})
         warn("Fragen", frage_id, "Gesetzte Variable", teil,
              f"{len(elemente)} Werte stehen {len(optionen)} Antwortoptionen "
-             "gegenüber – keine eindeutige Zuordnung ableitbar", "warnung")
+             "gegenüber – keine eindeutige Zuordnung ableitbar. Die Variable "
+             f"gilt nach Beantwortung von {frage_id} als gesetzt, ihr Wert "
+             "bleibt unbekannt; Wertvergleiche darauf liefern 'unbekannt'",
+             "warnung")
     return ergebnis
 
 
@@ -882,16 +902,41 @@ def lese_mapping(ws, warn) -> list:
     return aus
 
 
+# Kurztitel der Prüfstrecken. Sie stehen nicht in der Excel – das Blatt
+# "Modulsteuerung" hat nur Modul, Startbedingung, Einstiegsfrage, Bemerkung.
+# Sobald dort eine Spalte "Kurztitel" (oder "Modulname"/"Bezeichnung")
+# ergänzt wird, gewinnt diese; die Liste hier ist nur der Rückfall, damit die
+# Oberfläche die Module benennen kann. Vermerkt in NOTES.md.
+MODUL_KURZTITEL_RUECKFALL = {
+    "EIN": "Einstieg",
+    "M-II": "IoT-Datenzugang",
+    "M-III": "B2B-Bedingungen",
+    "M-IV": "Vertragsklauseln",
+    "M-V": "Behördenverlangen",
+    "M-VI": "Cloud-Switching",
+    "M-VIII": "Interoperabilität und Smart Contracts",
+}
+KURZTITEL_SPALTEN = ("kurztitel", "modulname", "bezeichnung", "name")
+
+
 EINSTIEG_RE = re.compile(
     r"^(?P<frage>(?:EIN|II|III|IV|V|VI|VII|VIII|IX|X)-\d{2})"
     r"(?:\s*\((?:bei|wenn)\s+(?P<cond>[^()]+)\))?$")
 
 
 def lese_modulsteuerung(ws, warn) -> list:
+    kopf = [norm(z).lower() for z in next(ws.iter_rows(max_row=1, values_only=True))]
+    titel_spalte = next((i for i, k in enumerate(kopf)
+                         if any(k.startswith(s) for s in KURZTITEL_SPALTEN)), None)
     aus = []
     for nr, row in zeilen(ws):
-        row = row + [""] * 4
+        row = row + [""] * 8
         modul, start_roh, einstieg_roh, bemerkung = row[0], row[1], row[2], row[3]
+        if titel_spalte is not None and not ist_leer(row[titel_spalte]):
+            kurztitel, titel_quelle = row[titel_spalte], "Excel"
+        else:
+            kurztitel = MODUL_KURZTITEL_RUECKFALL.get(modul, modul)
+            titel_quelle = "Rückfallliste in build_data.py"
 
         immer = start_roh.lower().startswith("immer")
         if immer:
@@ -914,22 +959,29 @@ def lese_modulsteuerung(ws, warn) -> list:
                     warn("Modulsteuerung", modul, "Einstiegsfrage", teil,
                          "Einstieg nicht eindeutig zerlegbar", "warnung")
                     continue
+                cond = (m.group("cond") or "").strip()
+                if VAR_RE.match(cond):
+                    # "II-01 (bei ROLLE_PRODUKT)" nennt nur den Variablennamen;
+                    # gemeint ist der gesetzte Wert Ja (Wertebereich Ja/Nein).
+                    cond = cond + " = Ja"
                 bed = Bed()
-                if m.group("cond"):
-                    bed = Bed.aus_text(m.group("cond"))
-                if not m.group("cond") and vorher:
+                if cond:
+                    bed = Bed.aus_text(cond)
+                if not cond and vorher:
                     for v in vorher:
                         bed = bed.kombiniere(v.negiert())
-                elif m.group("cond") and vorher:
+                elif cond and vorher:
                     neu = Bed()
                     for v in vorher:
                         neu = neu.kombiniere(v.negiert())
                     bed = neu.kombiniere(bed)
-                if m.group("cond"):
-                    vorher.append(Bed.aus_text(m.group("cond")))
+                if cond:
+                    vorher.append(Bed.aus_text(cond))
                 einstiege.append({"frage_id": m.group("frage"),
                                   "bedingung": bed.als_json()})
-        aus.append({"modul": modul, "startbedingung": start,
+        aus.append({"modul": modul, "kurztitel": kurztitel,
+                    "kurztitel_quelle": titel_quelle,
+                    "startbedingung": start,
                     "einstiegsfragen": einstiege, "einstieg_roh": einstieg_roh,
                     "bemerkung": bemerkung, "zeile": nr})
     return aus
@@ -1308,6 +1360,18 @@ def pruefe_auffaelligkeiten(daten: dict) -> list:
              "Antwortbezug: " + ", ".join(offen[:10])
              + (" …" if len(offen) > 10 else ""))
 
+    # Modul-Kurztitel: einziger Text, der nicht aus der Excel stammt
+    rueckfall = [m["modul"] for m in daten["module"]
+                 if m.get("kurztitel_quelle") != "Excel"]
+    if rueckfall:
+        note("Modulsteuerung",
+             "Die Prüfstrecken haben in der Excel keinen Namen. Für die "
+             "Oberfläche stammen die Kurztitel von "
+             + ", ".join(rueckfall) + " aus der Rückfallliste in "
+             "build_data.py – der einzige angezeigte Text, der nicht aus der "
+             "Excel kommt. Eine Spalte 'Kurztitel' im Blatt 'Modulsteuerung' "
+             "würde sie übernehmen.")
+
     # Fristen: referenzierte Req-IDs
     unbekannt = set()
     for fr in daten["fristen"]:
@@ -1545,12 +1609,117 @@ def schreibe_notes(pfad: str, daten: dict, warn: Warnsammler):
         fh.write("\n".join(z))
 
 
+# ===========================================================================
+# 11  Auslieferungsdatei (--inline)
+# ===========================================================================
+
+# Felder, die nur der Nachvollziehbarkeit in data.json dienen und in der
+# HTML-Datei keinen Zweck haben. Inhalte werden dabei nicht verändert,
+# nur Herkunftsangaben und Rohtexte weggelassen.
+NUR_DATEI = ("zeile", "folgeknoten_roh", "quelltext", "einstieg_roh",
+             "gesetzte_variable_roh", "werte_roh", "verwendet_in_roh",
+             "kurztitel_quelle")
+NUR_DATEI_ZWEIGE = ("qs", "warnungen", "auffaelligkeiten")
+
+
+def _schlanke(objekt):
+    """Nur Herkunftsangaben entfernen, keine Inhalte.
+
+    'roh' bleibt an Bedingungen erhalten – die Oberfläche zeigt damit an,
+    warum eine Frage gestellt oder eine Strecke ausgelassen wird. Nur an den
+    Kanten ist 'roh' eine reine Herkunftsangabe und entfällt.
+    """
+    if isinstance(objekt, dict):
+        ist_kante = "ziel_typ" in objekt and "antwort" in objekt
+        return {k: _schlanke(v) for k, v in objekt.items()
+                if k not in NUR_DATEI and not (ist_kante and k == "roh")}
+    if isinstance(objekt, list):
+        return [_schlanke(v) for v in objekt]
+    return objekt
+
+
+def wende_annahmen_an(daten: dict, annahmen: dict) -> list:
+    """Bestätigte Antwort->Wert-Zuordnungen aus annahmen.json einsetzen.
+
+    Greift nur dort, wo build_data.py die Zuordnung als nicht ableitbar
+    gemeldet hat. Die Excel bleibt unverändert; angewandt wird nur, was in
+    der Annahmendatei ausdrücklich steht.
+    """
+    gesetzt = annahmen.get("gesetzte_variablen", {})
+    angewandt = []
+    for frage in daten["fragen"]:
+        fuer_frage = gesetzt.get(frage["id"])
+        if not fuer_frage:
+            continue
+        for gv in frage["gesetzte_variablen"]:
+            zuordnung = fuer_frage.get(gv.get("variable"))
+            if not zuordnung:
+                continue
+            gueltig = {o["schluessel"] for o in frage["antwortoptionen"]}
+            unbekannt = [a for a in zuordnung if a not in gueltig]
+            if unbekannt:
+                sys.exit(f"annahmen.json: {frage['id']} kennt die Antwort(en) "
+                         + ", ".join(unbekannt) + " nicht.")
+            gv["zuordnung"] = [{"antwort": a, "wert": w}
+                               for a, w in zuordnung.items()]
+            gv["herleitung"] = "bestätigt in annahmen.json"
+            gv["sicher"] = True
+            gv.pop("wert_unbekannt", None)
+            angewandt.append(f"{frage['id']}/{gv['variable']}: "
+                             + ", ".join(f"{a}={w}" for a, w in zuordnung.items()))
+    return angewandt
+
+
+def schreibe_html(daten: dict, vorlage: str, skript: str, ziel: str) -> dict:
+    """Vorlage + app.js + data.json zu einer eigenständigen HTML-Datei."""
+    schlank = {k: v for k, v in daten.items() if k not in NUR_DATEI_ZWEIGE}
+    schlank = _schlanke(schlank)
+    schlank["meta"] = dict(schlank["meta"], eingebettet=True)
+
+    roh = json.dumps(schlank, ensure_ascii=False, separators=(",", ":"))
+    # In einem <script>-Block darf keine Zeichenfolge stehen, die den Block
+    # beenden oder einen Kommentar öffnen könnte. "<" und ">" kommen im
+    # JSON-Text nur innerhalb von Zeichenketten vor, \u003c ist dort die
+    # zulässige Schreibweise. Backslashes hat json.dumps bereits maskiert und
+    # dürfen hier nicht noch einmal angefasst werden.
+    roh = (roh.replace("<", "\\u003c").replace(">", "\\u003e")
+              .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
+    if json.loads(roh) != schlank:
+        sys.exit("Maskierung der eingebetteten Daten ist nicht verlustfrei – "
+                 "Abbruch statt stiller Änderung der Inhalte.")
+
+    if "__DATEN_JSON__" not in vorlage or "__SKRIPT__" not in vorlage:
+        sys.exit("Vorlage enthält nicht beide Platzhalter __DATEN_JSON__ und "
+                 "__SKRIPT__.")
+    html = vorlage.replace("__SKRIPT__", skript).replace("__DATEN_JSON__", roh)
+
+    verdaechtig = re.findall(r"""(?:src|href)\s*=\s*["']([^"'#]+)["']""", html)
+    extern = [u for u in verdaechtig
+              if re.match(r"^(?:[a-z]+:)?//|^https?:|^data:", u, re.I)]
+    if extern:
+        sys.exit("Vorlage verweist nach außen: " + ", ".join(extern))
+
+    with open(ziel, "w", encoding="utf-8") as fh:
+        fh.write(html)
+    return {"bytes": os.path.getsize(ziel), "daten_bytes": len(roh.encode("utf-8"))}
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--excel", default="DataAct_Anforderungen.xlsx")
     p.add_argument("--out", default="data.json")
     p.add_argument("--notes", default="NOTES.md")
+    p.add_argument("--inline", action="store_true",
+                   help="zusätzlich die Auslieferungsdatei data-act-check.html "
+                        "aus template.html, app.js und den Daten schreiben")
+    p.add_argument("--annahmen", default=None,
+                   help="Datei mit bestätigten Antwort->Wert-Zuordnungen "
+                        "(z. B. annahmen.json). Ohne Angabe wird ausschließlich "
+                        "die Excel ausgewertet.")
+    p.add_argument("--vorlage", default="template.html")
+    p.add_argument("--skript", default="app.js")
+    p.add_argument("--html", default="data-act-check.html")
     p.add_argument("--kompakt", action="store_true",
                    help="data.json ohne Einrückung schreiben (kleinere Datei "
                         "zum späteren Einbetten in die HTML-Datei)")
@@ -1565,6 +1734,20 @@ def main(argv=None) -> int:
         return 2
 
     daten, fehler, warn = baue(args.excel)
+
+    if args.annahmen:
+        if not os.path.exists(args.annahmen):
+            print(f"FEHLER: {args.annahmen} nicht gefunden.", file=sys.stderr)
+            return 2
+        annahmen = json.load(open(args.annahmen, encoding="utf-8"))
+        angewandt = wende_annahmen_an(daten, annahmen)
+        daten["meta"]["angewandte_annahmen"] = {
+            "datei": os.path.basename(args.annahmen),
+            "beschreibung": annahmen.get("beschreibung", ""),
+            "zuordnungen": angewandt,
+        }
+        print(f"Annahmen aus {args.annahmen} angewandt: "
+              + ("; ".join(angewandt) if angewandt else "keine passende Stelle"))
 
     if fehler:
         print("VALIDIERUNG FEHLGESCHLAGEN – data.json wurde nicht geschrieben."
@@ -1590,6 +1773,19 @@ def main(argv=None) -> int:
     print("Objekte:")
     for k, v in daten["meta"]["anzahl"].items():
         print(f"  {k:16} {v}")
+    if args.inline:
+        for pfad in (args.vorlage, args.skript):
+            if not os.path.exists(pfad):
+                print(f"FEHLER: {pfad} nicht gefunden.", file=sys.stderr)
+                return 2
+        info = schreibe_html(daten,
+                             open(args.vorlage, encoding="utf-8").read(),
+                             open(args.skript, encoding="utf-8").read(),
+                             args.html)
+        print(f"{args.html} geschrieben: {info['bytes']/1024:.1f} KiB "
+              f"(davon Daten {info['daten_bytes']/1024:.1f} KiB), "
+              "eigenständig, ohne externe Verweise")
+
     warnungen = warn.nach_schwere("warnung")
     print(f"\nWarnliste ({len(warnungen)} nicht eindeutig parsebare Stellen):")
     if not warnungen:

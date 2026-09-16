@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data-Act-Check</title>
+<meta name="description" content="Geführte Prüfung der Pflichten aus der Verordnung (EU) 2023/2854 (Data Act). Läuft vollständig offline.">
+<style>
+/* ---------------------------------------------------------------- Tokens */
+:root {
+  --tinte:   #14181C;
+  --grau:    #5B6369;
+  --linie:   #D8DBDE;
+  --flaeche: #F5F6F7;
+  --akzent:  #0F6152;
+  --warn:    #8A5A12;
+  --papier:  #FFFFFF;
+
+  --schrift: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+             "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --tabellar: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+              "Liberation Mono", monospace;
+
+  --s1: .25rem; --s2: .5rem;  --s3: .75rem; --s4: 1rem;
+  --s5: 1.5rem; --s6: 2rem;   --s7: 3rem;   --s8: 4.5rem;
+
+  --t-meta: .8125rem;   /* 13 */
+  --t-klein: .9375rem;  /* 15 */
+  --t-text: 1.0625rem;  /* 17 */
+  --t-modul: 1.25rem;   /* 20 */
+  --t-frage: 1.625rem;  /* 26 */
+  --t-titel: 2.125rem;  /* 34 */
+
+  --spalte: 46rem;
+}
+
+/* ---------------------------------------------------------------- Basis */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--papier);
+  color: var(--tinte);
+  font-family: var(--schrift);
+  font-size: var(--t-text);
+  line-height: 1.55;
+  font-feature-settings: "kern" 1;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3 { font-weight: 600; line-height: 1.25; margin: 0; letter-spacing: -.01em; }
+p { margin: 0 0 var(--s3); max-width: 66ch; }
+p:last-child { margin-bottom: 0; }
+button { font: inherit; color: inherit; }
+:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+:focus:not(:focus-visible) { outline: none; }
+/* Nach jedem Wechsel wandert der Fokus auf die Überschrift bzw. den
+   Fragetext, damit Screenreader den neuen Inhalt vorlesen. Diese Ziele sind
+   per Tab nicht erreichbar und brauchen deshalb keinen sichtbaren Ring. */
+[tabindex="-1"]:focus, [data-fokus]:focus { outline: none; }
+.verborgen {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.sprung {
+  position: absolute; left: var(--s4); top: -3rem; z-index: 10;
+  background: var(--papier); color: var(--akzent); padding: var(--s2) var(--s3);
+  border: 1px solid var(--akzent); text-decoration: none;
+}
+.sprung:focus { top: var(--s2); }
+
+/* ---------------------------------------------------------------- Gerüst */
+.huelle { max-width: var(--spalte); margin: 0 auto; padding: 0 var(--s4); }
+
+.kopf {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--papier);
+  border-bottom: 1px solid var(--linie);
+}
+.kopf__innen {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--s4); padding-top: var(--s3); padding-bottom: var(--s3);
+}
+.marke { font-size: var(--t-klein); font-weight: 600; letter-spacing: -.005em; }
+.marke span { font-weight: 400; color: var(--grau); }
+.zaehler {
+  font-size: var(--t-meta); color: var(--grau); text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.zaehler b { font-weight: 600; color: var(--tinte); }
+
+main { padding: var(--s6) 0 var(--s8); }
+
+.fuss {
+  border-top: 1px solid var(--linie);
+  padding: var(--s4) 0 var(--s6);
+  font-size: var(--t-meta); color: var(--grau);
+}
+.fuss__innen { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s5); }
+
+/* ------------------------------------------------------------ Typografie */
+.titel { font-size: var(--t-titel); margin-bottom: var(--s2); }
+.lead { color: var(--grau); font-size: var(--t-klein); max-width: 62ch; }
+.abschnitt { margin-top: var(--s7); }
+.abschnitt__kopf {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: var(--s4); margin-bottom: var(--s3);
+}
+.abschnitt h2 { font-size: var(--t-modul); }
+
+/* ------------------------------------------------------- Meldung / Warnung */
+.meldung {
+  border-left: 3px solid var(--akzent);
+  background: var(--flaeche);
+  padding: var(--s3) var(--s4);
+  font-size: var(--t-klein);
+  margin-bottom: var(--s5);
+}
+.meldung--warn { border-left-color: var(--warn); }
+.meldung__kopf { font-weight: 600; margin-bottom: var(--s1); }
+.meldung button {
+  background: none; border: 0; padding: 0; margin-top: var(--s2);
+  color: var(--akzent); text-decoration: underline; cursor: pointer;
+  font-size: var(--t-meta);
+}
+
+/* ------------------------------------------------------------ Modulliste */
+.vorstufe {
+  display: flex; align-items: baseline; gap: var(--s3);
+  flex-wrap: wrap;
+  padding: var(--s3) 0;
+  border-top: 2px solid var(--tinte);
+  border-bottom: 1px solid var(--linie);
+  font-size: var(--t-klein);
+}
+.vorstufe__titel { font-weight: 600; font-size: var(--t-text); }
+.vorstufe__rest { margin-left: auto; display: flex; gap: var(--s4); align-items: baseline; }
+
+.module { list-style: none; margin: 0; padding: 0; }
+.modul {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--s2) var(--s4);
+  padding: var(--s4) 0;
+  border-bottom: 1px solid var(--linie);
+}
+.modul__rechts {
+  display: flex; flex-direction: column; align-items: flex-end;
+  gap: var(--s1); text-align: right;
+}
+.modul--aus { color: var(--grau); }
+.modul__marke {
+  width: .5rem; height: .5rem; margin-top: .45rem;
+  border: 1px solid var(--grau); background: transparent;
+  align-self: start;
+}
+.modul__marke--arbeit { background: var(--akzent); border-color: var(--akzent);
+                        box-shadow: inset 0 0 0 2px var(--papier); }
+.modul__marke--fertig { background: var(--akzent); border-color: var(--akzent); }
+.modul__marke--aus    { border-style: dotted; }
+.modul__haupt { min-width: 0; }
+.modul__id {
+  font-family: var(--tabellar); font-size: var(--t-meta);
+  color: var(--grau); letter-spacing: .01em;
+}
+.modul__name { font-size: var(--t-modul); font-weight: 600; display: block; }
+.modul--aus .modul__name { font-weight: 500; }
+.modul__note { font-size: var(--t-klein); color: var(--grau); margin-top: var(--s1); max-width: 58ch; }
+.modul__zahl {
+  font-family: var(--tabellar); font-size: var(--t-meta); color: var(--grau);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.modul__status { font-size: var(--t-meta); color: var(--grau); white-space: nowrap; }
+
+/* -------------------------------------------------------------- Aktionen */
+.tat {
+  display: inline-block; background: none; border: 0; padding: var(--s1) 0;
+  color: var(--akzent); font-size: var(--t-klein); font-weight: 500;
+  cursor: pointer; text-decoration: none;
+  border-bottom: 1px solid transparent; white-space: nowrap;
+}
+.tat:hover { border-bottom-color: var(--akzent); }
+.tat[disabled] { color: var(--grau); cursor: default; }
+.tat[disabled]:hover { border-bottom-color: transparent; }
+.tat--zurueck { color: var(--grau); }
+.tat--zurueck:hover { border-bottom-color: var(--grau); }
+
+.tatleiste {
+  display: flex; flex-wrap: wrap; gap: var(--s4);
+  justify-content: space-between; align-items: center;
+  margin-top: var(--s6); padding-top: var(--s4);
+  border-top: 1px solid var(--linie);
+}
+
+.knopf {
+  background: var(--akzent); color: var(--papier); border: 1px solid var(--akzent);
+  padding: var(--s2) var(--s4); border-radius: 2px; cursor: pointer;
+  font-size: var(--t-klein); font-weight: 500;
+}
+.knopf[disabled] { background: var(--flaeche); color: var(--grau); border-color: var(--linie); cursor: default; }
+
+/* -------------------------------------------------------- Geführter Modus */
+.pfadkopf {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--s2) var(--s3);
+  font-size: var(--t-meta); color: var(--grau);
+  padding-bottom: var(--s3); border-bottom: 1px solid var(--linie);
+  margin-bottom: var(--s5);
+}
+.pfadkopf__modul { color: var(--tinte); font-weight: 600; }
+.pfadkopf__stand { margin-left: auto; font-variant-numeric: tabular-nums; }
+
+.schrittleiste { display: flex; flex-wrap: wrap; gap: var(--s1); margin-bottom: var(--s6); }
+.schritt {
+  width: 1.25rem; height: 1.25rem; padding: 0; cursor: pointer;
+  background: none; border: 0; display: grid; place-items: center;
+}
+.schritt::after {
+  content: ""; width: .4375rem; height: .4375rem; border-radius: 50%;
+  background: var(--akzent);
+}
+.schritt--offen::after { background: transparent; border: 1px solid var(--linie); }
+.schritt--hier::after { box-shadow: 0 0 0 3px var(--papier), 0 0 0 4px var(--akzent); }
+.schritt[disabled] { cursor: default; }
+
+.frageblock { border: 0; padding: 0; margin: 0; min-width: 0; }
+.frageblock__kennung {
+  font-family: var(--tabellar); font-size: var(--t-meta); color: var(--grau);
+  display: block; margin-bottom: var(--s2);
+}
+.frageblock legend { padding: 0; }
+.frageblock__text {
+  font-size: var(--t-frage); font-weight: 600; line-height: 1.3;
+  letter-spacing: -.012em; max-width: 30ch; margin-bottom: var(--s5);
+}
+
+.optionen { display: flex; flex-direction: column; gap: 0; margin-bottom: var(--s6); }
+.option {
+  display: flex; gap: var(--s3); align-items: flex-start; width: 100%;
+  text-align: left; background: var(--papier); cursor: pointer;
+  border: 1px solid var(--linie); border-radius: 2px;
+  padding: var(--s3) var(--s4) var(--s3) calc(var(--s4) - 3px);
+  border-left: 3px solid var(--linie);
+  margin-bottom: -1px;
+  transition: background-color .12s ease-out, border-color .12s ease-out;
+}
+.option:first-child { border-top-left-radius: 2px; border-top-right-radius: 2px; }
+.option:hover { background: var(--flaeche); border-left-color: var(--grau); }
+.option[aria-pressed="true"], .option[aria-checked="true"] {
+  border-left-color: var(--akzent);
+  background: var(--flaeche);
+  position: relative; z-index: 1;
+}
+.option__kuerzel {
+  font-family: var(--tabellar); font-size: var(--t-meta); color: var(--grau);
+  min-width: 1.25rem; padding-top: .18rem;
+}
+.option[aria-pressed="true"] .option__kuerzel,
+.option[aria-checked="true"] .option__kuerzel { color: var(--akzent); font-weight: 600; }
+.option__text { flex: 1; }
+.option__marke { color: var(--akzent); font-size: var(--t-klein); padding-top: .12rem; }
+
+.erklaerung {
+  background: var(--flaeche); padding: var(--s4); border-radius: 2px;
+  font-size: var(--t-klein); color: var(--tinte);
+}
+.erklaerung h3 {
+  font-size: var(--t-meta); font-weight: 600; margin-bottom: var(--s2);
+  color: var(--grau);
+}
+.fundstelle {
+  margin-top: var(--s3); font-size: var(--t-meta); color: var(--grau);
+  max-width: 66ch;
+}
+.fundstelle b { font-weight: 500; }
+
+/* ------------------------------------------------------------- Ergebnisse */
+.zwischen { margin-bottom: var(--s5); }
+.zwischen summary {
+  cursor: pointer; font-size: var(--t-meta); color: var(--grau);
+  padding: var(--s2) 0; border-bottom: 1px solid var(--linie);
+  list-style: none;
+}
+.zwischen summary::-webkit-details-marker { display: none; }
+.zwischen summary::before { content: "▸ "; }
+.zwischen[open] summary::before { content: "▾ "; }
+.befund {
+  border-left: 3px solid var(--akzent); padding: var(--s3) var(--s4);
+  background: var(--flaeche); margin-top: var(--s3); font-size: var(--t-klein);
+}
+.befund--warn { border-left-color: var(--warn); }
+.befund__quelle {
+  font-family: var(--tabellar); font-size: var(--t-meta); color: var(--grau);
+  display: block; margin-bottom: var(--s1);
+}
+.befundliste { display: flex; flex-direction: column; gap: 0; }
+
+/* ----------------------------------------------------------------- Mobil */
+@media (max-width: 30rem) {
+  .marke span, .nur-breit { display: none; }
+}
+
+@media (max-width: 40rem) {
+  :root { --t-titel: 1.75rem; --t-frage: 1.375rem; }
+  main { padding-top: var(--s5); }
+  .modul { grid-template-columns: auto minmax(0, 1fr); }
+  .modul__rechts { grid-column: 2; align-items: flex-start; text-align: left; }
+  .vorstufe__rest { margin-left: 0; width: 100%; }
+  .frageblock__text { max-width: none; }
+  .tatleiste { gap: var(--s3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+@media print {
+  .kopf, .schrittleiste, .tatleiste, .tat { display: none; }
+  body { font-size: 11pt; }
+}
+</style>
+</head>
+<body>
+<a class="sprung" href="#inhalt">Zum Inhalt springen</a>
+
+<header class="kopf">
+  <div class="huelle kopf__innen">
+    <div class="marke">Data-Act-Check <span>· VO (EU) 2023/2854</span></div>
+    <div class="zaehler" id="zaehler" role="status" aria-live="polite"></div>
+  </div>
+</header>
+
+<main id="inhalt" class="huelle" tabindex="-1"></main>
+
+<div class="huelle">
+  <footer class="fuss">
+    <div class="fuss__innen">
+      <span>Läuft vollständig offline. Kein Netzwerkverkehr, kein Tracking, keine Analyse.</span>
+      <span id="fuss-quelle"></span>
+    </div>
+  </footer>
+</div>
+
+<p class="verborgen" id="live" role="status" aria-live="polite"></p>
+
+<script id="daten" type="application/json">__DATEN_JSON__</script>
+<script>__SKRIPT__</script>
+</body>
+</html>

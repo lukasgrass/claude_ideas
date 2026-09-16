@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-16T14:05:36 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-16T14:39:12 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -29,8 +29,8 @@ Nichts davon wurde geraten oder verworfen. Die betroffenen Stellen stehen als Kl
 | Blatt | Bezug | Feld | Problem | Rohtext |
 | --- | --- | --- | --- | --- |
 | Fragen | EIN-02 | Gesetzte Variable | Zuordnung Antwort->Wert für GROESSE steht nicht in der Excel; positionell angenommen: Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz)=Kleinst, Kleinunternehmen (< 50 Mitarbeiter und ≤ 10 Mio. €)=Klein, Mittleres Unternehmen (< 250 Mitarbeiter und ≤ 50 Mio. € Umsatz bzw. ≤ 43 Mio. € Bilanz)=Mittel, Großunternehmen (darüber)=Groß – bitte bestätigen | `GROESSE (Kleinst / Klein / Mittel / Groß)` |
-| Fragen | III-01 | Gesetzte Variable | 3 Werte stehen 5 Antwortoptionen gegenüber – keine eindeutige Zuordnung ableitbar | `KAP3_ROLLE (Bereitsteller / Empfänger / Beides)` |
-| Fragen | IV-02 | Gesetzte Variable | 3 Werte stehen 4 Antwortoptionen gegenüber – keine eindeutige Zuordnung ableitbar | `KLAUSEL_ROLLE (Verwender / Betroffener / Beides)` |
+| Fragen | III-01 | Gesetzte Variable | 3 Werte stehen 5 Antwortoptionen gegenüber – keine eindeutige Zuordnung ableitbar. Die Variable gilt nach Beantwortung von III-01 als gesetzt, ihr Wert bleibt unbekannt; Wertvergleiche darauf liefern 'unbekannt' | `KAP3_ROLLE (Bereitsteller / Empfänger / Beides)` |
+| Fragen | IV-02 | Gesetzte Variable | 3 Werte stehen 4 Antwortoptionen gegenüber – keine eindeutige Zuordnung ableitbar. Die Variable gilt nach Beantwortung von IV-02 als gesetzt, ihr Wert bleibt unbekannt; Wertvergleiche darauf liefern 'unbekannt' | `KLAUSEL_ROLLE (Verwender / Betroffener / Beides)` |
 | Fragen | IV-03 | Gesetzte Variable | Zuordnung Antwort->Wert für VERTRAG_ALT steht nicht in der Excel; positionell angenommen: A=Ja, B=Nein, C=Gemischt – bitte bestätigen | `VERTRAG_ALT (Ja / Nein / Gemischt)` |
 | Fragen | V-01 | Gesetzte Variable | Zuordnung Antwort->Wert für JURISTISCHE_PERSON steht nicht in der Excel; positionell angenommen: A=Ja, B=Nein, C=Öffentlich, D=Öffentliches Unternehmen – bitte bestätigen | `JURISTISCHE_PERSON (Ja / Nein / Öffentlich / Öffentliches Unternehmen)` |
 | Fragen | VI-04 | Gesetzte Variable | Zuordnung Antwort->Wert für CLOUD_MODELL steht nicht in der Excel; positionell angenommen: A=IaaS, B=PaaS-SaaS, Unsicher=Unsicher – bitte bestätigen | `CLOUD_MODELL (IaaS / PaaS-SaaS / Unsicher)` |
@@ -208,6 +208,12 @@ also gerade *kein* Altvertrag, und B „Am oder vor dem 12.09.2025“, also Altv
 Für die umgekehrte Lesart (A = Nein, B = Ja) stimmen alle sechs QS-Testprofile exakt;
 mit der Reihenfolgelesart weichen fünf von sechs um genau `DA-XI-006` ab. Die Prüfannahme
 liegt in `annahmen.json`, die Excel selbst ist unverändert.
+In der Oberfläche wirkt sich das unmittelbar aus: Mit der Reihenfolgelesart wird die
+Folgefrage IV-04 (Laufzeit der Altverträge) nur nach Antwort C („Beides") gestellt.
+Antwort B („Am oder vor dem 12.09.2025") – also genau der Altvertragsfall, um den es
+IV-04 geht – überspringt sie, weil IV-04 nur bei `VERTRAG_ALT ∈ {Ja, Gemischt}`
+erscheint. Mit `python3 build_data.py --inline --annahmen annahmen.json` wird die
+umgekehrte Lesart gebaut und IV-04 nach B gestellt.
 Vorschlag: in der Excel `VERTRAG_ALT (Nein bei A / Ja bei B / Gemischt bei C)` schreiben.
 
 **2 – Antwort-Wert-Zuordnung fehlt an fünf weiteren Stellen (mittel)**
@@ -230,8 +236,10 @@ Testfälle eindeutig nachrechenbar machen.
 EIN-01 setzt sechs unabhängige Ja/Nein-Variablen (ROLLE_PRODUKT … ROLLE_DATENRAUM) über die
 Antwortkürzel A–F; G ist „Keine davon“. Dass mehrere Antworten gleichzeitig gelten können,
 ergibt sich nur aus dem Wortlaut der Frage und aus der Modulsteuerung. Der Parser behandelt
-EIN-01 deshalb als Mehrfachauswahl (nicht ausgewählte Rollen = Nein) – bitte bestätigen,
-denn davon hängt ab, wie die HTML-Oberfläche diese Frage darstellt.
+EIN-01 deshalb als Mehrfachauswahl (nicht ausgewählte Rollen = Nein). Der Fragetext selbst
+endet mit „(Mehrfachauswahl)" und stützt diese Lesart; ausdrücklich in einer Datenspalte
+steht sie nicht. Die Oberfläche stellt EIN-01 entsprechend mit Ankreuzfeldern und einem
+eigenen „Weiter" dar, alle übrigen 48 Fragen mit Einfachauswahl.
 
 **5 – Zwei Anzeigebedingungen verweisen auf Antworten statt auf Variablen (mittel)**
 `II-04`: „… und II-03 = Nein …“ und `II-05`: „II-04 = Ja oder (II-04 = Nein und keine
@@ -275,3 +283,4 @@ Aus der Excel berechnet, nichts davon wurde geändert.
 
 - **Mapping:** 8 Anforderungen werden von keiner Frage erreicht: DA-I-008, DA-I-009, DA-III-014, DA-III-017, DA-IX-009, DA-VIII-005, DA-XI-007, DA-XI-008
 - **Variablen:** 12 Variablen steuern nichts, sondern gehen laut Blatt nur in die Ergebnisausgabe ein – für den Entscheidungsbaum nur als Anzeigewert relevant: AUSSERGEW_NOTWENDIGKEIT, CLOUD_MODELL, EMPFAENGER_KMU, EU_MARKT, GESCHAEFTSGEHEIMNIS, KAP3_ZEIT, NEUPRODUKT_2026, PBD_DRITTER, SCHUTZMASSNAHMEN, VERLANGEN_FORMELL_OK, VERTRETER_PFLICHT, WECHSELENTGELTE
+- **Modulsteuerung:** Die Prüfstrecken haben in der Excel keinen Namen. Für die Oberfläche stammen die Kurztitel von EIN, M-II, M-III, M-IV, M-V, M-VI, M-VIII, Ergebnis aus der Rückfallliste in build_data.py – der einzige angezeigte Text, der nicht aus der Excel kommt. Eine Spalte 'Kurztitel' im Blatt 'Modulsteuerung' würde sie übernehmen.

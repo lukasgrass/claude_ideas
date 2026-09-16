@@ -1,0 +1,814 @@
+{
+ "variante": "A – reine Excel-Lesart, ohne annahmen.json",
+ "erzeugt_durch": "verify_data.py",
+ "profile": [
+  {
+   "profil_id": "T1",
+   "antworten": {
+    "EIN-01": [
+     "A",
+     "E"
+    ],
+    "EIN-02": [
+     "Mittleres Unternehmen (< 250 Mitarbeiter und ≤ 50 Mio. € Umsatz bzw. ≤ 43 Mio. € Bilanz)"
+    ],
+    "EIN-03": [
+     "Nein"
+    ],
+    "EIN-04": [
+     "Unsicher"
+    ],
+    "EIN-05": [
+     "Ja"
+    ],
+    "EIN-07": [
+     "Nein"
+    ],
+    "II-01": [
+     "Ja"
+    ],
+    "II-03": [
+     "Nein"
+    ],
+    "II-04": [
+     "Nein"
+    ],
+    "II-05": [
+     "Ja"
+    ],
+    "II-06": [
+     "A"
+    ],
+    "II-07": [
+     "Ja"
+    ],
+    "II-08": [
+     "Ja"
+    ],
+    "III-01": [
+     "A"
+    ],
+    "III-02": [
+     "Ja"
+    ],
+    "III-03": [
+     "Ja"
+    ],
+    "III-04": [
+     "Ja"
+    ],
+    "III-05": [
+     "Ja"
+    ],
+    "IV-01": [
+     "Ja"
+    ],
+    "IV-02": [
+     "B"
+    ],
+    "IV-03": [
+     "C"
+    ],
+    "IV-04": [
+     "Unsicher"
+    ],
+    "V-01": [
+     "A"
+    ],
+    "V-02": [
+     "Nein"
+    ],
+    "VI-09": [
+     "Nein"
+    ]
+   },
+   "ausgeloest": [
+    "DA-I-001",
+    "DA-I-002",
+    "DA-I-003",
+    "DA-I-006",
+    "DA-I-007",
+    "DA-II-001",
+    "DA-II-002",
+    "DA-II-004",
+    "DA-II-005",
+    "DA-II-006",
+    "DA-II-007",
+    "DA-II-008",
+    "DA-II-009",
+    "DA-II-010",
+    "DA-II-011",
+    "DA-II-012",
+    "DA-II-013",
+    "DA-II-015",
+    "DA-II-016",
+    "DA-II-017",
+    "DA-II-018",
+    "DA-II-019",
+    "DA-II-020",
+    "DA-II-021",
+    "DA-II-022",
+    "DA-II-024",
+    "DA-II-026",
+    "DA-II-027",
+    "DA-II-028",
+    "DA-II-029",
+    "DA-II-030",
+    "DA-II-031",
+    "DA-II-032",
+    "DA-II-033",
+    "DA-II-046",
+    "DA-III-001",
+    "DA-III-002",
+    "DA-III-003",
+    "DA-III-004",
+    "DA-III-005",
+    "DA-III-006",
+    "DA-III-007",
+    "DA-III-008",
+    "DA-III-009",
+    "DA-III-010",
+    "DA-III-011",
+    "DA-III-012",
+    "DA-III-013",
+    "DA-III-015",
+    "DA-III-018",
+    "DA-III-019",
+    "DA-III-020",
+    "DA-III-025",
+    "DA-IV-001",
+    "DA-IV-002",
+    "DA-IV-003",
+    "DA-IV-004",
+    "DA-IV-005",
+    "DA-IV-006",
+    "DA-IV-007",
+    "DA-IV-008",
+    "DA-IV-009",
+    "DA-IV-010",
+    "DA-IV-011",
+    "DA-IV-012",
+    "DA-IV-013",
+    "DA-IV-014",
+    "DA-IV-015",
+    "DA-IV-016",
+    "DA-IV-017",
+    "DA-IX-001",
+    "DA-IX-004",
+    "DA-IX-005",
+    "DA-IX-006",
+    "DA-IX-007",
+    "DA-IX-008",
+    "DA-V-001",
+    "DA-V-005",
+    "DA-X-001",
+    "DA-XI-001",
+    "DA-XI-002",
+    "DA-XI-003",
+    "DA-XI-004",
+    "DA-XI-005",
+    "DA-XI-006"
+   ],
+   "ausgeschlossen": []
+  },
+  {
+   "profil_id": "T2",
+   "antworten": {
+    "EIN-01": [
+     "D"
+    ],
+    "EIN-02": [
+     "Großunternehmen (darüber)"
+    ],
+    "EIN-05": [
+     "Ja"
+    ],
+    "EIN-07": [
+     "Nein"
+    ],
+    "IV-01": [
+     "Ja"
+    ],
+    "IV-02": [
+     "A"
+    ],
+    "IV-03": [
+     "B"
+    ],
+    "V-01": [
+     "A"
+    ],
+    "V-02": [
+     "Nein"
+    ],
+    "VI-01": [
+     "Ja"
+    ],
+    "VI-02": [
+     "Nein"
+    ],
+    "VI-03": [
+     "Nein"
+    ],
+    "VI-04": [
+     "B"
+    ],
+    "VI-05": [
+     "Nein"
+    ],
+    "VI-06": [
+     "Ja"
+    ],
+    "VI-07": [
+     "Nein"
+    ]
+   },
+   "ausgeloest": [
+    "DA-I-003",
+    "DA-I-004",
+    "DA-III-016",
+    "DA-IV-001",
+    "DA-IV-002",
+    "DA-IV-003",
+    "DA-IV-004",
+    "DA-IV-005",
+    "DA-IV-006",
+    "DA-IV-007",
+    "DA-IV-008",
+    "DA-IV-009",
+    "DA-IV-010",
+    "DA-IV-011",
+    "DA-IV-012",
+    "DA-IV-013",
+    "DA-IV-014",
+    "DA-IV-015",
+    "DA-IV-016",
+    "DA-IV-017",
+    "DA-IX-001",
+    "DA-IX-004",
+    "DA-IX-005",
+    "DA-IX-006",
+    "DA-IX-007",
+    "DA-V-001",
+    "DA-V-005",
+    "DA-VI-001",
+    "DA-VI-002",
+    "DA-VI-003",
+    "DA-VI-004",
+    "DA-VI-005",
+    "DA-VI-006",
+    "DA-VI-007",
+    "DA-VI-008",
+    "DA-VI-009",
+    "DA-VI-010",
+    "DA-VI-011",
+    "DA-VI-012",
+    "DA-VI-013",
+    "DA-VI-014",
+    "DA-VI-015",
+    "DA-VI-016",
+    "DA-VI-017",
+    "DA-VI-018",
+    "DA-VI-019",
+    "DA-VI-020",
+    "DA-VI-021",
+    "DA-VI-024",
+    "DA-VI-025",
+    "DA-VI-026",
+    "DA-VI-028",
+    "DA-VI-029",
+    "DA-VI-030",
+    "DA-VI-031",
+    "DA-VI-032",
+    "DA-VII-001",
+    "DA-VIII-003",
+    "DA-VIII-004",
+    "DA-VIII-006",
+    "DA-XI-001",
+    "DA-XI-002",
+    "DA-XI-003"
+   ],
+   "ausgeschlossen": [
+    "DA-VI-027",
+    "DA-VI-033",
+    "DA-VI-034"
+   ]
+  },
+  {
+   "profil_id": "T3",
+   "antworten": {
+    "EIN-01": [
+     "A"
+    ],
+    "EIN-02": [
+     "Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz)"
+    ],
+    "EIN-03": [
+     "Nein"
+    ],
+    "EIN-05": [
+     "Ja"
+    ],
+    "EIN-07": [
+     "Nein"
+    ],
+    "II-01": [
+     "Ja"
+    ],
+    "II-03": [
+     "Nein"
+    ],
+    "II-04": [
+     "Nein"
+    ],
+    "IV-01": [
+     "Ja"
+    ],
+    "IV-02": [
+     "A"
+    ],
+    "IV-03": [
+     "B"
+    ],
+    "V-01": [
+     "A"
+    ],
+    "V-02": [
+     "Nein"
+    ]
+   },
+   "ausgeloest": [
+    "DA-I-001",
+    "DA-I-003",
+    "DA-I-006",
+    "DA-II-044",
+    "DA-IV-001",
+    "DA-IV-002",
+    "DA-IV-003",
+    "DA-IV-004",
+    "DA-IV-005",
+    "DA-IV-006",
+    "DA-IV-007",
+    "DA-IV-008",
+    "DA-IV-009",
+    "DA-IV-010",
+    "DA-IV-011",
+    "DA-IV-012",
+    "DA-IV-013",
+    "DA-IV-014",
+    "DA-IV-015",
+    "DA-IV-016",
+    "DA-IV-017",
+    "DA-IX-001",
+    "DA-IX-004",
+    "DA-IX-005",
+    "DA-IX-006",
+    "DA-IX-007",
+    "DA-V-001",
+    "DA-V-005",
+    "DA-XI-001",
+    "DA-XI-002",
+    "DA-XI-003"
+   ],
+   "ausgeschlossen": [
+    "DA-II-001",
+    "DA-II-002",
+    "DA-II-003",
+    "DA-II-004",
+    "DA-II-005",
+    "DA-II-006",
+    "DA-II-007",
+    "DA-II-008",
+    "DA-II-009",
+    "DA-II-010",
+    "DA-II-011",
+    "DA-II-012",
+    "DA-II-013",
+    "DA-II-014",
+    "DA-II-015",
+    "DA-II-016",
+    "DA-II-017",
+    "DA-II-018",
+    "DA-II-019",
+    "DA-II-020",
+    "DA-II-021",
+    "DA-II-022",
+    "DA-II-023",
+    "DA-II-024",
+    "DA-II-025",
+    "DA-II-026",
+    "DA-II-027",
+    "DA-II-028",
+    "DA-II-029",
+    "DA-II-030",
+    "DA-II-031",
+    "DA-II-032",
+    "DA-II-033",
+    "DA-II-046"
+   ]
+  },
+  {
+   "profil_id": "T4",
+   "antworten": {
+    "EIN-01": [
+     "B",
+     "E"
+    ],
+    "EIN-02": [
+     "Großunternehmen (darüber)"
+    ],
+    "EIN-05": [
+     "Ja"
+    ],
+    "EIN-07": [
+     "Nein"
+    ],
+    "II-09": [
+     "Ja"
+    ],
+    "II-10": [
+     "Ja"
+    ],
+    "IV-01": [
+     "Ja"
+    ],
+    "IV-02": [
+     "A"
+    ],
+    "IV-03": [
+     "C"
+    ],
+    "IV-04": [
+     "Nein"
+    ],
+    "V-01": [
+     "A"
+    ],
+    "V-02": [
+     "Ja"
+    ],
+    "V-03": [
+     "Ja"
+    ],
+    "V-05": [
+     "Ja"
+    ],
+    "V-06": [
+     "Nein"
+    ],
+    "V-07": [
+     "A"
+    ],
+    "VI-09": [
+     "Ja"
+    ],
+    "VI-10": [
+     "A"
+    ]
+   },
+   "ausgeloest": [
+    "DA-I-002",
+    "DA-I-003",
+    "DA-II-007",
+    "DA-II-014",
+    "DA-II-015",
+    "DA-II-016",
+    "DA-II-046",
+    "DA-III-013",
+    "DA-III-016",
+    "DA-III-021",
+    "DA-III-023",
+    "DA-III-024",
+    "DA-IX-001",
+    "DA-IX-004",
+    "DA-IX-005",
+    "DA-IX-006",
+    "DA-IX-007",
+    "DA-IX-008",
+    "DA-V-001",
+    "DA-V-002",
+    "DA-V-005",
+    "DA-V-008",
+    "DA-V-009",
+    "DA-V-010",
+    "DA-V-011",
+    "DA-V-012",
+    "DA-V-014",
+    "DA-V-015",
+    "DA-V-016",
+    "DA-V-017",
+    "DA-V-019",
+    "DA-V-020",
+    "DA-V-023",
+    "DA-V-024",
+    "DA-VI-001",
+    "DA-VI-002",
+    "DA-VI-004",
+    "DA-VI-005",
+    "DA-VI-006",
+    "DA-VI-007",
+    "DA-VI-008",
+    "DA-VI-009",
+    "DA-VI-010",
+    "DA-VI-011",
+    "DA-VI-012",
+    "DA-VI-013",
+    "DA-VI-014",
+    "DA-VI-015",
+    "DA-VI-016",
+    "DA-VI-017",
+    "DA-VI-018",
+    "DA-VI-019",
+    "DA-VI-022",
+    "DA-VI-031",
+    "DA-XI-001",
+    "DA-XI-002",
+    "DA-XI-003",
+    "DA-XI-006"
+   ],
+   "ausgeschlossen": [
+    "DA-IV-001",
+    "DA-IV-002",
+    "DA-IV-003",
+    "DA-IV-004",
+    "DA-IV-005",
+    "DA-IV-006",
+    "DA-IV-007",
+    "DA-IV-008",
+    "DA-IV-009",
+    "DA-IV-010",
+    "DA-IV-011",
+    "DA-IV-012",
+    "DA-IV-013",
+    "DA-IV-014",
+    "DA-IV-015",
+    "DA-IV-016",
+    "DA-IV-017"
+   ]
+  },
+  {
+   "profil_id": "T5",
+   "antworten": {
+    "EIN-01": [
+     "C"
+    ],
+    "EIN-02": [
+     "Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz)"
+    ],
+    "EIN-03": [
+     "Nein"
+    ],
+    "EIN-05": [
+     "Ja"
+    ],
+    "EIN-07": [
+     "Nein"
+    ],
+    "II-11": [
+     "Ja"
+    ],
+    "II-12": [
+     "Ja"
+    ],
+    "III-01": [
+     "B"
+    ],
+    "III-02": [
+     "Ja"
+    ],
+    "III-03": [
+     "Ja"
+    ],
+    "III-04": [
+     "Ja"
+    ],
+    "III-05": [
+     "Nein"
+    ],
+    "IV-01": [
+     "Ja"
+    ],
+    "IV-02": [
+     "A"
+    ],
+    "IV-03": [
+     "B"
+    ],
+    "V-01": [
+     "A"
+    ],
+    "V-02": [
+     "Ja"
+    ],
+    "V-03": [
+     "Nein"
+    ],
+    "V-04": [
+     "Ja"
+    ]
+   },
+   "ausgeloest": [
+    "DA-I-002",
+    "DA-I-003",
+    "DA-II-024",
+    "DA-II-025",
+    "DA-II-026",
+    "DA-II-028",
+    "DA-II-029",
+    "DA-II-032",
+    "DA-II-034",
+    "DA-II-035",
+    "DA-II-036",
+    "DA-II-037",
+    "DA-II-038",
+    "DA-II-039",
+    "DA-II-040",
+    "DA-II-041",
+    "DA-II-042",
+    "DA-II-043",
+    "DA-III-001",
+    "DA-III-003",
+    "DA-III-005",
+    "DA-III-007",
+    "DA-III-009",
+    "DA-III-010",
+    "DA-III-011",
+    "DA-III-012",
+    "DA-III-013",
+    "DA-III-015",
+    "DA-III-018",
+    "DA-III-021",
+    "DA-III-022",
+    "DA-III-025",
+    "DA-IV-001",
+    "DA-IV-002",
+    "DA-IV-003",
+    "DA-IV-004",
+    "DA-IV-005",
+    "DA-IV-006",
+    "DA-IV-007",
+    "DA-IV-008",
+    "DA-IV-009",
+    "DA-IV-010",
+    "DA-IV-011",
+    "DA-IV-012",
+    "DA-IV-013",
+    "DA-IV-014",
+    "DA-IV-015",
+    "DA-IV-016",
+    "DA-IV-017",
+    "DA-IX-001",
+    "DA-IX-004",
+    "DA-IX-005",
+    "DA-IX-006",
+    "DA-IX-007",
+    "DA-V-004",
+    "DA-V-005",
+    "DA-XI-001",
+    "DA-XI-002",
+    "DA-XI-003",
+    "DA-XI-005"
+   ],
+   "ausgeschlossen": [
+    "DA-V-001",
+    "DA-V-011"
+   ]
+  },
+  {
+   "profil_id": "T6",
+   "antworten": {
+    "EIN-01": [
+     "D"
+    ],
+    "EIN-02": [
+     "Großunternehmen (darüber)"
+    ],
+    "EIN-05": [
+     "Nein"
+    ],
+    "EIN-06": [
+     "Ja"
+    ],
+    "EIN-07": [
+     "Nein"
+    ],
+    "IV-01": [
+     "Ja"
+    ],
+    "IV-02": [
+     "A"
+    ],
+    "IV-03": [
+     "B"
+    ],
+    "V-01": [
+     "A"
+    ],
+    "V-02": [
+     "Nein"
+    ],
+    "VI-01": [
+     "Ja"
+    ],
+    "VI-02": [
+     "Nein"
+    ],
+    "VI-03": [
+     "Nein"
+    ],
+    "VI-04": [
+     "A"
+    ],
+    "VI-05": [
+     "Ja"
+    ],
+    "VI-06": [
+     "Ja"
+    ],
+    "VI-07": [
+     "Ja"
+    ],
+    "VI-08": [
+     "Nein"
+    ]
+   },
+   "ausgeloest": [
+    "DA-I-003",
+    "DA-I-004",
+    "DA-III-016",
+    "DA-IV-001",
+    "DA-IV-002",
+    "DA-IV-003",
+    "DA-IV-004",
+    "DA-IV-005",
+    "DA-IV-006",
+    "DA-IV-007",
+    "DA-IV-008",
+    "DA-IV-009",
+    "DA-IV-010",
+    "DA-IV-011",
+    "DA-IV-012",
+    "DA-IV-013",
+    "DA-IV-014",
+    "DA-IV-015",
+    "DA-IV-016",
+    "DA-IV-017",
+    "DA-IX-002",
+    "DA-IX-003",
+    "DA-IX-004",
+    "DA-IX-005",
+    "DA-IX-006",
+    "DA-IX-007",
+    "DA-V-001",
+    "DA-V-005",
+    "DA-VI-001",
+    "DA-VI-002",
+    "DA-VI-003",
+    "DA-VI-004",
+    "DA-VI-005",
+    "DA-VI-006",
+    "DA-VI-007",
+    "DA-VI-008",
+    "DA-VI-009",
+    "DA-VI-010",
+    "DA-VI-011",
+    "DA-VI-012",
+    "DA-VI-013",
+    "DA-VI-014",
+    "DA-VI-015",
+    "DA-VI-016",
+    "DA-VI-017",
+    "DA-VI-018",
+    "DA-VI-019",
+    "DA-VI-020",
+    "DA-VI-021",
+    "DA-VI-022",
+    "DA-VI-023",
+    "DA-VI-024",
+    "DA-VI-025",
+    "DA-VI-026",
+    "DA-VI-027",
+    "DA-VI-031",
+    "DA-VI-032",
+    "DA-VII-001",
+    "DA-VII-002",
+    "DA-VII-003",
+    "DA-VII-004",
+    "DA-VII-005",
+    "DA-VII-006",
+    "DA-VIII-003",
+    "DA-VIII-004",
+    "DA-XI-001",
+    "DA-XI-002",
+    "DA-XI-003"
+   ],
+   "ausgeschlossen": [
+    "DA-VI-028",
+    "DA-VI-029",
+    "DA-VI-030",
+    "DA-VI-033",
+    "DA-VI-034"
+   ]
+  }
+ ]
+}
