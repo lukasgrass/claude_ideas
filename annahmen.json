@@ -1,11 +1,28 @@
 {
-  "beschreibung": "Prüfannahme zu IV-03: Die Excel sagt nicht, welche Antwortoption welchen Wert von VERTRAG_ALT setzt ('VERTRAG_ALT (Ja / Nein / Gemischt)' bei den Optionen A/B/C). Nach dem Wortlaut der Optionen bedeutet A ('Nach dem 12.09.2025') kein Altvertrag und B ('Am oder vor dem 12.09.2025') Altvertrag - also genau umgekehrt zur Reihenfolge. Diese Datei prueft diese Lesart, ohne die Excel zu aendern. Weitere Annahmen koennen nach demselben Muster ergaenzt werden.",
+  "beschreibung": "Geprüfte Ergänzungen zur Excel, die beim Bauen eingesetzt werden, ohne die Excel zu ändern. Zwei Arten: 'gesetzte_variablen' bestätigt eine Antwort->Wert-Zuordnung, die die Excel nicht ausspricht. 'ergebnistexte' ergänzt einen Ergebnistext an einer Kante, an der die Excel keinen vorsieht - der Nutzer erführe sonst nicht, dass und warum ein Kapitel geprüft und verneint wurde. Jede Ergänzung nennt ihren Grund und die Fundstelle, auf die sie sich stützt. Keine Ergänzung erfindet eine Anforderung; sie verweisen ausschließlich auf Anforderungen, die im Katalog stehen.",
   "gesetzte_variablen": {
     "IV-03": {
       "VERTRAG_ALT": {
         "A": "Nein",
         "B": "Ja",
         "C": "Gemischt"
+      }
+    }
+  },
+  "ergebnistexte": {
+    "V-01": {
+      "C": {
+        "text": "Als ersuchende Stelle treffen Sie eigene Pflichten aus Art. 17 (Form und Begründung des Verlangens), Art. 19 (Pflichten der empfangenden Stelle), Art. 21 (Weitergabe an Forschung) und Art. 22 (Amtshilfe). Dieses Werkzeug prüft diese Strecke nicht - Einzelfallprüfung erforderlich.",
+        "grund": "Die Excel beendet M-V bei V-01 = C mit dem Hinweis, öffentliche Stellen könnten selbst Datenverlangen stellen, zeigt dazu aber nichts. Der Katalog enthält elf Anforderungen, die sich ausschließlich an die ersuchende Stelle richten (DA-V-002, -003, -006 bis -009, -016, -017, -019, -023, -024); sie sind nur über den Dateninhaber-Pfad erreichbar. Ohne diesen Zusatz wiegt sich eine öffentliche Stelle zu Unrecht in Sicherheit. Review-Befund B-01.",
+        "stuetzt_sich_auf": "DA-V-006, DA-V-016, DA-V-023, DA-V-024 (Blatt Anforderungen)",
+        "anhaengen": true
+      }
+    },
+    "IV-01": {
+      "Nein": {
+        "text": "Kapitel IV gilt nur für Verträge mit Klauseln über Datenzugang, Datennutzung oder Haftung. Solche Klauseln stehen häufig auch in gewöhnlichen IT-Dienstleistungs-, Wartungs- und Cloud-Verträgen - im Zweifel Vertragsinventur.",
+        "grund": "Die Excel sieht an dieser Kante keinen Ergebnistext vor. Kapitel IV verschwand dadurch spurlos, und der Nutzer konnte nicht erkennen, ob es geprüft und verneint oder übergangen wurde. Eine falsche Verneinung entlastet still von 17 Anforderungen. Review-Befund B-03.",
+        "stuetzt_sich_auf": "Art. 13; Erklärtext zu IV-01 (Blatt Fragen)"
       }
     }
   }

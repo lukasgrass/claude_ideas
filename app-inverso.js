@@ -45,6 +45,36 @@ function el(tag, attrs, kinder) {
 function leere(n) { while (n.firstChild) n.removeChild(n.firstChild); }
 function sage(t) { document.getElementById("live").textContent = t; }
 function anzahlText(n) { return n === 1 ? "1 Anforderung" : n + " Anforderungen"; }
+
+/* Der Katalog enthält Pflichten, Rechte und Ausnahmen. Sie alle als
+   "Anforderungen" zu zählen überzeichnet die Betroffenheit um rund ein
+   Drittel - eine Ausnahme ist eine Entlastung, kein Erfüllungsaufwand. */
+var PFLICHTTYPEN = ["Handlungspflicht", "Informationspflicht", "Unterlassungspflicht"];
+function nachTyp(eintraege) {
+  var z = { pflicht: 0, recht: 0, ausnahme: 0 };
+  (eintraege || []).forEach(function (e) {
+    if (PFLICHTTYPEN.indexOf(e.typ) >= 0) z.pflicht++;
+    else if (e.typ === "Recht") z.recht++;
+    else if (e.typ === "Ausnahme") z.ausnahme++;
+  });
+  return z;
+}
+function typText(eintraege) {
+  var z = nachTyp(eintraege), teile = [];
+  teile.push(z.pflicht === 1 ? "1 Pflicht" : z.pflicht + " Pflichten");
+  if (z.recht) teile.push(z.recht === 1 ? "1 Recht" : z.recht + " Rechte");
+  if (z.ausnahme) teile.push(z.ausnahme === 1 ? "1 Ausnahme" : z.ausnahme + " Ausnahmen");
+  return teile.join(" · ");
+}
+
+/* Rechtsstand, deutsche Umsetzung und laufendes Verfahren - an einer Stelle,
+   damit beim Nachziehen nichts vergessen wird. */
+var RECHTSSTAND = "Rechtsstand: 17. September 2026. Geprüft wird ausschließlich "
+  + "die Verordnung (EU) 2023/2854. Die deutsche Umsetzung "
+  + "(Data-Act-Durchführungsgesetz, in Kraft seit 30.05.2026) bildet dieses "
+  + "Werkzeug nicht ab; zuständige Behörde in Deutschland ist die "
+  + "Bundesnetzagentur. Das Verfahren zum Digital Omnibus ist nicht "
+  + "abgeschlossen - Änderungen am Data Act sind möglich.";
 function kurz(t, n) {
   if (!t) return "";
   if (t.length <= n) return t;
@@ -365,9 +395,17 @@ function setzeSchritt() {
 /* --------------------------------------------------------- Kopfzeile */
 function zeichneKopfzeile(erg) {
   var rechts = el("div", { class: "kopfzeile__rechts" }, [
-    el("span", { class: "kopfzeile__zahl" }, [
-      el("b", { text: String(erg.anzahl) }), " Anforderungen"
-    ])
+    (function () {
+      var z = nachTyp(erg.ausgeloest), rest = [];
+      if (z.recht) rest.push(z.recht + (z.recht === 1 ? " Recht" : " Rechte"));
+      if (z.ausnahme) rest.push(z.ausnahme + (z.ausnahme === 1 ? " Ausnahme" : " Ausnahmen"));
+      return el("span", { class: "kopfzeile__zahl" }, [
+        el("b", { text: String(z.pflicht) }),
+        z.pflicht === 1 ? " Pflicht" : " Pflichten",
+        rest.length ? el("span", { class: "kopfzeile__neben",
+                                   text: " · " + rest.join(" · ") }) : null
+      ]);
+    })()
   ]);
   /* Innerhalb eines Moduls ist immer nur eine Frage offen, und die kann in
      jeder Säule stehen - ohne diesen Verweis sucht man sie. */
@@ -386,7 +424,12 @@ function zeichneKopfzeile(erg) {
     el("div", {}, [
       el("h1", { text: MODELL.titel, "data-fokus": true, tabindex: "-1" }),
       el("div", { class: "kopfzeile__firma",
-                  text: PROFIL.unternehmen.name + " · " + PROFIL.unternehmen.kurz })
+                  text: PROFIL.unternehmen.name + " · " + PROFIL.unternehmen.kurz }),
+      /* Die Grenze zwischen Orientierung und Beratung gehört dorthin, wo
+         Schlüsse gezogen werden - nicht nur in die Fußzeile. */
+      el("div", { class: "kopfzeile__hinweis",
+                  text: "Strukturierte Orientierung nach VO (EU) 2023/2854 · "
+                        + "keine Rechtsberatung · Rechtsstand 17.09.2026" })
     ]),
     rechts
   ]);
@@ -526,7 +569,7 @@ function zeichneErnte(fachId, erg) {
   });
   var karte = el("div", { class: "ernte", id: "ernte-" + fachId }, [
     el("div", { class: "ernte__zahl", text: String(eintraege.length) }),
-    el("div", { class: "ernte__titel", text: anzahlText(eintraege.length) }),
+    el("div", { class: "ernte__titel", text: typText(eintraege) }),
     el("div", { class: "ernte__kapitel",
                 text: kapitel.length ? "Kapitel " + kapitel.sort().join(", ") : "—" }),
     mehrfach.length
@@ -732,6 +775,9 @@ function zeichneReqZeile(e, mehrfachStraenge, dieserStrang) {
         text: e.ergebnis.fundstelle || e.anforderung.fundstelle || "" }),
       el("span", { class: "req__frist", text: fristText }),
       el("span", { class: "req__typ", text: TYP_KUERZEL[e.typ] || e.typ }),
+      /* Der Katalog enthält auch Pflichten, die sich an Behörden richten.
+         Ohne den Adressaten liest man sie als eigene. */
+      el("span", { class: "req__adressat", text: kurz(e.anforderung.adressat, 38) }),
       auchIn.length
         ? el("span", { class: "req__marke req__marke--rolle",
                        text: "auch: " + auchIn.join(", ") }) : null,
@@ -818,6 +864,7 @@ function zeichneFusszeile() {
   return el("footer", { class: "fusszeile" }, [
     el("span", { text: "Strukturierte Orientierung nach VO (EU) 2023/2854, "
                      + "keine Rechtsberatung." }),
+    el("span", { class: "fusszeile__stand", text: RECHTSSTAND }),
     el("span", { text: "Läuft vollständig lokal: kein Netzwerkaufruf, kein Tracking." }),
     el("span", { text: MODELL.fussnote }),
     el("button", { class: "tat", type: "button", text: "Drucken / PDF",

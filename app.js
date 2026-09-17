@@ -763,6 +763,36 @@ var RECHTSHINWEIS = "Dieses Werkzeug gibt eine strukturierte Orientierung "
   + "anhand des Verordnungstextes. Es ist keine Rechtsberatung und ersetzt "
   + "keine Prüfung des Einzelfalls.";
 
+/* Rechtsstand, deutsche Umsetzung und laufendes Verfahren - an einer Stelle,
+   damit beim Nachziehen nichts vergessen wird. Der Sanktionsrahmen des DADG
+   ist bewusst nicht genannt: die Quellenlage dazu ist uneinheitlich. */
+var RECHTSSTAND = "Rechtsstand: 17. September 2026. Geprüft wird ausschließlich "
+  + "die Verordnung (EU) 2023/2854. Die deutsche Umsetzung "
+  + "(Data-Act-Durchführungsgesetz, in Kraft seit 30.05.2026) bildet dieses "
+  + "Werkzeug nicht ab; zuständige Behörde in Deutschland ist die "
+  + "Bundesnetzagentur. Das Verfahren zum Digital Omnibus ist nicht "
+  + "abgeschlossen - Änderungen am Data Act sind möglich.";
+
+/* Pflichten, Rechte und Ausnahmen alle als "Anforderungen" zu zählen
+   überzeichnet die Betroffenheit - eine Ausnahme ist eine Entlastung. */
+var PFLICHTTYPEN = ["Handlungspflicht", "Informationspflicht", "Unterlassungspflicht"];
+function nachTyp(eintraege) {
+  var z = { pflicht: 0, recht: 0, ausnahme: 0 };
+  (eintraege || []).forEach(function (e) {
+    if (PFLICHTTYPEN.indexOf(e.typ) >= 0) z.pflicht++;
+    else if (e.typ === "Recht") z.recht++;
+    else if (e.typ === "Ausnahme") z.ausnahme++;
+  });
+  return z;
+}
+function typText(eintraege) {
+  var z = nachTyp(eintraege), teile = [];
+  teile.push(z.pflicht === 1 ? "1 Pflicht" : z.pflicht + " Pflichten");
+  if (z.recht) teile.push(z.recht === 1 ? "1 Recht" : z.recht + " Rechte");
+  if (z.ausnahme) teile.push(z.ausnahme === 1 ? "1 Ausnahme" : z.ausnahme + " Ausnahmen");
+  return teile.join(" · ");
+}
+
 var S = {
   antworten: {},
   ansicht: "intro",       /* intro | modul | uebersicht | ergebnis */
@@ -1127,6 +1157,7 @@ function zeichneIntro() {
     + "Sieben Fragen zum Einstieg, danach die Prüfstrecken, die auf Ihr "
     + "Unternehmen zutreffen. Inhalte ausschließlich aus dem Verordnungstext." }));
   w.appendChild(el("p", { class: "rechtshinweis", text: RECHTSHINWEIS }));
+  w.appendChild(el("p", { class: "rechtshinweis", text: RECHTSSTAND }));
 
   if (S.wiederhergestellt) {
     var datum = "";
@@ -1894,13 +1925,14 @@ function zeichneErgebnis() {
     el("dt", { text: "Beantwortete Fragen" }),
     el("dd", { text: String(erg.beantwortet) }),
     el("dt", { text: "Anwendbare Anforderungen" }),
-    el("dd", { text: String(erg.anzahl) }),
+    el("dd", { text: String(erg.anzahl) + " (" + typText(erg.ausgeloest) + ")" }),
     el("dt", { text: "Ausgeschlossen" }),
     el("dd", { text: String(erg.ausgeschlossen.length) }),
     el("dt", { text: "Quelle" }),
     el("dd", { text: "VO (EU) 2023/2854 · " + (DATEN.meta ? DATEN.meta.quelle : "") })
   ]));
   w.appendChild(el("p", { class: "rechtshinweis", text: RECHTSHINWEIS }));
+  w.appendChild(el("p", { class: "rechtshinweis", text: RECHTSSTAND }));
 
   if (erg.offeneStrecken.length) {
     w.appendChild(el("div", { class: "meldung meldung--warn" }, [

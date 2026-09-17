@@ -1,7 +1,7 @@
 {
  "meta": {
   "quelle": "DataAct_Anforderungen.xlsx",
-  "erzeugt_am": "2026-09-17T15:03:33",
+  "erzeugt_am": "2026-09-17T18:34:49",
   "erzeugt_durch": "build_data.py",
   "schema": "dataact-entscheidungsbaum/1",
   "wirkungsrangfolge": [
@@ -29,6 +29,15 @@
    "begriffsmarkierungen": 964,
    "warnungen": 6,
    "hinweise": 146
+  },
+  "angewandte_annahmen": {
+   "datei": "annahmen.json",
+   "beschreibung": "Geprüfte Ergänzungen zur Excel, die beim Bauen eingesetzt werden, ohne die Excel zu ändern. Zwei Arten: 'gesetzte_variablen' bestätigt eine Antwort->Wert-Zuordnung, die die Excel nicht ausspricht. 'ergebnistexte' ergänzt einen Ergebnistext an einer Kante, an der die Excel keinen vorsieht - der Nutzer erführe sonst nicht, dass und warum ein Kapitel geprüft und verneint wurde. Jede Ergänzung nennt ihren Grund und die Fundstelle, auf die sie sich stützt. Keine Ergänzung erfindet eine Anforderung; sie verweisen ausschließlich auf Anforderungen, die im Katalog stehen.",
+   "zuordnungen": [
+    "IV-03/VERTRAG_ALT: A=Nein, B=Ja, C=Gemischt",
+    "V-01/C: Ergebnistext angehängt",
+    "IV-01/Nein: Ergebnistext gesetzt"
+   ]
   }
  },
  "module": [
@@ -3652,9 +3661,10 @@
      "bedingung": null,
      "ziel": "ENDE-MODUL",
      "ziel_typ": "ende_modul",
-     "ergebnistext": null,
+     "ergebnistext": "Kapitel IV gilt nur für Verträge mit Klauseln über Datenzugang, Datennutzung oder Haftung. Solche Klauseln stehen häufig auch in gewöhnlichen IT-Dienstleistungs-, Wartungs- und Cloud-Verträgen - im Zweifel Vertragsinventur.",
      "weiter_mit": null,
-     "roh": "Nein → ENDE-MODUL"
+     "roh": "Nein → ENDE-MODUL",
+     "ergebnistext_ergaenzt": "gesetzt"
     },
     {
      "antwort": "Unsicher",
@@ -3895,19 +3905,19 @@
      "zuordnung": [
       {
        "antwort": "A",
-       "wert": "Ja"
+       "wert": "Nein"
       },
       {
        "antwort": "B",
-       "wert": "Nein"
+       "wert": "Ja"
       },
       {
        "antwort": "C",
        "wert": "Gemischt"
       }
      ],
-     "herleitung": "positionell (Reihenfolge der Antwortoptionen)",
-     "sicher": false,
+     "herleitung": "bestätigt in annahmen.json",
+     "sicher": true,
      "roh": "VERTRAG_ALT (Ja / Nein / Gemischt)"
     }
    ],
@@ -4046,7 +4056,7 @@
      "bedingung": null,
      "ziel": "ERGEBNIS",
      "ziel_typ": "ergebnis",
-     "ergebnistext": "Öffentliche Stellen sind keine Dateninhaber i. S. v. Kapitel V, können aber selbst Datenverlangen stellen",
+     "ergebnistext": "Öffentliche Stellen sind keine Dateninhaber i. S. v. Kapitel V, können aber selbst Datenverlangen stellen. Als ersuchende Stelle treffen Sie eigene Pflichten aus Art. 17 (Form und Begründung des Verlangens), Art. 19 (Pflichten der empfangenden Stelle), Art. 21 (Weitergabe an Forschung) und Art. 22 (Amtshilfe). Dieses Werkzeug prüft diese Strecke nicht - Einzelfallprüfung erforderlich.",
      "weiter_mit": null,
      "anschluss": "ende_modul",
      "roh": "C → ERGEBNIS: 'Öffentliche Stellen sind keine Dateninhaber i. S. v. Kapitel V, können aber selbst Datenverlangen stellen' (ENDE-MODUL)",
@@ -4061,7 +4071,8 @@
        "laenge": 12,
        "begriff": "Dateninhaber"
       }
-     ]
+     ],
+     "ergebnistext_ergaenzt": "angehängt"
     },
     {
      "antwort": "D",

@@ -55,6 +55,16 @@ gesetzt oder offen gelassen):
 
 ## 2. Management Summary
 
+> **Nachtrag 17.09.2026 — Anpassungen umgesetzt.** Alle unten genannten Befunde
+> sind behoben oder entschärft; der Status je Befund steht in
+> `review_befunde.xlsx`, Spalte *Status*. Der Bericht bleibt im ursprünglichen
+> Wortlaut stehen, damit nachvollziehbar ist, was gefunden wurde. Offen bleiben
+> zwei Punkte für das Anwaltsgespräch: der Bußgeldrahmen nach DADG (B-07,
+> Quellenlage uneinheitlich, deshalb bewusst keine Zahl im Werkzeug) und der
+> strukturelle Umbau des Kapitel-V-Zweigs (B-01, im Werkzeug vorerst durch
+> einen Ergebnistext abgefangen). Damit ist die Fassung aus Sicht dieses
+> Reviews weitergabefähig.
+
 **Gesamturteil: KANN NACH ANPASSUNGEN GETEILT WERDEN.**
 
 Die Entscheidungslogik ist tragfähig. Alle 49 Fragen sind erreichbar, kein Pfad

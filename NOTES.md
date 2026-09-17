@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-17T15:03:33 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-17T18:34:49 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -78,19 +78,19 @@ Diese Bedingungen sind fachlich formuliert und nicht vollständig auf Variablen 
 
 | Profil | Fragen Pfad / QS | offene Antworten | erwartet ausgelöst | berechnet | Δ | erwartet ausgeschlossen | berechnet | Δ | Σ Abweichung |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| **T1** | 25 / 25 | 14 | 85 | 85 | +0 | 0 | 0 | +0 | 0 |
-| **T2** | 16 / 16 | 6 | 64 | 63 | -1 | 3 | 3 | +0 | 1 |
-| **T3** | 13 / 13 | 6 | 32 | 31 | -1 | 34 | 34 | +0 | 1 |
-| **T4** | 18 / 18 | 10 | 57 | 58 | +1 | 17 | 17 | +0 | 1 |
-| **T5** | 19 / 19 | 11 | 61 | 60 | -1 | 2 | 2 | +0 | 1 |
-| **T6** | 18 / 18 | 7 | 69 | 68 | -1 | 5 | 5 | +0 | 1 |
+| **T1** | 25 / 25 | 15 | 85 | 85 | +0 | 0 | 0 | +0 | 0 |
+| **T2** | 16 / 16 | 6 | 64 | 64 | +0 | 3 | 3 | +0 | 0 |
+| **T3** | 13 / 13 | 6 | 32 | 32 | +0 | 34 | 34 | +0 | 0 |
+| **T4** | 18 / 18 | 11 | 57 | 57 | +0 | 17 | 17 | +0 | 0 |
+| **T5** | 19 / 19 | 11 | 61 | 61 | +0 | 2 | 2 | +0 | 0 |
+| **T6** | 18 / 18 | 7 | 69 | 69 | +0 | 5 | 5 | +0 | 0 |
 
-Summe der Abweichungen: **5**
+Summe der Abweichungen: **0**
 
 **T1 – Mittelständischer Maschinenbauer (180 MA, konzernfrei, Maschinen mit Sensorik, eigene IoT-Plattform, nutzt Cloud)**
 
-- Verfahren: Koordinatenabstieg, 60 Startpunkte (419,904 Kombinationen)
-- aus der Excel nicht ableitbare Antworten: `EIN-03` ∈ {Ja, Nein, Unsicher}; `EIN-04` ∈ {Ja, Nein, Unsicher}; `EIN-07` ∈ {Ja, Nein}; `II-04` ∈ {Ja, Nein}; `II-05` ∈ {Ja, Nein}; `II-07` ∈ {Ja, Nein, Unsicher}; `II-08` ∈ {Ja, Nein, Unsicher}; `III-01` ∈ {A, B, C}; `III-02` ∈ {Ja, Unsicher}; `III-04` ∈ {Ja, Nein, Unsicher}; `III-05` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `IV-04` ∈ {Ja, Nein, Unsicher}; `V-01` ∈ {A, D}
+- Verfahren: Koordinatenabstieg, 60 Startpunkte (839,808 Kombinationen)
+- aus der Excel nicht ableitbare Antworten: `EIN-03` ∈ {Ja, Nein, Unsicher}; `EIN-04` ∈ {Ja, Nein, Unsicher}; `EIN-07` ∈ {Ja, Nein}; `II-04` ∈ {Ja, Nein}; `II-05` ∈ {Ja, Nein}; `II-07` ∈ {Ja, Nein, Unsicher}; `II-08` ∈ {Ja, Nein, Unsicher}; `III-01` ∈ {A, B, C}; `III-02` ∈ {Ja, Unsicher}; `III-04` ∈ {Ja, Nein, Unsicher}; `III-05` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `IV-03` ∈ {B, C}; `IV-04` ∈ {Ja, Nein, Unsicher}; `V-01` ∈ {A, D}
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-III-016, DA-V-011, DA-V-012, DA-V-014, DA-V-018, DA-VI-001, DA-VI-002, DA-VI-004, DA-VI-016, DA-VI-017, DA-VI-018, DA-VI-019
 - verwendeter Antwortsatz: `EIN-01`=A+E, `EIN-02`=Mittleres Unternehmen (< 250 Mitarbeiter und ≤ 50 Mio. € Umsatz bzw. ≤ 43 Mio. € Bilanz), `EIN-03`=Nein, `EIN-04`=Unsicher, `EIN-05`=Ja, `EIN-07`=Nein, `II-01`=Ja, `II-03`=Nein, `II-04`=Nein, `II-05`=Ja, `II-06`=A, `II-07`=Ja, `II-08`=Ja, `III-01`=A, `III-02`=Ja, `III-03`=Ja, `III-04`=Ja, `III-05`=Ja, `IV-01`=Ja, `IV-02`=B, `IV-03`=C, `IV-04`=Unsicher, `V-01`=A, `V-02`=Nein, `VI-09`=Nein
 
@@ -98,44 +98,39 @@ Summe der Abweichungen: **5**
 
 - Verfahren: vollständig (216 Kombinationen)
 - aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}; `VI-03` ∈ {Ja, Nein, Unsicher}; `VI-04` ∈ {A, B, Unsicher}; `VI-05` ∈ {Ja, Nein}
-- erwartet, aber nicht ausgelöst: DA-XI-006
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-011, DA-V-012, DA-V-014, DA-V-018, DA-VI-022, DA-VI-023, DA-VII-002, DA-VII-003, DA-VII-004, DA-VII-005, DA-VII-006
-- verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=B, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=B, `VI-05`=Nein, `VI-06`=Ja, `VI-07`=Nein
+- verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=B, `VI-05`=Nein, `VI-06`=Ja, `VI-07`=Nein
 
 **T3 – Eigenständiger Kleinhersteller (35 MA, Smart-Home-Geräte, kein Konzern, kein Unterauftrag, Daten in eigener Cloud)**
 
 - Verfahren: vollständig (144 Kombinationen)
 - aus der Excel nicht ableitbare Antworten: `EIN-02` ∈ {Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz), Kleinunternehmen (< 50 Mitarbeiter und ≤ 10 Mio. €)}; `EIN-03` ∈ {Ja, Nein, Unsicher}; `EIN-07` ∈ {Ja, Nein}; `II-04` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}
-- erwartet, aber nicht ausgelöst: DA-XI-006
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-011, DA-V-012, DA-V-014, DA-V-018
-- verwendeter Antwortsatz: `EIN-01`=A, `EIN-02`=Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz), `EIN-03`=Nein, `EIN-05`=Ja, `EIN-07`=Nein, `II-01`=Ja, `II-03`=Nein, `II-04`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=B, `V-01`=A, `V-02`=Nein
+- verwendeter Antwortsatz: `EIN-01`=A, `EIN-02`=Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz), `EIN-03`=Nein, `EIN-05`=Ja, `EIN-07`=Nein, `II-01`=Ja, `II-03`=Nein, `II-04`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Nein
 
 **T4 – Logistikunternehmen (Groß, Nutzer von Telematik/Lkw-Flotte, Behördenverlangen wegen Hochwasser-Notstand, Daten enthalten Fahrerdaten)**
 
-- Verfahren: vollständig (10368 Kombinationen)
-- aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `II-10` ∈ {Ja, Nein, Unsicher}; `IV-02` ∈ {A, B, C}; `IV-04` ∈ {Ja, Nein, Unsicher}; `V-01` ∈ {A, D}; `V-03` ∈ {Ja, Unsicher}; `V-05` ∈ {Ja, Unsicher}; `V-06` ∈ {Nein, Unsicher}; `V-07` ∈ {A, B, C, D}; `VI-10` ∈ {A, B, C}
-- ausgelöst, aber nicht erwartet: DA-XI-006
+- Verfahren: Koordinatenabstieg, 60 Startpunkte (20,736 Kombinationen)
+- aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `II-10` ∈ {Ja, Nein, Unsicher}; `IV-02` ∈ {A, B, C}; `IV-03` ∈ {B, C}; `IV-04` ∈ {Ja, Nein, Unsicher}; `V-01` ∈ {A, D}; `V-03` ∈ {Ja, Unsicher}; `V-05` ∈ {Ja, Unsicher}; `V-06` ∈ {Nein, Unsicher}; `V-07` ∈ {A, B, C, D}; `VI-10` ∈ {A, B, C}
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-006, DA-V-007
-- verwendeter Antwortsatz: `EIN-01`=B+E, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Ja, `EIN-07`=Nein, `II-09`=Ja, `II-10`=Ja, `IV-01`=Ja, `IV-02`=A, `IV-03`=C, `IV-04`=Nein, `V-01`=A, `V-02`=Ja, `V-03`=Ja, `V-05`=Ja, `V-06`=Nein, `V-07`=A, `VI-09`=Ja, `VI-10`=A
+- verwendeter Antwortsatz: `EIN-01`=B+E, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Ja, `EIN-07`=Nein, `II-09`=Ja, `II-10`=Ja, `IV-01`=Ja, `IV-02`=A, `IV-03`=B, `IV-04`=Nein, `V-01`=A, `V-02`=Ja, `V-03`=Ja, `V-05`=Ja, `V-06`=Nein, `V-07`=A, `VI-09`=Ja, `VI-10`=A
 
 **T5 – Unabhängige Kfz-Werkstatt (Kleinunternehmen, empfängt Fahrzeugdaten auf Nutzerverlangen, gibt sie an Analytics-Partner weiter, Behördenverlangen ohne Notstand)**
 
 - Verfahren: vollständig (15552 Kombinationen)
 - aus der Excel nicht ableitbare Antworten: `EIN-02` ∈ {Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz), Kleinunternehmen (< 50 Mitarbeiter und ≤ 10 Mio. €)}; `EIN-03` ∈ {Ja, Nein, Unsicher}; `EIN-07` ∈ {Ja, Nein}; `II-12` ∈ {Ja, Nein}; `III-01` ∈ {A, B, C}; `III-02` ∈ {Ja, Unsicher}; `III-04` ∈ {Ja, Nein, Unsicher}; `III-05` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}; `V-04` ∈ {Ja, Nein, Unsicher}
-- erwartet, aber nicht ausgelöst: DA-XI-006
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-III-019, DA-III-020
-- verwendeter Antwortsatz: `EIN-01`=C, `EIN-02`=Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz), `EIN-03`=Nein, `EIN-05`=Ja, `EIN-07`=Nein, `II-11`=Ja, `II-12`=Ja, `III-01`=B, `III-02`=Ja, `III-03`=Ja, `III-04`=Ja, `III-05`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=B, `V-01`=A, `V-02`=Ja, `V-03`=Nein, `V-04`=Ja
+- verwendeter Antwortsatz: `EIN-01`=C, `EIN-02`=Kleinstunternehmen (< 10 Mitarbeiter und ≤ 2 Mio. € Umsatz/Bilanz), `EIN-03`=Nein, `EIN-05`=Ja, `EIN-07`=Nein, `II-11`=Ja, `II-12`=Ja, `III-01`=B, `III-02`=Ja, `III-03`=Ja, `III-04`=Ja, `III-05`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Ja, `V-03`=Nein, `V-04`=Ja
 
 **T6 – US-IaaS-Anbieter ohne EU-Niederlassung (Groß, EU-Kunden, Egress-Gebühren, Herausgabeverlangen einer US-Behörde ohne Abkommen)**
 
 - Verfahren: vollständig (648 Kombinationen)
 - aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}; `VI-03` ∈ {Ja, Nein, Unsicher}; `VI-04` ∈ {A, B, Unsicher}; `VI-05` ∈ {Ja, Nein}; `VI-08` ∈ {Ja, Nein, Unsicher}
-- erwartet, aber nicht ausgelöst: DA-XI-006
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-011, DA-V-012, DA-V-014, DA-V-018
-- verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Nein, `EIN-06`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=B, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=A, `VI-05`=Ja, `VI-06`=Ja, `VI-07`=Ja, `VI-08`=Nein
+- verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Nein, `EIN-06`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=A, `VI-05`=Ja, `VI-06`=Ja, `VI-07`=Ja, `VI-08`=Nein
 
 
-**B) Mit den Annahmen aus `annahmen.json`.** Prüfannahme zu IV-03: Die Excel sagt nicht, welche Antwortoption welchen Wert von VERTRAG_ALT setzt ('VERTRAG_ALT (Ja / Nein / Gemischt)' bei den Optionen A/B/C). Nach dem Wortlaut der Optionen bedeutet A ('Nach dem 12.09.2025') kein Altvertrag und B ('Am oder vor dem 12.09.2025') Altvertrag - also genau umgekehrt zur Reihenfolge. Diese Datei prueft diese Lesart, ohne die Excel zu aendern. Weitere Annahmen koennen nach demselben Muster ergaenzt werden.
+**B) Mit den Annahmen aus `annahmen.json`.** Geprüfte Ergänzungen zur Excel, die beim Bauen eingesetzt werden, ohne die Excel zu ändern. Zwei Arten: 'gesetzte_variablen' bestätigt eine Antwort->Wert-Zuordnung, die die Excel nicht ausspricht. 'ergebnistexte' ergänzt einen Ergebnistext an einer Kante, an der die Excel keinen vorsieht - der Nutzer erführe sonst nicht, dass und warum ein Kapitel geprüft und verneint wurde. Jede Ergänzung nennt ihren Grund und die Fundstelle, auf die sie sich stützt. Keine Ergänzung erfindet eine Anforderung; sie verweisen ausschließlich auf Anforderungen, die im Katalog stehen.
 
 | Profil | Fragen Pfad / QS | offene Antworten | erwartet ausgelöst | berechnet | Δ | erwartet ausgeschlossen | berechnet | Δ | Σ Abweichung |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -189,6 +184,7 @@ Summe der Abweichungen: **0**
 - aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}; `VI-03` ∈ {Ja, Nein, Unsicher}; `VI-04` ∈ {A, B, Unsicher}; `VI-05` ∈ {Ja, Nein}; `VI-08` ∈ {Ja, Nein, Unsicher}
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-011, DA-V-012, DA-V-014, DA-V-018
 - verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Nein, `EIN-06`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=A, `VI-05`=Ja, `VI-06`=Ja, `VI-07`=Ja, `VI-08`=Nein
+
 <!-- TESTPROFILE:END -->
 
 ## 4 Inhaltliche Auffälligkeiten
@@ -433,6 +429,49 @@ Beim Bauen zeigte sich zweimal, dass diese Unterscheidung trägt:
   Prämissen entgegen, deren Mapping unabhängig vom Lauf greift.
 Beide Erweiterungen sind rückwärtskompatibel; das allgemeine Werkzeug übergibt nichts
 und verhält sich unverändert.
+**19b – Ergänzte Ergebnistexte über annahmen.json (hoch)**
+Zwei Kanten der Excel führten zu einem Modulende, ohne dem Nutzer zu sagen, was
+das bedeutet. Beide sind über `annahmen.json` ergänzt, ohne die Excel zu ändern;
+der Build meldet jede Ergänzung, und ein vorhandener Excel-Text wird nie
+überschrieben (nur mit `"anhaengen": true` verlängert):
+
+- `V-01 = C` (öffentliche Stelle): Die Excel beendet Kapitel V mit dem Hinweis,
+  öffentliche Stellen könnten selbst Datenverlangen stellen — und zeigt dazu
+  nichts. Der Katalog enthält elf Anforderungen, die sich ausschließlich an die
+  ersuchende Stelle richten (Art. 15, 17, 19, 21, 22); sie sind nur über den
+  Dateninhaber-Pfad erreichbar. Der angehängte Satz benennt diese Pflichten und
+  sagt, dass das Werkzeug die Strecke nicht prüft. Der **strukturelle** Umbau
+  des Zweigs steht aus. Review-Befund B-01.
+- `IV-01 = Nein`: Die Excel sieht dort keinen Ergebnistext vor, Kapitel IV
+  verschwand spurlos. Der gesetzte Text nennt, worauf Kapitel IV zielt, und
+  weist darauf hin, dass entsprechende Klauseln auch in gewöhnlichen
+  IT-Dienstleistungsverträgen stehen. Review-Befund B-03.
+
+Beide Texte erfinden keine Anforderung; sie verweisen auf Anforderungen, die im
+Katalog stehen. Grund und Stützfundstelle stehen je Eintrag in `annahmen.json`.
+
+**19c – Zähler trennt Pflichten von Rechten und Ausnahmen (mittel)**
+Der Katalog enthält 54 Handlungs-, 22 Informations- und 45 Unterlassungspflichten,
+dazu 23 Rechte und 45 Ausnahmen. Sie alle als „Anforderungen" zu zählen
+überzeichnete die Betroffenheit um rund ein Drittel — eine Ausnahme ist eine
+Entlastung, kein Erfüllungsaufwand. Kopfzeile und Erntekarten weisen die drei
+Gruppen jetzt getrennt aus. Review-Befund B-02.
+
+**19d – Rechtsstand, deutsche Umsetzung, Digital Omnibus (mittel)**
+Beide Fassungen nennen jetzt den Rechtsstand mit Datum, dass ausschließlich die
+Verordnung geprüft wird, dass die deutsche Umsetzung (DADG, in Kraft seit
+30.05.2026) nicht abgebildet ist und dass die Bundesnetzagentur zuständig ist.
+**Der Bußgeldrahmen wird bewusst nicht genannt** — die recherchierten
+Sekundärquellen widersprechen sich (5 Mio. € bzw. 500.000 €) und die Zahl ist
+nicht verifiziert. Ebenfalls genannt: das Verfahren zum Digital Omnibus ist nicht
+abgeschlossen. Review-Befunde B-05, B-06, B-07.
+
+**19e – Kopfzeilen-CSS war beim Layoutumbau verlorengegangen (behoben)**
+Beim Wechsel vom Bandlayout auf die Schrittleiste fiel der gesamte
+`.kopfzeile`-Block aus `template-inverso.html` heraus. Die Kopfzeile lief
+seitdem unformatiert; ein zwischenzeitlicher „Fix" am Zeilenumbruch griff ins
+Leere, weil die Regel gar nicht existierte. Wiederhergestellt und um den
+Rechtshinweis erweitert. Review-Befund B-08.
 <!-- MANUELL:END -->
 
 ### 4b Maschinell abgeleitet

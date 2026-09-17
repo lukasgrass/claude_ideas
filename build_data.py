@@ -1939,6 +1939,47 @@ def wende_annahmen_an(daten: dict, annahmen: dict) -> list:
             gv.pop("wert_unbekannt", None)
             angewandt.append(f"{frage['id']}/{gv['variable']}: "
                              + ", ".join(f"{a}={w}" for a, w in zuordnung.items()))
+
+    # Ergebnistexte an Kanten, an denen die Excel keinen vorsieht. Der Nutzer
+    # erführe sonst nicht, dass und warum ein Kapitel geprüft und verneint
+    # wurde. Ein vorhandener Text wird nie überschrieben - das bliebe
+    # unbemerkt und wäre eine Änderung am Inhalt der Excel.
+    texte = annahmen.get("ergebnistexte", {})
+    nach_id = {f["id"]: f for f in daten["fragen"]}
+    for frage_id, je_antwort in texte.items():
+        frage = nach_id.get(frage_id)
+        if not frage:
+            sys.exit(f"annahmen.json/ergebnistexte: Frage {frage_id} gibt es nicht.")
+        gueltig = {o["schluessel"] for o in frage["antwortoptionen"]}
+        for antwort, eintrag in je_antwort.items():
+            if antwort not in gueltig:
+                sys.exit(f"annahmen.json/ergebnistexte: {frage_id} kennt die "
+                         f"Antwort {antwort} nicht.")
+            if not eintrag.get("text") or not eintrag.get("grund"):
+                sys.exit(f"annahmen.json/ergebnistexte: {frage_id}/{antwort} "
+                         f"braucht 'text' und 'grund'.")
+            passende = [k for k in frage["kanten"] if k["antwort"] == antwort]
+            if not passende:
+                sys.exit(f"annahmen.json/ergebnistexte: {frage_id} hat keine "
+                         f"Kante für {antwort}.")
+            anhaengen = bool(eintrag.get("anhaengen"))
+            for kante in passende:
+                vorhanden = kante.get("ergebnistext")
+                if vorhanden and not anhaengen:
+                    sys.exit(f"annahmen.json/ergebnistexte: {frage_id}/{antwort} "
+                             f"hat bereits einen Ergebnistext aus der Excel. "
+                             f"Zum Anhängen \"anhaengen\": true setzen; "
+                             f"Ersetzen ist nicht vorgesehen.")
+                if anhaengen and not vorhanden:
+                    sys.exit(f"annahmen.json/ergebnistexte: {frage_id}/{antwort} "
+                             f"ist als Ergänzung angelegt, die Excel hat dort "
+                             f"aber keinen Text zum Anhängen.")
+                kante["ergebnistext"] = (
+                    (vorhanden.rstrip(" .;") + ". " + eintrag["text"])
+                    if vorhanden else eintrag["text"])
+                kante["ergebnistext_ergaenzt"] = "angehängt" if vorhanden else "gesetzt"
+            angewandt.append(f"{frage_id}/{antwort}: Ergebnistext "
+                             + ("angehängt" if anhaengen else "gesetzt"))
     return angewandt
 
 

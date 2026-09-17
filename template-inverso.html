@@ -65,6 +65,31 @@ button { font: inherit; color: inherit; }
   padding: var(--a5) var(--a6) var(--a7);
 }
 
+/* ------------------------------------------------------------ Kopfzeile */
+.kopfzeile {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--a2) var(--a5);
+  padding-bottom: var(--a4); margin-bottom: var(--a4);
+  border-bottom: 2px solid var(--tinte);
+}
+.kopfzeile h1 { font-size: var(--t-gross); letter-spacing: -.012em; }
+.kopfzeile__firma { font-size: var(--t-klein); color: var(--grau); }
+/* Die Grenze zwischen Orientierung und Beratung gehört dorthin, wo Schlüsse
+   gezogen werden - nicht nur in die Fußzeile. */
+.kopfzeile__hinweis {
+  font-size: var(--t-mini); color: var(--grau); margin-top: var(--a2);
+  padding-top: var(--a2); border-top: 1px solid var(--linie); max-width: 46rem;
+}
+.kopfzeile__rechts {
+  margin-left: auto; display: flex; flex-wrap: wrap;
+  gap: var(--a2) var(--a4); align-items: baseline;
+}
+.kopfzeile__zahl {
+  font-family: var(--tabellar); font-size: var(--t-klein); color: var(--grau);
+  font-variant-numeric: tabular-nums;
+}
+.kopfzeile__zahl b { color: var(--tinte); font-size: var(--t-text); }
+.kopfzeile__neben { color: var(--grau); font-weight: 400; }
+
 /* ------------------------------------------------ Schrittleiste (links) */
 /* Die fünf Schritte der Vorgehensfolie. Sie sind Orientierung, nicht
    Gliederung: sie sagen nur, wo im Bild man gerade steht. Kein Bedienelement. */
@@ -243,6 +268,7 @@ button { font: inherit; color: inherit; }
   font-size: var(--t-mini); color: var(--grau);
 }
 .fusszeile .tat { font-size: var(--t-mini); }
+.fusszeile__stand { flex-basis: 100%; max-width: 62rem; }
 
 .tat {
   display: inline-block; background: none; border: 0; padding: 0;
@@ -290,7 +316,8 @@ button { font: inherit; color: inherit; }
 }
 .req[open] .req__id { color: var(--akzent); }
 .req__titel { font-size: var(--t-klein); font-weight: 500; min-width: 0; }
-.req__stelle, .req__frist, .req__typ {
+.req__adressat { font-style: italic; }
+.req__stelle, .req__frist, .req__typ, .req__adressat {
   font-size: var(--t-meta); color: var(--grau);
 }
 .req__frist { font-variant-numeric: tabular-nums; }

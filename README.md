@@ -82,7 +82,8 @@ die Inverso GmbH: **ein einziges Bild**, senkrecht von oben nach unten, mit
 aufklappbaren Anforderungen am Fuß jeder Säule.
 
 ```
-python3 build_data.py --inline --inverso   # beide Auslieferungsdateien
+python3 build_data.py --inline --inverso --annahmen annahmen.json
+                                           # beide Auslieferungsdateien
 node pruefe.js                             # allgemeine Fassung, 17 Prüfungen
 node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 23 Prüfungen
 ```
@@ -117,6 +118,12 @@ wird. Sie ist Orientierung, kein Gliederungsprinzip, und trägt keine Bedienung.
 - **Jeder Sachverhalt muss einen Strang haben**, jede Frage eines gezeigten
   Moduls genau eine Säule. Auch das bricht den Build ab — sonst fällt ein
   Sachverhalt still heraus.
+- **`--annahmen` ist Pflicht für die Auslieferung.** `annahmen.json` trägt zwei
+  Arten geprüfter Ergänzungen, die die Excel nicht hergibt: bestätigte
+  Antwort→Wert-Zuordnungen und Ergebnistexte an Kanten, an denen die Excel
+  schweigt. Jede nennt ihren Grund; der Build meldet sie und überschreibt
+  nie einen vorhandenen Excel-Text. Ohne den Schalter fehlen dem Werkzeug
+  zwei Ergebnistexte (Kapitel IV und Kapitel V), und Kapitel IV endet stumm.
 - **Anforderungen dürfen mehrfach erscheinen**, wenn mehrere Stränge sie
   auslösen; sie tragen dann den Verweis „auch: <anderer Strang>". Die Zahl in
   der Kopfzeile zählt jede Anforderung einmal.
