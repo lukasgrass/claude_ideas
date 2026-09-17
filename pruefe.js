@@ -119,7 +119,40 @@ for (let runde = 0; runde < DURCHLAEUFE; runde++) {
   if (beleg.size === alleFragen.size && runde > 2000) break;
 }
 
-const fehlend = [...alleFragen].filter(f => !beleg.has(f)).sort();
+/* Eine Vorbelegung darf Zweige schließen - das ist ihr Zweck. EIN-05 = Ja
+   (Niederlassung in der EU) macht EIN-06 unerreichbar, und das ist richtig.
+   Gemessen wird deshalb die Reichweite OHNE Vorbelegungen; was erst durch sie
+   zufällt, wird genannt, gilt aber nicht als Fehler. */
+const fehlendMit = [...alleFragen].filter(f => !beleg.has(f)).sort();
+let fehlend = fehlendMit;
+if (fehlendMit.length && Object.keys(START_ANTWORTEN).length) {
+  const belegOhne = new Set();
+  for (let runde = 0; runde < 8000; runde++) {
+    const antworten = {};
+    let wache = 0;
+    for (const def of idx.module) {
+      for (;;) {
+        if (++wache > 400) break;
+        const zustand = E.zustandAus(antworten, idx);
+        if (!E.modulAnwendbar(def, zustand, antworten)) break;
+        const lauf = E.laufeModul(def.modul, antworten, idx);
+        if (lauf.abbruch) break;
+        lauf.schritte.forEach(s => belegOhne.add(s.frage_id));
+        if (!lauf.aktuell) break;
+        belegOhne.add(lauf.aktuell);
+        const wahlen = moeglichkeiten(idx.fragen.get(lauf.aktuell));
+        antworten[lauf.aktuell] = wahlen[zufall(wahlen.length)];
+      }
+    }
+    if (belegOhne.size >= alleFragen.size) break;
+  }
+  fehlend = fehlendMit.filter(f => !belegOhne.has(f));
+  const durchPraemisse = fehlendMit.filter(f => belegOhne.has(f));
+  if (durchPraemisse.length) {
+    console.log("  (Hinweis) durch die Vorbelegungen geschlossen: "
+                + durchPraemisse.join(", "));
+  }
+}
 pruefe("alle " + alleFragen.size + " Fragen erreichbar (je ein Durchlauf als Beleg)",
        fehlend.length === 0,
        fehlend.length ? "kein Beleg für: " + fehlend.join(", ") : "");
@@ -342,41 +375,64 @@ if (DATEN.profil) {
          + " Vorbelegungen sind gültige Antwortoptionen mit Begründung",
          ungueltig.length === 0, ungueltig.join(" | "));
 
-  /* Jede Frage, die das Vorgehensmodell nennt, muss es geben und im Modullauf
-     vorkommen - sonst zeigt die Oberfläche eine Karte, die nie erreichbar ist. */
-  const genannt = [];
-  (M.ausnahmen || []).forEach(fid => genannt.push(["ausnahmen", fid]));
-  (M.straenge || []).forEach(s =>
-    (s.fragen || []).forEach(fid => genannt.push(["Strang " + s.id, fid])));
-  (M.grundlagen || { fragen: [] }).fragen.forEach(fid => genannt.push(["grundlagen", fid]));
-  const unerreichbar = [];
-  genannt.forEach(([wo, fid]) => {
-    const f = idx.fragen.get(fid);
-    if (!f) { unerreichbar.push(wo + ": " + fid + " gibt es nicht"); return; }
-    /* Vorbelegte Einstiegsfragen liegen vor jedem Modullauf */
-    if (PRAEMISSEN.has(fid)) return;
-    if (!beleg.has(fid)) unerreichbar.push(wo + ": " + fid + " wird nie gestellt");
-  });
-  pruefe(genannt.length + " Fragen des Vorgehensmodells sind erreichbar",
-         unerreichbar.length === 0, unerreichbar.join(" | "));
+  /* Die Rollenfrage entscheidet, welche Kapitel gelten. Sie vorzubelegen hieße,
+     die Betroffenheit zu behaupten statt sie zu prüfen - genau der Fehler, den
+     diese Fassung behebt. */
+  const rollenfrage = DATEN.fragen.filter(f =>
+    f.gesetzte_variablen.filter(gv => gv.wert_sonst).length > 1)[0];
+  pruefe("die Rollenfrage " + (rollenfrage ? rollenfrage.id : "?")
+         + " ist nicht vorbelegt",
+         !!rollenfrage && !(P.vorbelegt || {})[rollenfrage.id]);
 
-  /* Die Oberfläche läuft je Strang genau ein Modul (zeichneSaeule,
-     istStrangAktiv). Fragen aus zwei Modulen wären dort still verloren. */
-  const gemischt = [];
+  /* Jeder benannte Sachverhalt muss von einem Strang getragen werden */
+  const getragen = new Set();
+  (M.straenge || []).forEach(s => (s.sachverhalte || []).forEach(x => getragen.add(x)));
+  const verwaist = (M.sachverhalte || []).filter(sv => !getragen.has(sv.id));
+  pruefe((M.sachverhalte || []).length + " Sachverhalte sind je einem Strang zugeordnet",
+         verwaist.length === 0,
+         verwaist.map(sv => sv.kurz).join(", "));
+
+  /* Keine Frage ohne Säule, keine Frage in zweien */
+  const jeFrage = new Map();
+  (M.straenge || []).forEach(s =>
+    (s.fragen || []).forEach(fid =>
+      jeFrage.set(fid, (jeFrage.get(fid) || []).concat(s.id))));
+  const grundFragen = new Set((M.grundlagen || { fragen: [] }).fragen);
+  const gezeigteModule = new Set((M.anknuepfungspunkte || []).map(a => a.modul));
+  [...grundFragen].forEach(fid => {
+    const f = idx.fragen.get(fid); if (f) gezeigteModule.add(f.modul);
+  });
+  const ohneSaeule = [], doppelt2 = [];
+  DATEN.fragen.forEach(f => {
+    if (!gezeigteModule.has(f.modul)) return;
+    const wo = jeFrage.get(f.id) || [];
+    if (wo.length > 1) doppelt2.push(f.id + ": " + wo.join(", "));
+    if (!wo.length && !grundFragen.has(f.id)) ohneSaeule.push(f.id + " (" + f.modul + ")");
+  });
+  pruefe("jede Frage der gezeigten Module liegt in genau einer Säule",
+         ohneSaeule.length === 0 && doppelt2.length === 0,
+         (ohneSaeule.length ? "ohne Säule: " + ohneSaeule.join(", ") + " " : "")
+         + (doppelt2.length ? "doppelt: " + doppelt2.join(" | ") : ""));
+
+  /* Die Fragen eines Strangs stammen aus dem Modul seines Anknüpfungspunkts */
+  const ankModul = {};
+  (M.anknuepfungspunkte || []).forEach(a => { ankModul[a.id] = a.modul; });
+  const falschesModul = [];
   (M.straenge || []).forEach(s => {
     const module = new Set((s.fragen || []).map(fid => {
-      const f = idx.fragen.get(fid);
-      return f ? f.modul : "?";
+      const f = idx.fragen.get(fid); return f ? f.modul : "?";
     }));
-    if (module.size !== 1) {
-      gemischt.push(s.id + ": " + [...module].sort().join(", "));
+    if (module.size !== 1) falschesModul.push(s.id + ": " + [...module].sort().join(", "));
+    else if (ankModul[s.anknuepfung] && !module.has(ankModul[s.anknuepfung])) {
+      falschesModul.push(s.id + ": liegt in " + [...module][0]
+                         + ", Anknüpfungspunkt nennt " + ankModul[s.anknuepfung]);
     }
   });
-  pruefe((M.straenge || []).length + " Stränge stammen aus je einem Modul",
-         gemischt.length === 0, gemischt.join(" | "));
+  pruefe((M.straenge || []).length + " Stränge liegen im Modul ihres Anknüpfungspunkts",
+         falschesModul.length === 0, falschesModul.join(" | "));
 
-  /* Deckungsprobe: derselbe Antwortsatz muss im zugeschnittenen und im
-     vollständigen Werkzeug dieselben Anforderungen ergeben. */
+  /* Deckungsprobe gegen das vollständige Werkzeug, über mehrere Rollensätze:
+     bei offener Rollenfrage hängt alles daran, welche Module gelten. */
   const vollDatei = "data-act-check.html";
   if (!fs.existsSync(vollDatei)) {
     console.log("  (übersprungen) Deckungsprobe - " + vollDatei + " fehlt");
@@ -386,63 +442,44 @@ if (DATEN.profil) {
       /<script id="daten" type="application\/json">([\s\S]*?)<\/script>/)[1]);
     const vollIdx = E.baueIndex(VOLL);
     const praem = Object.keys(P.vorbelegt || {});
+    const rollensaetze = [["D","E"], ["C","D","E"], ["A","D","E"], ["A","C","D","E"], ["G"]];
+    const abweichung = [], fremd = [];
+    const gezeigteFragen = new Set([...jeFrage.keys(), ...grundFragen]);
 
-    /* Antwortsatz: Vorbelegungen plus je erste Option in jedem Strangmodul */
-    const strangModule = [...new Set((M.straenge || []).map(s => {
-      const f = idx.fragen.get(s.fragen[0]);
-      return f ? f.modul : null;
-    }).filter(Boolean))];
-    const antworten = {};
-    praem.forEach(fid => { antworten[fid] = P.vorbelegt[fid].antwort.slice(); });
-    for (let runde = 0; runde < 60; runde++) {
-      let offen = null;
-      strangModule.forEach(modul => {
-        if (offen) return;
-        const l = E.laufeModul(modul, antworten, idx);
-        if (l.aktuell) offen = l.aktuell;
-      });
-      if (!offen) break;
-      antworten[offen] = [idx.fragen.get(offen).antwortoptionen[0].schluessel];
-    }
-
-    const schmal = E.baueErgebnis(antworten, idx, praem);
-    const voll = E.baueErgebnis(antworten, vollIdx, praem);
-    /* Im vollständigen Werkzeug laufen weitere Module mit; verglichen wird
-       deshalb nur, was aus den Fragen dieses Zuschnitts stammt. */
-    const eigeneFragen = new Set(DATEN.fragen.map(f => f.id));
-    const ausVoll = voll.ausgeloest
-      .filter(e => e.belege.some(b => eigeneFragen.has(b.frage_id)))
-      .map(e => e.req_id).sort();
-    const ausSchmal = schmal.ausgeloest.map(e => e.req_id).sort();
-    const fehlt = ausVoll.filter(r => ausSchmal.indexOf(r) < 0);
-    const zuviel = ausSchmal.filter(r => ausVoll.indexOf(r) < 0);
-    pruefe("Deckungsprobe: " + ausSchmal.length + " Anforderungen wie im "
-           + "vollständigen Werkzeug", fehlt.length === 0 && zuviel.length === 0,
-           (fehlt.length ? "fehlt: " + fehlt.join(", ") + " " : "")
-           + (zuviel.length ? "zusätzlich: " + zuviel.join(", ") : ""));
-
-    /* Verteilung wie auswertung() in app-inverso.js: was kein Strang
-       beansprucht, fällt in die Grundlagen. Damit kann nichts verschwinden -
-       geprüft wird deshalb, dass jede Anforderung im Auffangfach auch aus
-       einer Frage stammt, die das Bild zeigt. Eine neue Frage in der Excel
-       fiele hier auf. */
-    const gezeigt = new Set([
-      ...(M.ausnahmen || []),
-      ...(M.grundlagen || { fragen: [] }).fragen,
-      ...(M.straenge || []).flatMap(s => s.fragen)
-    ]);
-    const fremd = new Map();
-    schmal.ausgeloest.forEach(e => {
-      const trifft = (M.straenge || []).some(s =>
-        e.belege.some(b => s.fragen.indexOf(b.frage_id) >= 0));
-      if (trifft) return;
-      e.belege.forEach(b => {
-        if (!gezeigt.has(b.frage_id)) fremd.set(e.req_id, b.frage_id);
+    rollensaetze.forEach(rollen => {
+      const antworten = {};
+      praem.forEach(fid => { antworten[fid] = P.vorbelegt[fid].antwort.slice(); });
+      antworten[rollenfrage.id] = rollen;
+      for (let runde = 0; runde < 80; runde++) {
+        const zustand = E.zustandAus(antworten, idx);
+        let offen = null;
+        for (const m of idx.module) {
+          if (m.modul === "Ergebnis") continue;
+          if (!E.modulAnwendbar(m, zustand, antworten)) continue;
+          const l = E.laufeModul(m.modul, antworten, idx);
+          if (l.aktuell) { offen = l.aktuell; break; }
+        }
+        if (!offen) break;
+        antworten[offen] = [idx.fragen.get(offen).antwortoptionen[0].schluessel];
+      }
+      const schmal = E.baueErgebnis(antworten, idx, praem).ausgeloest.map(e => e.req_id).sort();
+      const voll = E.baueErgebnis(antworten, vollIdx, praem).ausgeloest.map(e => e.req_id).sort();
+      if (schmal.join() !== voll.join()) {
+        abweichung.push(rollen.join("+") + ": " + schmal.length + " statt " + voll.length);
+      }
+      /* Jede ausgelöste Anforderung muss aus einer Frage stammen, die das Bild
+         zeigt - sonst fällt sie unsichtbar ins Auffangfach. */
+      E.baueErgebnis(antworten, idx, praem).ausgeloest.forEach(e => {
+        if (e.belege.every(b => !gezeigteFragen.has(b.frage_id))) {
+          fremd.push(rollen.join("+") + "/" + e.req_id);
+        }
       });
     });
-    pruefe("jede ausgelöste Anforderung stammt aus einer Frage, die das Bild "
-           + "zeigt", fremd.size === 0,
-           [...fremd].map(([r, f]) => r + " über " + f).join(", "));
+    pruefe("Deckungsprobe über " + rollensaetze.length
+           + " Rollensätze deckt sich mit dem vollständigen Werkzeug",
+           abweichung.length === 0, abweichung.join(" | "));
+    pruefe("jede ausgelöste Anforderung stammt aus einer Frage, die das Bild zeigt",
+           fremd.length === 0, [...new Set(fremd)].slice(0, 10).join(", "));
   }
 }
 

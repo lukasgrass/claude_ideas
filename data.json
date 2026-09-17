@@ -1,7 +1,7 @@
 {
  "meta": {
   "quelle": "DataAct_Anforderungen.xlsx",
-  "erzeugt_am": "2026-09-17T14:09:33",
+  "erzeugt_am": "2026-09-17T15:03:33",
   "erzeugt_durch": "build_data.py",
   "schema": "dataact-entscheidungsbaum/1",
   "wirkungsrangfolge": [

@@ -11,7 +11,8 @@ var MODELL = PROFIL.vorgehensmodell;
 var idx = baueIndex(DATEN);
 var SCHLUESSEL = "data-act-inverso/stand/2";
 
-var S = { antworten: {}, offen: {}, meldung: null };
+var S = { antworten: {}, offen: {}, entwurf: {}, meldung: null,
+          naechste: null };
 
 function praemissen() { return Object.keys(PROFIL.vorbelegt || {}); }
 function vorbelegung(fid) { return (PROFIL.vorbelegt || {})[fid] || null; }
@@ -261,12 +262,39 @@ function beantworte(frageId, schluessel) {
 /* =================================================================
    Zeichnen
 
-   Das Bild folgt der Entscheidungslogik, nicht den fünf Schritten der
-   Vorgehensfolie: oben zwei waagerechte Reihen (Ausgangslage, Ausschlüsse),
-   darunter je Strang eine durchgehende Säule von der ersten Frage bis zu
-   ihren Anforderungen. Die fünf Schritte laufen als Leiste am linken Rand
-   mit - sie sind Orientierung zur Folie, die unmittelbar davor gezeigt wird.
+   Das Bild folgt der Entscheidungslogik: oben die Ausgangslage mit der
+   Rollenfrage, daneben was dadurch entfällt, dann was unabhängig vom Pfad
+   gilt, darunter je Anknüpfungspunkt ein Block mit seinen Strängen. Ein
+   Strang läuft ohne Unterbrechung von seiner ersten Frage bis zu seinen
+   Anforderungen. Die fünf Schritte der Vorgehensfolie laufen als Leiste am
+   linken Rand mit - Orientierung, keine Gliederung.
    ================================================================= */
+
+/* Kapitel je Modul, aus den Anknüpfungspunkten des Modells */
+function kapitelVonModul(modulId) {
+  var a = MODELL.anknuepfungspunkte.filter(function (x) { return x.modul === modulId; })[0];
+  return a ? a.kapitel : "";
+}
+
+/* Gilt ein Modul nach der Startbedingung der Excel? */
+function modulGilt(modulId) {
+  var m = idx.module.filter(function (x) { return x.modul === modulId; })[0];
+  if (!m) return false;
+  return modulAnwendbar(m, zustandAus(S.antworten, idx), S.antworten);
+}
+
+/* Die nächste offene Frage über alle geltenden Module - das ist der eine
+   Punkt, an dem es weitergeht. */
+function naechsteFrage() {
+  for (var i = 0; i < idx.module.length; i++) {
+    var m = idx.module[i];
+    if (m.modul === "Ergebnis") continue;
+    if (!modulGilt(m.modul)) continue;
+    var lauf = laufeModul(m.modul, S.antworten, idx);
+    if (lauf.aktuell) return { frage: lauf.aktuell, modul: m.modul };
+  }
+  return null;
+}
 
 function zeichne() {
   var fluss = document.getElementById("fluss");
@@ -274,6 +302,7 @@ function zeichne() {
   leere(fluss);
 
   var erg = auswertung();
+  S.naechste = naechsteFrage();
   fluss.appendChild(zeichneKopfzeile(erg));
   fluss.appendChild(marke(1));
   fluss.appendChild(zeichneAusgangslage());
@@ -284,7 +313,7 @@ function zeichne() {
   fluss.appendChild(zeichneFusszeile());
 
   window.scrollTo(0, scroll);
-  requestAnimationFrame(function () { zeichneSpuren(); setzeSchritt(); });
+  requestAnimationFrame(setzeSchritt);
 }
 
 /* Leere Marke: sagt der Leiste, ab welcher Höhe welcher Schritt gilt */
@@ -293,7 +322,6 @@ function marke(nr) {
 }
 
 /* ------------------------------------------------------ Schrittleiste */
-/* Einmal gebaut, danach nur noch hervorgehoben - der Inhalt ändert sich nie. */
 function zeichneLeiste() {
   var leiste = document.getElementById("leiste");
   leere(leiste);
@@ -316,8 +344,6 @@ function zeichneLeiste() {
   });
 }
 
-/* Welcher Schritt gilt gerade: der Abschnitt, der oben am Bildschirm steht -
-   die letzte Marke, deren Oberkante noch im obersten Band liegt. */
 function setzeSchritt() {
   var marken = document.querySelectorAll(".marke");
   var grenze = Math.min(140, window.innerHeight * 0.25);
@@ -338,67 +364,76 @@ function setzeSchritt() {
 
 /* --------------------------------------------------------- Kopfzeile */
 function zeichneKopfzeile(erg) {
+  var rechts = el("div", { class: "kopfzeile__rechts" }, [
+    el("span", { class: "kopfzeile__zahl" }, [
+      el("b", { text: String(erg.anzahl) }), " Anforderungen"
+    ])
+  ]);
+  /* Innerhalb eines Moduls ist immer nur eine Frage offen, und die kann in
+     jeder Säule stehen - ohne diesen Verweis sucht man sie. */
+  if (S.naechste) {
+    rechts.appendChild(el("button", {
+      class: "tat", type: "button",
+      text: "Nächste Frage: " + S.naechste.frage + " →",
+      onclick: function () { springeZuKnoten(S.naechste.frage); }
+    }));
+  } else {
+    rechts.appendChild(el("span", { class: "kopfzeile__zahl",
+                                    text: "alle Fragen beantwortet" }));
+  }
+  if (S.meldung) rechts.appendChild(el("span", { class: "kopfzeile__zahl", text: S.meldung }));
   return el("header", { class: "kopfzeile" }, [
     el("div", {}, [
       el("h1", { text: MODELL.titel, "data-fokus": true, tabindex: "-1" }),
       el("div", { class: "kopfzeile__firma",
                   text: PROFIL.unternehmen.name + " · " + PROFIL.unternehmen.kurz })
     ]),
-    el("div", { class: "kopfzeile__rechts" }, [
-      el("span", { class: "kopfzeile__zahl" }, [
-        el("b", { text: String(erg.anzahl) }), " Anforderungen"
-      ]),
-      S.meldung ? el("span", { class: "kopfzeile__zahl", text: S.meldung }) : null
-    ])
+    rechts
   ]);
 }
 
 /* ------------------------------------------- Reihe 1: die Ausgangslage */
+/* Die Rollenfrage ist keine Vorbelegung mehr: sie entscheidet, welche
+   Kapitel überhaupt gelten, und wird deshalb hier gestellt. */
 function zeichneAusgangslage() {
-  var pos = MODELL.position;
   var zeile = el("div", { class: "zeile", id: "zeile-ausgangslage" });
-  pos.liegen_vor.forEach(function (r) {
-    zeile.appendChild(el("div", { class: "karte karte--fest", id: "k-rolle-" + r.antwort }, [
-      el("div", { class: "karte__kopf" }, [
-        el("span", { text: "Rolle " + r.antwort }), el("span", { text: "liegt vor" })
-      ]),
-      el("div", { class: "karte__titel", text: r.kurz })
-    ]));
+  var lauf = laufeModul("EIN", S.antworten, idx);
+  MODELL.grundlagen.fragen.forEach(function (fid) {
+    zeile.appendChild(frageKarte(fid, lauf));
   });
-  var weg = pos.liegen_nicht_vor;
-  zeile.appendChild(el("div", { class: "karte karte--aus" }, [
-    el("div", { class: "karte__kopf" }, [
-      el("span", { text: "Rollen " + weg.antworten.join(", ") }),
-      el("span", { text: "liegen nicht vor" })
-    ]),
-    el("div", { class: "karte__titel", text: weg.kurz }),
-    el("div", { class: "karte__grund", text: weg.grund })
-  ]));
   return zeile;
 }
 
-/* -------------------------------- Reihe 2: was entfällt, was zu prüfen */
+/* -------------------------------- Reihe 2: was nach der Excel entfällt */
+/* Nicht mehr von Hand behauptet, sondern aus der Startbedingung des Moduls
+   berechnet - und wieder da, sobald die Rolle gesetzt wird. */
 function zeichneAusschluesse() {
-  var zeile = el("div", { class: "zeile" });
-  MODELL.ausgeschlossen.forEach(function (e) {
-    zeile.appendChild(el("div", { class: "karte karte--aus" }, [
+  var zeile = el("div", { class: "zeile", id: "zeile-ausschluss" });
+  var offen = 0;
+  idx.module.forEach(function (m) {
+    if (m.modul === "EIN" || m.modul === "Ergebnis") return;
+    if (modulGilt(m.modul)) return;
+    offen++;
+    zeile.appendChild(el("div", { class: "karte karte--aus", id: "k-aus-" + m.modul }, [
       el("div", { class: "karte__kopf" }, [
-        el("span", { text: e.kapitel }), el("span", { text: "entfällt" })
+        el("span", { text: kapitelVonModul(m.modul) || m.modul }),
+        el("span", { text: "entfällt" })
       ]),
-      el("div", { class: "karte__titel", text: e.kurz }),
-      el("div", { class: "karte__grund", text: e.grund })
+      el("div", { class: "karte__titel", text: m.kurztitel }),
+      el("div", { class: "karte__grund",
+                  text: "Setzt voraus: " + m.startbedingung.roh })
     ]));
   });
-  MODELL.ausnahmen.forEach(function (fid) {
-    zeile.appendChild(frageKarte(fid));
-  });
+  if (!offen) {
+    zeile.appendChild(el("div", { class: "karte karte--fest" }, [
+      el("div", { class: "karte__kopf" }, [el("span", { text: "Stand" })]),
+      el("div", { class: "karte__titel", text: "Kein Kapitel entfällt" })
+    ]));
+  }
   return zeile;
 }
 
-/* ------------------------- Reihe 3: was unabhängig vom Strang gilt ------ */
-/* Die Rollen aus dem Einstieg und die Ausnahmefragen lösen selbst schon
-   Anforderungen aus - die gelten in jedem Strang und stehen deshalb vor
-   der Verzweigung. */
+/* ------------------------- Reihe 3: was unabhängig vom Strang gilt ---- */
 function zeichneGrundlagen(erg) {
   var zeile = el("div", { class: "zeile" });
   var karte = el("div", { class: "karte karte--fest", id: "k-grundlagen" }, [
@@ -413,54 +448,47 @@ function zeichneGrundlagen(erg) {
   return zeile;
 }
 
-/* ------------------------------------------------ Das Gitter der Säulen */
-/* Je Anknüpfungspunkt eine Kopfkarte über seinen Strängen, darunter die
-   Säulen. Die Kopfkarten liegen in Gitterzeile 1, die Säulen in Zeile 2;
-   die Dokumentordnung bleibt trotzdem "Punkt, dann seine Stränge", damit
-   die schmale Ansicht ohne Gitter dieselbe Reihenfolge zeigt. */
+/* ------------------------------------------- Die Blöcke der Stränge --- */
+/* Je Anknüpfungspunkt ein Block: Kopfkarte und darunter seine Säulen. Als
+   umbrechender Fluss statt fester Spaltenzahl - bei zehn Strängen bricht das
+   um, statt Spalten auf 160 px zu quetschen. */
 function zeichneGitter(erg) {
   var aus = document.createDocumentFragment();
   aus.appendChild(marke(3));
-  var gitter = el("div", { class: "gitter",
-                           style: "--spalten:" + MODELL.straenge.length });
+  var gitter = el("div", { class: "gitter" });
   var erste = true;
   MODELL.anknuepfungspunkte.forEach(function (a) {
+    if (!modulGilt(a.modul)) return;
     var meine = MODELL.straenge.filter(function (s) { return s.anknuepfung === a.id; });
     if (!meine.length) return;
-    var aktiv = meine.some(istStrangAktiv);
-    gitter.appendChild(el("div", {
-      class: "anker" + (aktiv ? " anker--an" : ""),
-      id: "k-ank-" + a.id,
-      style: meine.length > 1 ? "grid-column: span " + meine.length : null
-    }, [
+    var block = el("div", { class: "block", id: "k-ank-" + a.id,
+                            style: "--spalten:" + meine.length });
+    block.appendChild(el("div", { class: "anker" }, [
       el("div", { class: "anker__kopf" }, [
-        el("span", { text: a.kapitel }),
-        el("span", { text: a.rollenunabhaengig ? "rollenunabhängig" : "Rolle " + a.rolle })
+        el("span", { text: a.kapitel }), el("span", { text: a.modul })
       ]),
       el("div", { class: "anker__titel", text: a.kurz })
     ]));
+    var spalten = el("div", { class: "block__spalten" });
     meine.forEach(function (strang) {
-      gitter.appendChild(zeichneSaeule(strang, erg, erste));
+      spalten.appendChild(zeichneSaeule(strang, erg, erste));
       erste = false;
     });
+    block.appendChild(spalten);
+    gitter.appendChild(block);
   });
   aus.appendChild(gitter);
   return aus;
 }
 
-/* Eine Säule läuft ohne Unterbrechung von der ersten Frage bis zur Ernte. */
 function zeichneSaeule(strang, erg, erste) {
   var f0 = idx.fragen.get(strang.fragen[0]);
   var lauf = laufeModul(f0.modul, S.antworten, idx);
   var menge = strangFragen(strang);
-  var aktiv = istStrangAktiv(strang);
-  var saeule = el("div", { class: "saeule" + (aktiv ? "" : " saeule--aus"),
-                           id: "spur-" + strang.id });
+  var saeule = el("div", { class: "saeule", id: "spur-" + strang.id });
   saeule.appendChild(el("div", { class: "saeule__kopf", text: strang.kurz }));
   if (erste) saeule.appendChild(marke(4));
 
-  /* Erst die Fragen in der Reihenfolge des Modullaufs, dann die noch nicht
-     erreichten Fragen des Strangs blass hinterher */
   var gezeigt = [];
   lauf.schritte.forEach(function (s) {
     if (menge.has(s.frage_id)) gezeigt.push(s.frage_id);
@@ -473,7 +501,6 @@ function zeichneSaeule(strang, erg, erste) {
     saeule.appendChild(frageKarte(fid, lauf, menge));
   });
 
-  /* Ergebnistexte der gegangenen Kanten dieses Strangs */
   lauf.schritte.forEach(function (s) {
     if (!menge.has(s.frage_id)) return;
     s.befunde.forEach(function (b) {
@@ -488,7 +515,6 @@ function zeichneSaeule(strang, erg, erste) {
   return saeule;
 }
 
-/* Fuß der Säule: wie viele Anforderungen, und welche */
 function zeichneErnte(fachId, erg) {
   var eintraege = nurAusgeloest(erg.faecher[fachId] || []);
   var mehrfach = eintraege.filter(function (e) {
@@ -527,34 +553,34 @@ function zeichneErnte(fachId, erg) {
   return karte;
 }
 
-/* Ist ein Strang im aktuellen Modullauf überhaupt erreicht worden? */
-function istStrangAktiv(strang) {
-  var f = idx.fragen.get(strang.fragen[0]);
-  if (!f) return false;
-  var lauf = laufeModul(f.modul, S.antworten, idx);
-  var menge = strangFragen(strang);
-  return lauf.schritte.some(function (s) { return menge.has(s.frage_id); })
-      || (lauf.aktuell && menge.has(lauf.aktuell));
-}
-
 /* --------------------------------------------------------- Fragenkarte */
 function frageKarte(fid, lauf, menge) {
   var f = idx.fragen.get(fid);
   if (!f) return el("div");
   var gegeben = S.antworten[fid] || null;
   var vor = vorbelegung(fid);
+  var mehrfach = istMehrfachauswahl(f);
+  var dran = !!S.naechste && S.naechste.frage === fid;
+
+  /* Vorbelegte Fragen sind immer umstellbar - unabhängig davon, wie weit der
+     Modullauf gerade ist. Sonst stünde eine Vorbelegung grau da und ließe
+     sich erst ändern, wenn man sich zu ihr durchgeklickt hat. */
   var erreichbar = true;
-  if (lauf) {
+  if (lauf && !vor) {
     erreichbar = lauf.schritte.some(function (s) { return s.frage_id === fid; })
               || lauf.aktuell === fid;
   }
+
   var klasse = "karte";
-  if (!erreichbar) klasse += " karte--aus";
+  if (vor) klasse += " karte--fest";
+  else if (!erreichbar) klasse += " karte--aus";
   else if (gegeben) klasse += " karte--gegangen";
   else klasse += " karte--offen";
+  if (dran) klasse += " karte--dran";
 
   var kopfRechts = vor ? "vorbelegt"
-    : (!erreichbar ? "nicht im Pfad" : (gegeben ? "beantwortet" : "offen"));
+    : (dran ? "hier weiter"
+            : (!erreichbar ? "noch nicht dran" : (gegeben ? "beantwortet" : "offen")));
   var titel = el("div", { class: "karte__titel", text: kurzeFrage(f) });
   haengeErklAn(titel, function () { return erklFrage(f); });
 
@@ -565,26 +591,41 @@ function frageKarte(fid, lauf, menge) {
     titel
   ]);
 
-  /* Lücke in der Excel ausweisen - kurz auf der Karte, im Volltext im Hover */
   if ((PROFIL.warnungen || {})[fid]) {
     karte.classList.add("karte--warn");
     karte.appendChild(el("div", { class: "karte__grund karte__grund--warn",
                                   text: "Excel-Lücke, siehe Hinweis" }));
   }
 
+  /* Bei Mehrfachauswahl gilt die Frage erst mit "Übernehmen" als beantwortet -
+     sonst liefe der Lauf schon nach dem ersten Häkchen weiter. */
+  var entwurf = mehrfach
+    ? (S.entwurf[fid] || (gegeben ? gegeben.slice() : []))
+    : null;
+
   var chips = el("div", { class: "karte__chips", role: "group",
                           "aria-label": "Antwort auf " + fid });
   f.antwortoptionen.forEach(function (o) {
-    var an = !!gegeben && gegeben.indexOf(o.schluessel) >= 0;
+    var an = mehrfach ? entwurf.indexOf(o.schluessel) >= 0
+                      : (!!gegeben && gegeben.indexOf(o.schluessel) >= 0);
     var buchstabe = o.form === "buchstabe";
     var knopf = el("button", {
       class: "chip" + (an ? " chip--an" : "") + (buchstabe ? " chip--lang" : ""),
       type: "button",
+      /* Nicht erreichbare Fragen nehmen keine Klicks mehr an: die Antwort
+         wurde bisher gesetzt und sofort wieder weggeräumt - sichtbar
+         passierte nichts. */
+      disabled: !erreichbar ? "" : null,
       "aria-pressed": an ? "true" : "false",
-      /* Vorgelesen wird der volle Wortlaut, nicht die gekürzte Beschriftung */
       "aria-label": buchstabe ? o.schluessel + ": " + o.text : o.schluessel,
       title: buchstabe ? o.text : o.schluessel,
-      onclick: function () { beantworte(fid, [o.schluessel]); }
+      onclick: function () {
+        if (!mehrfach) { beantworte(fid, [o.schluessel]); return; }
+        var pos = entwurf.indexOf(o.schluessel);
+        if (pos >= 0) entwurf.splice(pos, 1); else entwurf.push(o.schluessel);
+        S.entwurf[fid] = entwurf;
+        zeichne();
+      }
     });
     if (buchstabe) {
       knopf.appendChild(el("span", { class: "chip__nr", text: o.schluessel }));
@@ -595,6 +636,26 @@ function frageKarte(fid, lauf, menge) {
     chips.appendChild(knopf);
   });
   karte.appendChild(chips);
+
+  if (mehrfach && erreichbar) {
+    karte.appendChild(el("button", {
+      class: "tat", type: "button",
+      disabled: entwurf.length ? null : "",
+      text: entwurf.length ? "Übernehmen (" + entwurf.length + ")"
+                           : "Mindestens eine Angabe wählen",
+      onclick: function () {
+        delete S.entwurf[fid];
+        beantworte(fid, entwurf.slice());
+      }
+    }));
+  }
+
+  if (!erreichbar) {
+    karte.appendChild(el("div", { class: "karte__grund",
+                                  text: lauf && lauf.aktuell
+                                    ? "Wird nach " + lauf.aktuell + " gestellt"
+                                    : "In diesem Pfad nicht gestellt" }));
+  }
   return karte;
 }
 
@@ -750,69 +811,6 @@ function zeichneReqZeile(e, mehrfachStraenge, dieserStrang) {
 }
 
 /* =================================================================
-   Spuren: die Verbindungen zwischen den Bändern
-   ================================================================= */
-
-var SVGNS = "http://www.w3.org/2000/svg";
-
-function svgEl(tag, attrs) {
-  var k = document.createElementNS(SVGNS, tag);
-  if (attrs) Object.keys(attrs).forEach(function (a) {
-    var w = attrs[a];
-    if (w === null || w === undefined || w === false) return;
-    k.setAttribute(a, String(w));
-  });
-  return k;
-}
-
-/* Welche Spuren es gibt - aus dem Modell abgeleitet, nicht fest verdrahtet.
-   Nur zwei Arten: von der Rollenkarte zum Anknüpfungspunkt und von dort zur
-   Säule. Innerhalb einer Säule braucht es keine Spur, dort steht alles
-   ohnehin untereinander. */
-function spurliste() {
-  var aus = [];
-  MODELL.anknuepfungspunkte.forEach(function (a) {
-    var meine = MODELL.straenge.filter(function (s) { return s.anknuepfung === a.id; });
-    if (!meine.length) return;
-    var aktiv = meine.some(istStrangAktiv);
-    if (a.rolle) {
-      aus.push({ von: "k-rolle-" + a.rolle, nach: "k-ank-" + a.id, an: aktiv });
-    }
-    meine.forEach(function (s) {
-      aus.push({ von: "k-ank-" + a.id, nach: "spur-" + s.id, an: istStrangAktiv(s) });
-    });
-  });
-  return aus;
-}
-
-function zeichneSpuren() {
-  var svg = document.getElementById("spuren");
-  var buehne = document.getElementById("buehne");
-  if (!svg || !buehne) return;
-  leere(svg);
-  var b = buehne.getBoundingClientRect();
-  if (!b.width || !b.height) return;
-  svg.setAttribute("viewBox", "0 0 " + Math.round(b.width) + " " + Math.round(b.height));
-
-  spurliste().forEach(function (sp) {
-    var a = document.getElementById(sp.von), z = document.getElementById(sp.nach);
-    if (!a || !z) return;
-    var ra = a.getBoundingClientRect(), rz = z.getBoundingClientRect();
-    var x1 = ra.left - b.left + ra.width / 2, y1 = ra.bottom - b.top;
-    var x2 = rz.left - b.left + rz.width / 2, y2 = rz.top - b.top;
-    if (y2 <= y1) return;                       /* nur abwärts, nie rückwärts */
-    var m = (y1 + y2) / 2;
-    svg.appendChild(svgEl("path", {
-      class: "spur" + (sp.an ? " spur--an" : ""),
-      d: "M " + x1.toFixed(1) + " " + y1.toFixed(1)
-         + " C " + x1.toFixed(1) + " " + m.toFixed(1)
-         + ", " + x2.toFixed(1) + " " + m.toFixed(1)
-         + ", " + x2.toFixed(1) + " " + y2.toFixed(1)
-    }));
-  });
-}
-
-/* =================================================================
    Fußzeile
    ================================================================= */
 
@@ -851,13 +849,13 @@ function zeichneFusszeile() {
   zeichneLeiste();
 
   var entprellt = null;
-  function spurenSpaeter() {
+  function schrittSpaeter() {
     clearTimeout(entprellt);
-    entprellt = setTimeout(function () { zeichneSpuren(); setzeSchritt(); }, 120);
+    entprellt = setTimeout(setzeSchritt, 120);
   }
-  window.addEventListener("resize", spurenSpaeter);
+  window.addEventListener("resize", schrittSpaeter);
   /* Aufgeklappte Anforderungen verschieben alles darunter */
-  document.addEventListener("toggle", spurenSpaeter, true);
+  document.addEventListener("toggle", schrittSpaeter, true);
 
   /* Die Leiste läuft beim Scrollen mit - je Bild höchstens einmal gerechnet */
   var wartet = false;
@@ -879,7 +877,6 @@ function zeichneFusszeile() {
   window.addEventListener("afterprint", function () {
     (vorDruck || []).forEach(function (paar) { paar[0].open = paar[1]; });
     vorDruck = null;
-    zeichneSpuren();
   });
 
   zeichne();

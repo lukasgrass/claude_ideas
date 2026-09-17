@@ -77,47 +77,49 @@ Schalter wird ausschließlich die Excel ausgewertet.
 
 ### Zugeschnittene Fassung für ein einzelnes Unternehmen
 
-`data-act-inverso.html` (rund 510 KiB) ist dieselbe Prüfung, zugeschnitten auf
-die Inverso GmbH: **ein einziges Bild statt sieben Modulen**, senkrecht von oben
-nach unten, mit vorbelegtem Firmenprofil und aufklappbaren Anforderungen am Fuß
-jeder Säule.
+`data-act-inverso.html` (rund 860 KiB) ist dieselbe Prüfung, zugeschnitten auf
+die Inverso GmbH: **ein einziges Bild**, senkrecht von oben nach unten, mit
+aufklappbaren Anforderungen am Fuß jeder Säule.
 
 ```
 python3 build_data.py --inline --inverso   # beide Auslieferungsdateien
 node pruefe.js                             # allgemeine Fassung, 17 Prüfungen
-node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 21 Prüfungen
+node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 23 Prüfungen
 ```
 
 Aufbau des Bildes — es folgt der Entscheidungslogik, nicht einer Gliederung:
 
-1. **Ausgangslage** — welche Rollen vorliegen und welche nicht.
-2. **Was entfällt** — die Kapitel, die für das Unternehmen wegfallen, daneben
-   die Ausnahmefragen, die noch zu beantworten sind.
+1. **Ausgangslage** — das Einstiegsmodul, beginnend mit der Rollenfrage `EIN-01`
+   (Mehrfachauswahl; erst „Übernehmen" wirkt).
+2. **Was entfällt** — je Modul, dessen Startbedingung nicht erfüllt ist, eine
+   Karte mit dieser Bedingung im Klartext. Sie verschwindet, sobald die Rolle
+   gesetzt wird.
 3. **Vor der Verzweigung** — was unabhängig vom Pfad gilt.
-4. **Die Säulen** — je Sachverhalt eine durchgehende Spalte von der ersten Frage
-   bis zu ihren Anforderungen, gruppiert unter ihrem Anknüpfungspunkt.
+4. **Die Blöcke** — je Anknüpfungspunkt eine Kopfkarte und darunter seine
+   Säulen, eine je Sachverhalt, durchgehend von der ersten Frage bis zu den
+   Anforderungen. Die Blöcke brechen um, statt Spalten zu quetschen.
 
 Am linken Rand läuft eine **Schrittleiste** mit den fünf Schritten des
 Vorgehensmodells mit, das in der Präsentation unmittelbar vor der Datei gezeigt
-wird. Sie ist Orientierung, kein Gliederungsprinzip: sie sagt nur, wo im Bild man
-gerade steht, und trägt keine Bedienung.
+wird. Sie ist Orientierung, kein Gliederungsprinzip, und trägt keine Bedienung.
 
 - **Ein Motor, zwei Oberflächen.** `--inverso` schneidet die Ablauflogik aus
   `app.js` heraus (Block zwischen `/*ENGINE-START*/` und `/*ENGINE-ENDE*/`) und
   setzt sie mit `template-inverso.html` und `app-inverso.js` zusammen. Es gibt
-  keinen zweiten Auswerter; `pruefe.js` rechnet beide Fassungen gegeneinander.
+  keinen zweiten Auswerter; `pruefe.js` rechnet beide Fassungen über fünf
+  Rollensätze gegeneinander.
 - **Der Zuschnitt ist Daten, kein Code:** `profil-inverso.json` nennt die
-  Vorbelegungen jeweils mit Begründung aus der Unternehmensbeschreibung, die
-  Variablen ohne Einfluss und das Vorgehensmodell mit seinen Schritten,
-  Anknüpfungspunkten und Strängen. Der Build prüft jede Angabe gegen die Excel
-  und bricht ab, wenn das Profil nicht mehr passt — so veraltet es nicht still.
-- **Eingebettet wird nur, was das Bild braucht:** 23 statt 49 Fragen, 101 statt
-  189 Anforderungen.
-- **Anforderungen dürfen mehrfach erscheinen.** Inverso ist zugleich Anbieter
-  und Kunde von Datenverarbeitungsdiensten; einzelne Anforderungen werden
-  deshalb in zwei Säulen ausgelöst und dort jeweils mit dem Verweis „auch:
-  <anderer Strang>" gezeigt. Was kein Strang beansprucht, fällt nicht heraus,
-  sondern in den Block „gilt unabhängig vom Pfad".
+  Vorbelegungen jeweils mit Begründung, die sieben Sachverhalte, die
+  Anknüpfungspunkte mit ihrem Modul und die Stränge mit ihren Fragen.
+- **Die Rollenfrage darf nicht vorbelegt werden.** Sie entscheidet, welche
+  Kapitel gelten; sie zu setzen hieße, die Betroffenheit zu behaupten statt sie
+  zu prüfen. Build und Prüfung brechen ab, wenn es doch geschieht.
+- **Jeder Sachverhalt muss einen Strang haben**, jede Frage eines gezeigten
+  Moduls genau eine Säule. Auch das bricht den Build ab — sonst fällt ein
+  Sachverhalt still heraus.
+- **Anforderungen dürfen mehrfach erscheinen**, wenn mehrere Stränge sie
+  auslösen; sie tragen dann den Verweis „auch: <anderer Strang>". Die Zahl in
+  der Kopfzeile zählt jede Anforderung einmal.
 
 Ein anderes Unternehmen bekommt eine eigene Profildatei:
 

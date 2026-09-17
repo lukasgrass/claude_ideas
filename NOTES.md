@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-17T14:09:33 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-17T15:03:33 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -189,7 +189,6 @@ Summe der Abweichungen: **0**
 - aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}; `VI-03` ∈ {Ja, Nein, Unsicher}; `VI-04` ∈ {A, B, Unsicher}; `VI-05` ∈ {Ja, Nein}; `VI-08` ∈ {Ja, Nein, Unsicher}
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-011, DA-V-012, DA-V-014, DA-V-018
 - verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Nein, `EIN-06`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=A, `VI-05`=Ja, `VI-06`=Ja, `VI-07`=Ja, `VI-08`=Nein
-
 <!-- TESTPROFILE:END -->
 
 ## 4 Inhaltliche Auffälligkeiten
@@ -335,74 +334,92 @@ ausgeschlossenen Anforderungen. Sie verschwinden nicht, sondern stehen im Ergebn
 eigenen Abschnitt „Nur eingeschränkt berührt". Auch QS-Abschnitt 6 zählt sie in keiner der
 beiden Spalten – die Lesart deckt sich also mit der Quelle.
 
-**16 – Zuschnitt auf die Inverso GmbH: was aus der Excel stammt und was nicht (hoch)**
-`data-act-inverso.html` zeigt ein einziges senkrechtes Bild statt sieben Modulen. Alle
-Anforderungen, Fragen, Erklärtexte und Fundstellen kommen unverändert aus der Excel.
-**Nicht aus der Excel** stammen ausschließlich die Angaben in `profil-inverso.json`;
-jede trägt dort ihre Begründung und ist in der Oberfläche sichtbar und umstellbar:
+**16 – Korrektur: die Rollenannahme war unbelegt (hoch)**
+Eine frühere Fassung belegte `EIN-01` fest mit den Rollen D+E („Cloud-Anbieter",
+„Cloud-Kunde") vor. Damit fielen M-II, M-III und M-VIII weg, und die Karte „Kapitel III
+entfällt — Kein Dateninhaber, kein Datenempfänger" stand im Bild. Das war eine
+**Behauptung über Inverso, keine Aussage der Excel** — und nach Einschätzung des
+Auftraggebers falsch, weil das Unternehmen als Betreiber von Versicherungssoftware
+sehr wohl Daten hält.
+
+Nachgeprüft, wie die Excel den Dateninhaber bestimmt: `DATENINHABER` wird von **II-06**
+gesetzt („Wo liegen die vom Produkt/Dienst erzeugten Daten?" → *Ja = bei uns*), und
+**M-III** startet bei `DATENINHABER = Ja oder ROLLE_DRITTER = Ja oder DRITTER_AKTIV = Ja`.
+Der Zugang zur ganzen Strecke hängt damit allein an `EIN-01` Rolle A oder C. Gemessen
+über je 3000 zufällige Durchläufe im vollständigen Werkzeug:
+
+| Prämisse | Anforderungen erreichbar | Fragen | Module |
+|---|---:|---:|---|
+| D+E (die alte Annahme) | 96 | 21 | M-IV, M-V, M-VI |
+| C+D+E | 120 | 28 | + M-II, M-III |
+| A+D+E | 154 | 34 | + M-II, M-III |
+| A+C+D+E | 156 | 36 | + M-II, M-III |
+
+Die Annahme hätte also bis zu 60 Anforderungen unterschlagen. **`EIN-01` wird deshalb
+nicht mehr vorbelegt**, sondern als erste Frage im Bild gestellt. `build_data.py` bricht
+ab, wenn die Rollenfrage künftig doch vorbelegt wird; `pruefe.js` prüft dasselbe.
+
+**16b – Was noch vorbelegt ist und warum (hoch)**
+Alle Anforderungen, Fragen, Erklärtexte und Fundstellen kommen unverändert aus der
+Excel. Nicht aus der Excel stammen ausschließlich die Angaben in
+`profil-inverso.json`; jede trägt ihre Begründung und ist im Bild sichtbar und
+umstellbar:
 
 | Frage | Vorbelegt | Begründung aus der Unternehmensbeschreibung |
 |---|---|---|
-| EIN-01 | D + E | Gesamtes Leistungsspektrum eines IT-Dienstleisters; nutzt selbst Cloud-Dienste |
 | EIN-05 | Ja | Sitz München, Niederlassungen Ilmenau und Jena |
+| V-01 | A | Gesellschaft mit beschränkter Haftung |
 | VI-02 | Nein | Produktivbetrieb seit 1997, keine befristete Testversion |
 | VI-04 | B | Software- und Consultinghaus auf Anwendungsebene, kein Infrastrukturdienst |
-| V-01 | A | Juristische Person des Privatrechts (GmbH) |
 
-`VI-04` ist die folgenreichste dieser fünf: Sie entscheidet zwischen Art. 30 Abs. 1
-(Infrastruktur) und Art. 30 Abs. 2–4 (Plattform/Software). Bei Hybrid- oder
-Managed-Diensten ist sie zu prüfen.
+`VI-04` ist die folgenreichste: Sie entscheidet zwischen Art. 30 Abs. 1 (Infrastruktur)
+und Art. 30 Abs. 2–4 (Plattform/Software). Bei Hybrid- oder Managed-Diensten ist sie zu
+prüfen. `EIN-05 = Ja` schließt `EIN-06` (Marktortprinzip) aus — das ist richtig so, und
+`pruefe.js` weist solche durch eine Vorbelegung geschlossenen Zweige gesondert aus,
+statt sie als unerreichbar zu melden.
 
-Ebenfalls nicht aus der Excel stammt die **Gliederung des Bildes**: die fünf Schritte
-des Vorgehensmodells, die Zuordnung der Stränge zu Anknüpfungspunkten und die Angabe,
-welche Kapitel für Inverso entfallen. Die fünf Schritte sind reine Orientierung zur
-Folie, die in der Präsentation davor gezeigt wird — sie steuern nichts. Welche
-Anforderung wo landet, entscheidet allein das Mapping der Excel.
+Nicht aus der Excel stammt auch die **Gliederung des Bildes**: die Zuordnung der
+Stränge zu Anknüpfungspunkten und die fünf Schritte des Vorgehensmodells. Die fünf
+Schritte sind reine Orientierung zur Folie, die in der Präsentation davor gezeigt wird;
+sie steuern nichts. Welche Anforderung wo landet, entscheidet allein das Mapping.
 
-**17 – Unternehmensgröße: wirkt an genau einer Stelle, und dort nicht (hoch)**
-Beim Umbau auf ein Bild ist Kapitel V in den Zuschnitt gerückt, und damit wurde eine
-frühere Aussage falsch: `GROESSE` ist **nicht** ohne Einfluss. `V-04` trägt die Kante
-`GROESSE ∈ {Kleinst, Klein}` zur Ausnahme des Art. 15 Abs. 2 („Verlangen unzulässig,
-Ablehnung binnen 30 Arbeitstagen"). Weil `EIN-02` nicht zum Zuschnitt gehört und die
-Variable deshalb nie gesetzt wird, kann diese Kante nie genommen werden — das Werkzeug
-nimmt stillschweigend den anderen Ast.
+**17 – Unternehmensgröße wird jetzt gefragt (erledigt)**
+Eine frühere Fassung wies `GROESSE` als „ohne Einfluss" aus und trug einen Warnhinweis
+an `V-04`, weil die Kante `GROESSE ∈ {Kleinst, Klein}` (Art. 15 Abs. 2) bei ungesetzter
+Variablen nie genommen werden konnte. Mit dem geöffneten Einstiegsmodul wird `EIN-02`
+im Bild gestellt und die Variable gesetzt; der Hinweis ist entfallen. `KONZERN`,
+`MITTEL_NEU` und `TORWAECHTER` werden über `EIN-03`, `EIN-04` und `EIN-07` ebenfalls
+gefragt statt angenommen.
 
-Das Ergebnis ist richtig: Mit rund 200 Mitarbeitenden ist Inverso nach dem Wortlaut der
-Antwortoptionen (Kleinst < 10, Klein < 50) weder Kleinst- noch Kleinunternehmen, und
-zwar unabhängig vom Umsatz. Es folgt aber aus der Unternehmensbeschreibung und nicht
-aus einer Rechnung. Der Jahresumsatz wurde **nicht angenommen**; stattdessen steht der
-Sachverhalt als Hinweis an der Karte `V-04` im Bild und im Profil unter
-`ohne_einfluss` ausdrücklich als Ausnahme von dieser Kategorie.
+**18 – Alle sieben Sachverhalte sind Stränge (hoch)**
+Der Auftraggeber nennt sieben Sachverhalte: Vertragsgestaltung, einseitige Klauseln,
+Datenbereitstellung, Anbieterwechsel, Parallelnutzung, EU-Behördenverlangen und
+drittstaatliches Zugriffsverlangen. In einer früheren Fassung fehlte
+**Datenbereitstellung** — sie stand als „entfällt" in der Ausschlussreihe. Jetzt trägt
+jeder Sachverhalt einen Strang, und `profil-inverso.json` benennt sie ausdrücklich unter
+`vorgehensmodell.sachverhalte`; `build_data.py` und `pruefe.js` brechen ab, wenn ein
+Sachverhalt keinem Strang zugeordnet ist. Das ist der Riegel gegen genau diesen Fehler.
 
-`KONZERN`, `MITTEL_NEU` und `TORWAECHTER` bleiben ohne Einfluss: geprüft über alle
-Anzeige-, Kanten- und Mappingbedingungen der Fragen von M-IV, M-V und M-VI kommen sie
-dort nicht vor. Ihre Mappingzeilen betreffen die Kapitel II und III. Für eine Prüfung
-dieser Kapitel wären sie erheblich — dort greift die KMU-Ausnahme des Art. 7 Abs. 1,
-und die Konzernbindung an Versicherungskammer und Provinzial würde sie ausschließen.
+Anmerkung zur Darstellung: **Anbieterwechsel und Parallelnutzung stammen aus derselben
+Frage** `VI-10` (A = vollständiger Wechsel, B = parallele Nutzung, C = beides). Sie sind
+zwei Ausgänge einer Frage und lassen sich nicht als zwei Stränge mit eigenen Fragen
+führen; der Strang heißt deshalb „Anbieterwechsel und Parallelnutzung" und trägt beide.
 
-**18 – Kapitel V ist jetzt begehbar, „Datenbereitstellung" bleibt ausgewiesen (mittel)**
-Eine frühere Fassung wies `DA-I-003`, `DA-V-001` und `DA-V-005` als „nicht in diesen
-Bäumen geprüft" aus. Das war beim Umbau auf ein Bild zu korrigieren: Über das Mapping
-werden alle drei von `V-01`, `V-02` bzw. `V-04` ausgelöst, und diese Fragen bilden jetzt
-den Strang „EU-Behördenverlangen". Der Abschnitt ist deshalb entfallen — nicht weil der
-Inhalt weggefallen wäre, sondern weil er im Bild liegt.
+**18b – Was entfällt, wird berechnet statt behauptet (mittel)**
+Die Reihe „was entfällt" nennt für jedes Modul, dessen Startbedingung streng `false`
+ergibt, diese Bedingung im Klartext („Setzt voraus: ROLLE_DATENRAUM = Ja") statt einer
+freien Begründung. Die Karte verschwindet von selbst, sobald die Rolle gesetzt wird.
+Damit kann kein Ausschluss mehr eine Aussage über das Unternehmen treffen, die die
+Excel nicht deckt.
 
-Umgekehrt gilt für den Sachverhalt **„Datenbereitstellung"** (Kapitel III): Er trifft
-auf Inverso nicht zu, weil das Unternehmen weder Dateninhaber noch Datenempfänger im
-Sinne der Verordnung ist. Er verschwindet deshalb nicht, sondern steht in der Reihe
-„was entfällt" mit seinem Grund — zusammen mit Kapitel II und Kapitel VIII.
-
-**18b – Anforderungen in mehreren Strängen (Hinweis)**
-Inverso ist zugleich Anbieter und Kunde von Datenverarbeitungsdiensten. Einzelne
-Anforderungen werden deshalb aus zwei Strängen zugleich ausgelöst — etwa `DA-VI-031`
-aus „Wechsel und Entgelte" und aus „Anbieterwechsel und Parallelnutzung". Sie werden
-in beiden Säulen gezeigt, jeweils mit dem Verweis auf den anderen Strang. Das ist
-keine Dopplung im Ergebnis: die Zahl in der Kopfzeile zählt jede Anforderung einmal.
-
-Anforderungen, die kein Strang beansprucht — die aus den Rollen des Einstiegs und aus
-den Ausnahmefragen `VI-01` bis `VI-03` — fallen nicht heraus, sondern in den Block
-„gilt unabhängig vom Pfad" vor der Verzweigung. `pruefe.js` prüft, dass jede ausgelöste
-Anforderung aus einer Frage stammt, die das Bild auch zeigt.
+**18c – Anforderungen in mehreren Strängen (Hinweis)**
+Ist Inverso zugleich Anbieter und Kunde von Datenverarbeitungsdiensten, werden einzelne
+Anforderungen aus zwei Strängen ausgelöst — etwa `DA-VI-031` aus „Wechsel und Entgelte"
+und aus „Anbieterwechsel und Parallelnutzung". Sie erscheinen in beiden Säulen, jeweils
+mit dem Verweis auf den anderen Strang. Das ist keine Dopplung im Ergebnis: die Zahl in
+der Kopfzeile zählt jede Anforderung einmal. Was kein Strang beansprucht, fällt in den
+Block „gilt unabhängig vom Pfad" vor der Verzweigung; `pruefe.js` prüft über fünf
+Rollensätze, dass nichts aus dem Bild fällt.
 
 **19 – Vorbelegungen sind Prämissen, keine Wegpunkte (Hinweis zur Umsetzung)**
 Beim Bauen zeigte sich zweimal, dass diese Unterscheidung trägt:

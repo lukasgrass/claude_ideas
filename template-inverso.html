@@ -64,10 +64,6 @@ button { font: inherit; color: inherit; }
   display: grid; grid-template-columns: 11rem minmax(0, 1fr); gap: var(--a5);
   padding: var(--a5) var(--a6) var(--a7);
 }
-.spuren { position: absolute; inset: 0; width: 100%; height: 100%;
-          pointer-events: none; z-index: 0; }
-.spur { fill: none; stroke: var(--linie); stroke-width: 1.5; }
-.spur--an { stroke: var(--akzent); stroke-width: 2; }
 
 /* ------------------------------------------------ Schrittleiste (links) */
 /* Die fünf Schritte der Vorgehensfolie. Sie sind Orientierung, nicht
@@ -120,35 +116,42 @@ button { font: inherit; color: inherit; }
 .zeile > .karte { flex: 1 1 15rem; max-width: 30rem; }
 .zeile > .karte--fest:only-child { max-width: none; }
 
-/* Ab hier läuft jede Säule ohne waagerechte Grenze bis zu ihrer Erntekarte */
+/* Ab hier läuft jede Säule ohne waagerechte Grenze bis zu ihrer Erntekarte.
+   Die Anknüpfungsblöcke brechen um, statt bei zehn Strängen jede Spalte auf
+   160 px zu quetschen. */
 .gitter {
-  display: grid; grid-template-columns: repeat(var(--spalten, 5), minmax(0, 1fr));
-  gap: var(--a3); align-items: stretch;
+  display: flex; flex-wrap: wrap; gap: var(--a5) var(--a4); align-items: flex-start;
   margin-top: var(--a4); padding-top: var(--a4); border-top: 1px solid var(--linie);
 }
+/* Ein Block ist so breit wie seine Säulen, darf schrumpfen und umbrechen -
+   so stehen die Anknüpfungspunkte nebeneinander, solange sie passen. */
+.block {
+  flex: 1 1 calc(var(--spalten, 1) * 16rem);
+  min-width: min(100%, calc(var(--spalten, 1) * 13rem));
+  max-width: 100%;
+}
+.block__spalten {
+  display: grid; grid-template-columns: repeat(var(--spalten, 1), minmax(0, 1fr));
+  gap: var(--a3); align-items: stretch; margin-top: var(--a3);
+}
 .anker {
-  grid-row: 1; min-width: 0;
-  border: 1px solid var(--linie); border-top: 3px solid var(--linie);
+  border: 1px solid var(--linie); border-top: 3px solid var(--akzent);
   border-radius: 2px; background: var(--flaeche); padding: var(--a3);
 }
-.anker--an { border-top-color: var(--akzent); background: var(--papier); }
 .anker__kopf {
   display: flex; gap: var(--a2); align-items: baseline; justify-content: space-between;
   font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
 }
 .anker__titel { font-size: var(--t-klein); font-weight: 600; margin-top: var(--a1); }
 .saeule {
-  grid-row: 2; min-width: 0; height: 100%;
+  min-width: 0; height: 100%;
   display: flex; flex-direction: column; gap: var(--a2);
 }
 .saeule__kopf {
   font-size: var(--t-klein); font-weight: 600;
   padding-bottom: var(--a1); border-bottom: 1px solid var(--linie);
 }
-.saeule--aus .saeule__kopf { color: var(--grau); font-weight: 500; }
-/* Die Erntekarte schließt die Säule ab, direkt unter der letzten Frage.
-   Ein "margin-top: auto" hätte sie zwar auf eine Linie gebracht, dafür aber
-   in den kurzen Säulen ein Loch von mehreren hundert Pixeln gerissen. */
+/* Die Erntekarte schließt die Säule ab, direkt unter der letzten Frage. */
 .saeule .ernte { margin-top: var(--a3); }
 
 /* --------------------------------------------------------------- Karten */
@@ -173,6 +176,14 @@ button { font: inherit; color: inherit; }
 .karte__grund--warn { color: var(--warn); }
 /* Ziel eines Sprungs aus einer Herkunftszeile, kurz hervorgehoben */
 .karte--ziel, .zeile.karte--ziel { outline: 2px solid var(--akzent); outline-offset: 2px; }
+/* Innerhalb eines Moduls ist nur eine Frage offen - die muss man finden. */
+.karte--dran {
+  border-left-color: var(--akzent); border-color: var(--akzent);
+  box-shadow: inset 3px 0 0 var(--akzent);
+}
+.karte--dran .karte__kopf > span:last-child {
+  color: var(--akzent); font-weight: 600;
+}
 .karte__chips { display: flex; flex-wrap: wrap; gap: var(--a1); }
 
 .chip {
@@ -192,7 +203,10 @@ button { font: inherit; color: inherit; }
   gap: var(--a2); align-items: baseline; line-height: 1.35;
 }
 .chip__nr { font-family: var(--tabellar); font-weight: 600; }
-.karte--aus .chip { cursor: default; }
+.chip[disabled] { cursor: not-allowed; opacity: .55; }
+.chip[disabled]:hover { background: var(--papier); border-color: var(--linie); }
+.tat[disabled] { color: var(--grau); cursor: default; }
+.tat[disabled]:hover { border-bottom-color: transparent; }
 
 /* Ergebnisknoten im Strang */
 .ergebnis {
@@ -202,7 +216,7 @@ button { font: inherit; color: inherit; }
 }
 .ergebnis--warn { border-left: 3px solid var(--warn); color: var(--tinte); }
 
-/* Stufe 5: Ergebniskarte je Spur */
+/* Ergebniskarte am Fuß jeder Säule */
 .ernte { border-top: 3px solid var(--akzent); padding-top: var(--a3);
          margin-top: var(--a3); }
 .ernte__zahl {
@@ -388,7 +402,6 @@ button { font: inherit; color: inherit; }
   .gitter { grid-template-columns: minmax(0, 1fr); }
   .anker, .saeule { grid-row: auto; grid-column: auto !important; }
   .saeule .ernte { margin-top: var(--a3); }
-  .spuren { display: none; }
 }
 @media (max-width: 48rem) {
   /* Leiste als schmaler Streifen über dem Bild */
@@ -414,7 +427,7 @@ button { font: inherit; color: inherit; }
 }
 
 @media print {
-  .spuren, .tat, .fusszeile .tat { display: none !important; }
+  .tat, .fusszeile .tat { display: none !important; }
   body { font-size: 9pt; color: #000; }
   .buehne { padding: 0; min-height: 0; gap: 8mm; }
   /* Im Druck ist die Leiste stille Beschriftung, keine Fortschrittsanzeige */
@@ -437,7 +450,6 @@ button { font: inherit; color: inherit; }
 </head>
 <body>
 <div class="buehne" id="buehne">
-  <svg class="spuren" id="spuren" aria-hidden="true"></svg>
   <nav class="leiste" id="leiste" aria-label="Schritte des Vorgehensmodells"></nav>
   <div class="fluss" id="fluss"></div>
 </div>

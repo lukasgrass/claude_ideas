@@ -1,5 +1,5 @@
 {
-  "_hinweis": "Zuschnitt des Data-Act-Werkzeugs auf ein konkretes Unternehmen. Alle Inhalte der Anforderungen stammen weiterhin aus DataAct_Anforderungen.xlsx. Was hier steht, sind ausschließlich Angaben zum Unternehmen und die daraus abgeleiteten Vorbelegungen - jede mit Begründung, jede in der Oberfläche sichtbar und umstellbar.",
+  "_hinweis": "Der Zuschnitt auf ein Unternehmen als Daten, nicht als Code. Vorbelegt wird nur, was aus der Unternehmensbeschreibung folgt und unstrittig ist - die Rollenfrage EIN-01 gehoert ausdruecklich nicht dazu, sie wird im Bild gestellt.",
   "unternehmen": {
     "name": "Inverso GmbH",
     "lang": "Inverso Gesellschaft für innovative Versicherungssoftware mbH",
@@ -7,13 +7,6 @@
     "kurz": "IT-Dienstleister für Versicherungssoftware, rund 200 Mitarbeitende, gegründet 1997"
   },
   "vorbelegt": {
-    "EIN-01": {
-      "antwort": [
-        "D",
-        "E"
-      ],
-      "grund": "Inverso bietet das gesamte Leistungsspektrum eines IT-Dienstleisters von der Lösungsentwicklung über die Implementierung bis zum Anwendersupport (D) und nutzt dafür selbst Dienste anderer Anbieter (E). Herstellung vernetzter Produkte, Nutzung fremder IoT-Produkte, Datenempfang aus solchen Produkten und Datenraum-Teilnahme sind in der Unternehmensbeschreibung nicht angelegt."
-    },
     "EIN-05": {
       "antwort": [
         "Ja"
@@ -43,34 +36,18 @@
   "ohne_einfluss": [
     {
       "variablen": [
-        "KONZERN",
-        "MITTEL_NEU"
-      ],
-      "titel": "Konzernbindung",
-      "text": "Mutterkonzerne sind die Versicherungskammer und seit 2025 die Provinzial Holding. KONZERN und MITTEL_NEU kommen in den Bedingungen dieses Zuschnitts nicht vor und ändern hier keine einzige Anforderung. Für die Kapitel II und III wären sie erheblich; dort greift die KMU-Ausnahme des Art. 7 Abs. 1, die eine Konzernbindung ausschließen würde."
-    },
-    {
-      "variablen": [
         "TORWAECHTER"
       ],
       "titel": "Torwächterstatus nach dem Digital Markets Act",
-      "text": "Wirkt ausschließlich in Kapitel II (Art. 5 Abs. 3, Art. 6 Abs. 2 Buchst. d) und damit nicht in diesem Zuschnitt."
-    },
-    {
-      "variablen": [
-        "GROESSE"
-      ],
-      "titel": "Unternehmensgröße - wirkt an genau einer Stelle",
-      "text": "GROESSE ist nicht vorbelegt, weil der Jahresumsatz der Inverso nicht bekannt ist und nicht angenommen wurde. Im Bild wirkt die Variable an genau einer Stelle: V-04 führt bei GROESSE ∈ {Kleinst, Klein} zur Ausnahme des Art. 15 Abs. 2 (Verlangen unzulässig). Weil die Variable ungesetzt ist, wird diese Kante nie genommen. Mit rund 200 Mitarbeitenden ist Inverso nach dem Wortlaut der Antwortoptionen weder Kleinst- noch Kleinunternehmen; der gezeigte Pfad ist damit der richtige - er folgt aber aus der Unternehmensbeschreibung, nicht aus einer Rechnung des Werkzeugs."
+      "text": "Nach öffentlich zugänglichen Angaben ist weder Inverso noch eine ihrer Konzernmütter von der EU-Kommission als Torwächter benannt. EIN-07 bleibt trotzdem im Bild und ist zu beantworten."
     }
   ],
   "warnungen": {
-    "IV-03": "Die Excel sagt nicht, welche Antwort hier welchen Wert der Variablen VERTRAG_ALT setzt. In der Reihenfolgelesart überspringt Antwort B die Folgefrage IV-04, obwohl B gerade der Altvertragsfall ist. Siehe NOTES.md Punkt 1; mit build_data.py --annahmen annahmen.json wird die geprüfte Lesart gebaut.",
-    "V-04": "GROESSE ist in diesem Zuschnitt nicht gesetzt. Die Kante 'GROESSE ∈ {Kleinst, Klein}' zur Ausnahme des Art. 15 Abs. 2 wird deshalb nie genommen. Mit rund 200 Mitarbeitenden ist Inverso nach dem Wortlaut der Antwortoptionen weder Kleinst- noch Kleinunternehmen - das Ergebnis stimmt, folgt hier aber aus der Unternehmensbeschreibung und nicht aus einer Rechnung."
+    "IV-03": "Die Excel sagt nicht, welche Antwort hier welchen Wert der Variablen VERTRAG_ALT setzt. In der Reihenfolgelesart überspringt Antwort B die Folgefrage IV-04, obwohl B gerade der Altvertragsfall ist. Siehe NOTES.md Punkt 1; mit build_data.py --annahmen annahmen.json wird die geprüfte Lesart gebaut."
   },
   "vorgehensmodell": {
     "titel": "Betroffenheitsanalyse EU Data Act",
-    "fussnote": "Sachverhalte: Vertragsgestaltung, einseitige Klauseln, Datenbereitstellung, Anbieterwechsel, Parallelnutzung, EU-Behördenverlangen / drittstaatliches Zugriffsverlangen",
+    "fussnote": "Sachverhalte: Vertragsgestaltung, einseitige Klauseln, Datenbereitstellung, Anbieterwechsel, Parallelnutzung, EU-Behördenverlangen, drittstaatliches Zugriffsverlangen",
     "stufen": [
       {
         "nr": 1,
@@ -103,86 +80,143 @@
         "gruppe": "Was muss ich tun?"
       }
     ],
-    "position": {
-      "liegen_vor": [
-        {
-          "antwort": "D",
-          "kurz": "Anbieter von Cloud-, Hosting- und Edge-Diensten"
-        },
-        {
-          "antwort": "E",
-          "kurz": "Nutzer fremder Cloud- und SaaS-Dienste"
-        }
-      ],
-      "liegen_nicht_vor": {
-        "kurz": "Vier weitere Rollen liegen nicht vor",
-        "antworten": [
-          "A",
-          "B",
-          "C",
-          "F"
-        ],
-        "grund": "Keine Herstellung vernetzter Produkte, keine Nutzung fremder IoT-Produkte, kein Datenempfang aus solchen Produkten, keine Datenraum-Teilnahme."
-      }
-    },
-    "ausgeschlossen": [
-      {
-        "modul": "M-II",
-        "kurz": "IoT-Datenzugang",
-        "kapitel": "Kapitel II",
-        "grund": "Keine Rolle im IoT-Datenzugang"
-      },
-      {
-        "modul": "M-III",
-        "kurz": "B2B-Datenbereitstellung",
-        "kapitel": "Kapitel III",
-        "grund": "Kein Dateninhaber, kein Datenempfänger"
-      },
-      {
-        "modul": "M-VIII",
-        "kurz": "Datenräume und Smart Contracts",
-        "kapitel": "Kapitel VIII",
-        "grund": "Keine Teilnahme an Datenräumen"
-      }
-    ],
-    "ausnahmen": [
-      "VI-01",
-      "VI-02",
-      "VI-03"
-    ],
     "anknuepfungspunkte": [
       {
-        "id": "anbieter",
-        "kurz": "Als Anbieter",
-        "kapitel": "Kapitel VI, VII",
-        "rollenunabhaengig": false,
-        "rolle": "D"
+        "id": "produkt",
+        "kurz": "Vernetzte Produkte",
+        "kapitel": "Kapitel II",
+        "modul": "M-II"
       },
       {
-        "id": "kunde",
-        "kurz": "Als Kunde",
-        "kapitel": "Kapitel VI",
-        "rollenunabhaengig": false,
-        "rolle": "E"
+        "id": "dateninhaber",
+        "kurz": "Dateninhaber",
+        "kapitel": "Kapitel III",
+        "modul": "M-III"
       },
       {
         "id": "vertraege",
         "kurz": "B2B-Vertragsklauseln",
         "kapitel": "Kapitel IV",
-        "rollenunabhaengig": true
+        "modul": "M-IV"
       },
       {
         "id": "behoerden",
         "kurz": "Behördenverlangen",
         "kapitel": "Kapitel V",
-        "rollenunabhaengig": true
+        "modul": "M-V"
+      },
+      {
+        "id": "anbieter",
+        "kurz": "Als Anbieter",
+        "kapitel": "Kapitel VI, VII",
+        "modul": "M-VI"
+      },
+      {
+        "id": "kunde",
+        "kurz": "Als Kunde",
+        "kapitel": "Kapitel VI",
+        "modul": "M-VI"
+      },
+      {
+        "id": "datenraum",
+        "kurz": "Datenräume",
+        "kapitel": "Kapitel VIII",
+        "modul": "M-VIII"
       }
     ],
     "straenge": [
       {
+        "id": "iot_zugang",
+        "anknuepfung": "produkt",
+        "kurz": "IoT-Datenzugang",
+        "sachverhalte": [],
+        "fragen": [
+          "II-01",
+          "II-02",
+          "II-03",
+          "II-04",
+          "II-05",
+          "II-06",
+          "II-07",
+          "II-08",
+          "II-09",
+          "II-10",
+          "II-11",
+          "II-12"
+        ]
+      },
+      {
+        "id": "datenbereitstellung",
+        "anknuepfung": "dateninhaber",
+        "kurz": "Datenbereitstellung",
+        "sachverhalte": [
+          "datenbereitstellung"
+        ],
+        "fragen": [
+          "III-01",
+          "III-02",
+          "III-03",
+          "III-04",
+          "III-05"
+        ]
+      },
+      {
+        "id": "vertragsgestaltung",
+        "anknuepfung": "vertraege",
+        "kurz": "Vertragsgestaltung",
+        "sachverhalte": [
+          "vertragsgestaltung"
+        ],
+        "fragen": [
+          "IV-01"
+        ]
+      },
+      {
+        "id": "einseitige_klauseln",
+        "anknuepfung": "vertraege",
+        "kurz": "Einseitige Klauseln",
+        "sachverhalte": [
+          "einseitige_klauseln"
+        ],
+        "fragen": [
+          "IV-02",
+          "IV-03",
+          "IV-04"
+        ]
+      },
+      {
+        "id": "behoerdenverlangen",
+        "anknuepfung": "behoerden",
+        "kurz": "EU-Behördenverlangen",
+        "sachverhalte": [
+          "behoerdenverlangen"
+        ],
+        "fragen": [
+          "V-01",
+          "V-02",
+          "V-03",
+          "V-04",
+          "V-05",
+          "V-06",
+          "V-07"
+        ]
+      },
+      {
+        "id": "dienstpruefung",
+        "anknuepfung": "anbieter",
+        "kurz": "Ist es ein Datenverarbeitungsdienst?",
+        "sachverhalte": [],
+        "fragen": [
+          "VI-01",
+          "VI-02",
+          "VI-03"
+        ]
+      },
+      {
         "id": "wechselentgelte",
         "anknuepfung": "anbieter",
         "kurz": "Wechsel und Entgelte",
+        "sachverhalte": [],
         "fragen": [
           "VI-04",
           "VI-05"
@@ -192,6 +226,9 @@
         "id": "drittstaat",
         "anknuepfung": "anbieter",
         "kurz": "Drittstaatliches Zugriffsverlangen",
+        "sachverhalte": [
+          "drittstaat"
+        ],
         "fragen": [
           "VI-06",
           "VI-07",
@@ -202,43 +239,69 @@
         "id": "anbieterwechsel",
         "anknuepfung": "kunde",
         "kurz": "Anbieterwechsel und Parallelnutzung",
+        "sachverhalte": [
+          "anbieterwechsel",
+          "parallelnutzung"
+        ],
         "fragen": [
           "VI-09",
           "VI-10"
         ]
       },
       {
-        "id": "vertragsgestaltung",
-        "anknuepfung": "vertraege",
-        "kurz": "Vertragsgestaltung und einseitige Klauseln",
+        "id": "datenraeume",
+        "anknuepfung": "datenraum",
+        "kurz": "Datenräume und Smart Contracts",
+        "sachverhalte": [],
         "fragen": [
-          "IV-01",
-          "IV-02",
-          "IV-03",
-          "IV-04"
-        ]
-      },
-      {
-        "id": "datenverlangen",
-        "anknuepfung": "behoerden",
-        "kurz": "EU-Behördenverlangen",
-        "fragen": [
-          "V-01",
-          "V-02",
-          "V-03",
-          "V-04",
-          "V-05",
-          "V-06",
-          "V-07"
+          "VIII-01",
+          "VIII-02",
+          "VIII-03",
+          "VIII-04"
         ]
       }
     ],
     "grundlagen": {
-      "kurz": "Gilt unabhängig vom Pfad",
+      "kurz": "Ausgangslage und Grundpflichten",
       "fragen": [
         "EIN-01",
-        "EIN-05"
+        "EIN-02",
+        "EIN-03",
+        "EIN-04",
+        "EIN-05",
+        "EIN-06",
+        "EIN-07"
       ]
-    }
+    },
+    "sachverhalte": [
+      {
+        "id": "vertragsgestaltung",
+        "kurz": "Vertragsgestaltung"
+      },
+      {
+        "id": "einseitige_klauseln",
+        "kurz": "Einseitige Klauseln"
+      },
+      {
+        "id": "datenbereitstellung",
+        "kurz": "Datenbereitstellung"
+      },
+      {
+        "id": "anbieterwechsel",
+        "kurz": "Anbieterwechsel"
+      },
+      {
+        "id": "parallelnutzung",
+        "kurz": "Parallelnutzung"
+      },
+      {
+        "id": "behoerdenverlangen",
+        "kurz": "EU-Behördenverlangen"
+      },
+      {
+        "id": "drittstaat",
+        "kurz": "Drittstaatliches Zugriffsverlangen"
+      }
+    ]
   }
 }

@@ -1999,7 +1999,7 @@ def schneide_motor(skript: str, herkunft: str) -> str:
 def pruefe_profil(daten: dict, profil: dict):
     """Das Profil gegen die Excel prüfen, damit es nicht still veraltet."""
     fragen = {f["id"]: f for f in daten["fragen"]}
-    module = {m["modul"] for m in daten["module"]}
+    module = {m["modul"]: m for m in daten["module"]}
     fehler = []
 
     def frage_pruefen(fid, wo):
@@ -2026,46 +2026,25 @@ def pruefe_profil(daten: dict, profil: dict):
     if len(modell.get("stufen") or []) != 5:
         fehler.append("vorgehensmodell: es werden genau fünf Stufen erwartet")
 
-    # Stufe 1: Die Rollen müssen Antwortoptionen der Rollenfrage sein.
+    # Die Rollenfrage darf nicht vorbelegt sein: sie entscheidet, welche Kapitel
+    # überhaupt gelten, und gehört deshalb ins Bild, nicht in die Annahmen.
     rollenfrage = next((f for f in daten["fragen"]
-                        if any(gv.get("wert_sonst") for gv in f["gesetzte_variablen"])),
-                       None)
-    position = modell.get("position") or {}
-    if rollenfrage:
-        gueltig = {o["schluessel"] for o in rollenfrage["antwortoptionen"]}
-        genannt = [e["antwort"] for e in position.get("liegen_vor", [])]
-        genannt += (position.get("liegen_nicht_vor") or {}).get("antworten", [])
-        for a in genannt:
-            if a not in gueltig:
-                fehler.append(f"position: '{a}' ist keine Antwortoption von "
-                              f"{rollenfrage['id']}")
-        if set(genannt) != gueltig - {"G"} and set(genannt) != gueltig:
-            fehlend = sorted(gueltig - set(genannt) - {"G"})
-            if fehlend:
-                fehler.append("position: diese Rollen sind weder als vorhanden "
-                              "noch als nicht vorhanden genannt: "
-                              + ", ".join(fehlend))
-    else:
-        fehler.append("position: keine Frage mit Rollenvariablen gefunden")
+                        if len([gv for gv in f["gesetzte_variablen"]
+                                if gv.get("wert_sonst")]) > 1), None)
+    if rollenfrage and rollenfrage["id"] in (profil.get("vorbelegt") or {}):
+        fehler.append(f"vorbelegt {rollenfrage['id']}: die Rollenfrage steuert die "
+                      f"Modulauswahl und darf nicht vorbelegt werden")
 
-    for e in modell.get("ausgeschlossen") or []:
-        if e.get("modul") not in module:
-            fehler.append(f"ausgeschlossen: Modul {e.get('modul')} gibt es nicht")
-    for fid in modell.get("ausnahmen") or []:
-        frage_pruefen(fid, "ausnahmen")
-
-    vorhandene_rollen = {e["antwort"] for e in position.get("liegen_vor", [])}
+    # Jeder Anknüpfungspunkt benennt sein Modul - daraus berechnet die
+    # Oberfläche, ob er gilt und was sonst in der Reihe "entfällt" steht.
+    anknuepfungen = {}
     for a in modell.get("anknuepfungspunkte") or []:
-        rolle = a.get("rolle")
-        if rolle is None:
-            if not a.get("rollenunabhaengig"):
-                fehler.append(f"Anknüpfungspunkt {a.get('id')}: weder "
-                              f"rollenunabhängig noch einer Rolle zugeordnet")
-        elif rolle not in vorhandene_rollen:
-            fehler.append(f"Anknüpfungspunkt {a.get('id')}: Rolle '{rolle}' "
-                          f"liegt nach Stufe 1 gar nicht vor")
+        if a.get("modul") not in module:
+            fehler.append(f"Anknüpfungspunkt {a.get('id')}: Modul "
+                          f"{a.get('modul')} gibt es nicht")
+        anknuepfungen[a["id"]] = a.get("modul")
 
-    anknuepfungen = {a["id"] for a in modell.get("anknuepfungspunkte") or []}
+    je_frage = {}
     for strang in modell.get("straenge") or []:
         if strang.get("anknuepfung") not in anknuepfungen:
             fehler.append(f"Strang {strang.get('id')}: unbekannter "
@@ -2077,12 +2056,53 @@ def pruefe_profil(daten: dict, profil: dict):
             f = frage_pruefen(fid, f"Strang {strang.get('id')}")
             if f:
                 im_strang.add(f["modul"])
+            je_frage.setdefault(fid, []).append(strang.get("id"))
         if len(im_strang) > 1:
             fehler.append(f"Strang {strang.get('id')}: Fragen aus mehreren "
                           f"Modulen ({', '.join(sorted(im_strang))})")
+        # Der Strang muss im Modul seines Anknüpfungspunkts liegen, sonst zeigt
+        # ihn die Oberfläche unter einer Überschrift, die nicht dazu passt.
+        erwartet = anknuepfungen.get(strang.get("anknuepfung"))
+        if erwartet and im_strang and erwartet not in im_strang:
+            fehler.append(f"Strang {strang.get('id')}: liegt in "
+                          f"{', '.join(sorted(im_strang))}, der Anknüpfungspunkt "
+                          f"nennt aber {erwartet}")
+
+    for fid, wo in je_frage.items():
+        if len(wo) > 1:
+            fehler.append(f"Frage {fid} liegt in mehreren Strängen: " + ", ".join(wo))
 
     for fid in (modell.get("grundlagen") or {}).get("fragen", []):
         frage_pruefen(fid, "grundlagen")
+        if fid in je_frage:
+            fehler.append(f"Frage {fid} steht in den Grundlagen und in Strang "
+                          + ", ".join(je_frage[fid]))
+
+    # Keine Frage eines gezeigten Moduls darf ohne Säule bleiben.
+    gezeigte_module = set(anknuepfungen.values())
+    gezeigte_module |= {fragen[f]["modul"]
+                        for f in (modell.get("grundlagen") or {}).get("fragen", [])
+                        if f in fragen}
+    zugeordnet = set(je_frage) | set((modell.get("grundlagen") or {}).get("fragen", []))
+    for f in daten["fragen"]:
+        if f["modul"] in gezeigte_module and f["id"] not in zugeordnet:
+            fehler.append(f"Frage {f['id']} ({f['modul']}) liegt in keinem Strang "
+                          f"und in keinen Grundlagen")
+
+    # Jeder benannte Sachverhalt muss von einem Strang getragen werden. Genau
+    # das war zuvor nicht der Fall - "Datenbereitstellung" fiel heraus.
+    getragen = set()
+    for strang in modell.get("straenge") or []:
+        getragen |= set(strang.get("sachverhalte") or [])
+    for sv in modell.get("sachverhalte") or []:
+        if sv["id"] not in getragen:
+            fehler.append(f"Sachverhalt '{sv['kurz']}' ({sv['id']}) wird von "
+                          f"keinem Strang getragen")
+    unbekannt = getragen - {sv["id"] for sv in modell.get("sachverhalte") or []}
+    if unbekannt:
+        fehler.append("Stränge nennen unbekannte Sachverhalte: "
+                      + ", ".join(sorted(unbekannt)))
+
     for fid in (profil.get("warnungen") or {}):
         frage_pruefen(fid, "warnungen")
 
@@ -2101,7 +2121,6 @@ def profil_fragen(profil: dict) -> set:
     """Alle Frage-IDs, die das Vorgehensmodell ausdrücklich nennt."""
     modell = profil.get("vorgehensmodell") or {}
     ids = set(profil.get("vorbelegt") or {})
-    ids |= set(modell.get("ausnahmen") or [])
     ids |= set((modell.get("grundlagen") or {}).get("fragen", []))
     for strang in modell.get("straenge") or []:
         ids |= set(strang.get("fragen") or [])
@@ -2115,9 +2134,7 @@ def verschlanke_auf_profil(daten: dict, profil: dict) -> dict:
     # Die Module der Stränge kommen vollständig mit - ein Strang wird als
     # Modullauf gerechnet, dazu gehören auch dessen Zwischenfragen. Fragen aus
     # anderen Modulen (Vorbelegungen des Einstiegs) kommen einzeln dazu.
-    strangmodule = {nach_id[fid]["modul"]
-                    for s in (profil["vorgehensmodell"].get("straenge") or [])
-                    for fid in s["fragen"] if fid in nach_id}
+    strangmodule = {nach_id[fid]["modul"] for fid in genannt if fid in nach_id}
 
     fragen = [f for f in daten["fragen"]
               if f["modul"] in strangmodule or f["id"] in genannt]
