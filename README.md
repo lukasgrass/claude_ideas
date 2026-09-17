@@ -75,6 +75,39 @@ Mit `--annahmen annahmen.json` werden zusätzlich die dort bestätigten
 Antwort-Wert-Zuordnungen eingesetzt (siehe NOTES.md, Punkt 1). Ohne diesen
 Schalter wird ausschließlich die Excel ausgewertet.
 
+### Zugeschnittene Fassung für ein einzelnes Unternehmen
+
+`data-act-inverso.html` (rund 450 KiB) ist dieselbe Prüfung, zugeschnitten auf
+die Inverso GmbH: **zwei Entscheidungsbäume statt sieben Module**, die man
+grafisch abgeht, mit vorbelegtem Firmenprofil und aufklappbaren Anforderungen
+am Ende jedes Baums.
+
+```
+python3 build_data.py --inline --inverso   # beide Auslieferungsdateien
+node pruefe.js                             # allgemeine Fassung, 17 Prüfungen
+node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 20 Prüfungen
+```
+
+- **Ein Motor, zwei Oberflächen.** `--inverso` schneidet die Ablauflogik aus
+  `app.js` heraus (Block zwischen `/*ENGINE-START*/` und `/*ENGINE-ENDE*/`) und
+  setzt sie mit `template-inverso.html` und `app-inverso.js` zusammen. Es gibt
+  keinen zweiten Auswerter; `pruefe.js` rechnet beide Fassungen gegeneinander.
+- **Der Zuschnitt ist Daten, kein Code:** `profil-inverso.json` nennt die
+  Vorbelegungen jeweils mit Begründung aus der Unternehmensbeschreibung, die
+  Variablen ohne Einfluss, die beiden Bäume und die Anforderungen, die außerhalb
+  bleiben. Der Build prüft jede Angabe gegen die Excel und bricht ab, wenn das
+  Profil nicht mehr passt — so veraltet es nicht still.
+- **Eingebettet wird nur, was die beiden Bäume brauchen:** 16 statt 49 Fragen,
+  rund 70 statt 189 Anforderungen.
+
+Ein anderes Unternehmen bekommt eine eigene Profildatei:
+
+```
+python3 build_data.py --inline --inverso \
+        --profil profil-andere-gmbh.json \
+        --inverso-html data-act-andere-gmbh.html
+```
+
 ### Was die Auslieferungsdatei enthält
 
 - **Einstieg und Modulübersicht** – sieben Fragen, danach die Prüfstrecken mit

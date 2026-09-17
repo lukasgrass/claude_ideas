@@ -1976,6 +1976,118 @@ def schreibe_html(daten: dict, vorlage: str, skript: str, ziel: str) -> dict:
     return {"bytes": os.path.getsize(ziel), "daten_bytes": len(roh.encode("utf-8"))}
 
 
+# ===========================================================================
+# 12  Zugeschnittene Auslieferungsdatei (--inverso)
+# ===========================================================================
+
+MOTOR_START = "/*ENGINE-START*/"
+MOTOR_ENDE = "/*ENGINE-ENDE*/"
+
+
+def schneide_motor(skript: str, herkunft: str) -> str:
+    """Die DOM-freie Ablauflogik aus app.js herausschneiden.
+
+    Beide Auslieferungsdateien rechnen damit mit derselben Logik; es gibt
+    keinen zweiten Auswerter, der auseinanderlaufen könnte.
+    """
+    if MOTOR_START not in skript or MOTOR_ENDE not in skript:
+        sys.exit(f"In {herkunft}: Marken {MOTOR_START} / {MOTOR_ENDE} fehlen.")
+    von = skript.index(MOTOR_START) + len(MOTOR_START)
+    return skript[von:skript.index(MOTOR_ENDE)]
+
+
+def pruefe_profil(daten: dict, profil: dict):
+    """Das Profil gegen die Excel prüfen, damit es nicht still veraltet."""
+    fragen = {f["id"]: f for f in daten["fragen"]}
+    module = {m["modul"] for m in daten["module"]}
+    reqs = {a["req_id"] for a in daten["anforderungen"]}
+    fehler = []
+
+    for fid, eintrag in (profil.get("vorbelegt") or {}).items():
+        frage = fragen.get(fid)
+        if not frage:
+            fehler.append(f"vorbelegt: Frage {fid} gibt es nicht")
+            continue
+        gueltig = {o["schluessel"] for o in frage["antwortoptionen"]}
+        for a in eintrag.get("antwort", []):
+            if a not in gueltig:
+                fehler.append(f"vorbelegt {fid}: '{a}' ist keine Antwortoption "
+                              f"(gültig: {', '.join(sorted(gueltig))})")
+        if not eintrag.get("grund"):
+            fehler.append(f"vorbelegt {fid}: Begründung fehlt")
+
+    for baum in profil.get("baeume") or []:
+        if baum.get("modul") not in module:
+            fehler.append(f"Baum {baum.get('id')}: Modul {baum.get('modul')} "
+                          "gibt es nicht")
+        elif not [f for f in daten["fragen"] if f["modul"] == baum["modul"]]:
+            fehler.append(f"Baum {baum.get('id')}: Modul {baum['modul']} hat "
+                          "keine Fragen")
+
+    for req in (profil.get("ausserhalb") or {}).get("req_ids", []):
+        if req not in reqs:
+            fehler.append(f"ausserhalb: {req} gibt es nicht")
+
+    for fid in (profil.get("warnungen") or {}):
+        if fid not in fragen:
+            fehler.append(f"warnungen: Frage {fid} gibt es nicht")
+
+    for gruppe in profil.get("ohne_einfluss") or []:
+        bekannt = {v["name"] for v in daten["variablen"]}
+        for v in gruppe.get("variablen", []):
+            if v not in bekannt:
+                fehler.append(f"ohne_einfluss: Variable {v} gibt es nicht")
+
+    if fehler:
+        sys.exit("profil-inverso.json passt nicht zur Excel:\n  "
+                 + "\n  ".join(fehler))
+
+
+def verschlanke_auf_profil(daten: dict, profil: dict) -> dict:
+    """Nur die Fragen, Mappingzeilen und Anforderungen der beiden Bäume."""
+    module = [b["modul"] for b in profil["baeume"]]
+    vorbelegt = set((profil.get("vorbelegt") or {}).keys())
+
+    fragen = [f for f in daten["fragen"]
+              if f["modul"] in module or f["id"] in vorbelegt]
+    frage_ids = {f["id"] for f in fragen}
+    mapping = [m for m in daten["mapping"] if m["frage_id"] in frage_ids]
+
+    gebraucht = {m["req_id"] for m in mapping}
+    gebraucht |= set((profil.get("ausserhalb") or {}).get("req_ids", []))
+
+    # Nur die Module der beiden Bäume. Die Fragen des Einstiegs sind
+    # Vorbelegungen und werden als Prämissen gerechnet, nicht als Modullauf -
+    # sonst bräche der Lauf an den nicht mitgelieferten Einstiegsfragen ab.
+    gehalten_module = [m for m in daten["module"] if m["modul"] in module]
+
+    schlank = dict(daten)
+    schlank["fragen"] = fragen
+    schlank["mapping"] = mapping
+    schlank["module"] = gehalten_module
+    schlank["anforderungen"] = [a for a in daten["anforderungen"]
+                                if a["req_id"] in gebraucht]
+    schlank["ergebnisse"] = [e for e in daten["ergebnisse"]
+                             if e["req_id"] in gebraucht]
+    schlank["profil"] = profil
+    schlank["meta"] = dict(daten["meta"], zuschnitt=profil["unternehmen"]["name"])
+    return schlank
+
+
+def schreibe_inverso(daten: dict, profil: dict, vorlage: str, oberflaeche: str,
+                     motor: str, ziel: str) -> dict:
+    pruefe_profil(daten, profil)
+    schlank = verschlanke_auf_profil(daten, profil)
+    # Der Motor kommt roh aus app.js, die Oberfläche als reiner Rumpf. Beides
+    # wird hier gemeinsam gekapselt, damit nichts im globalen Namensraum landet.
+    # Die Marken bleiben erhalten, damit pruefe.js auch in dieser Datei den
+    # Motor herausschneiden und einzeln prüfen kann.
+    skript = ('(function () {\n"use strict";\n'
+              + MOTOR_START + motor + MOTOR_ENDE + "\n"
+              + oberflaeche + "\n})();\n")
+    return schreibe_html(schlank, vorlage, skript, ziel)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1989,6 +2101,16 @@ def main(argv=None) -> int:
                    help="Datei mit bestätigten Antwort->Wert-Zuordnungen "
                         "(z. B. annahmen.json). Ohne Angabe wird ausschließlich "
                         "die Excel ausgewertet.")
+    p.add_argument("--inverso", action="store_true",
+                   help="zusätzlich die zugeschnittene Fassung "
+                        "data-act-inverso.html schreiben")
+    p.add_argument("--profil", default="profil-inverso.json")
+    p.add_argument("--inverso-vorlage", default="template-inverso.html",
+                   dest="inverso_vorlage")
+    p.add_argument("--inverso-oberflaeche", default="app-inverso.js",
+                   dest="inverso_oberflaeche")
+    p.add_argument("--inverso-html", default="data-act-inverso.html",
+                   dest="inverso_html")
     p.add_argument("--vorlage", default="template.html")
     p.add_argument("--skript", default="app.js")
     p.add_argument("--html", default="data-act-check.html")
@@ -2057,6 +2179,25 @@ def main(argv=None) -> int:
         print(f"{args.html} geschrieben: {info['bytes']/1024:.1f} KiB "
               f"(davon Daten {info['daten_bytes']/1024:.1f} KiB), "
               "eigenständig, ohne externe Verweise")
+
+    if args.inverso:
+        fehlend = [p for p in (args.profil, args.inverso_vorlage,
+                               args.inverso_oberflaeche, args.skript)
+                   if not os.path.exists(p)]
+        if fehlend:
+            print("FEHLER: nicht gefunden: " + ", ".join(fehlend), file=sys.stderr)
+            return 2
+        profil = json.load(open(args.profil, encoding="utf-8"))
+        motor = schneide_motor(open(args.skript, encoding="utf-8").read(),
+                               args.skript)
+        info = schreibe_inverso(
+            daten, profil,
+            open(args.inverso_vorlage, encoding="utf-8").read(),
+            open(args.inverso_oberflaeche, encoding="utf-8").read(),
+            motor, args.inverso_html)
+        print(f"{args.inverso_html} geschrieben: {info['bytes']/1024:.1f} KiB "
+              f"(davon Daten {info['daten_bytes']/1024:.1f} KiB), zugeschnitten "
+              f"auf {profil['unternehmen']['name']}")
 
     warnungen = warn.nach_schwere("warnung")
     print(f"\nWarnliste ({len(warnungen)} nicht eindeutig parsebare Stellen):")

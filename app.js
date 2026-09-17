@@ -326,11 +326,30 @@ function laufeAlles(antworten, idx) {
 
 /* Anforderungsprofil über das Mapping.
    Rangfolge: schließt aus > verschiebt Geltungsbeginn > löst aus > schränkt ein. */
-function berechneProfil(antworten, idx) {
+/* 'praemissen' sind Frage-IDs, deren Antwort unabhängig von einem Modullauf
+   feststeht - etwa weil sie aus einem Unternehmensprofil vorbelegt ist. Ihre
+   Mappingzeilen greifen deshalb auch dann, wenn die Frage in keinem gegangenen
+   Pfad vorkommt. Ohne Angabe verhält sich die Funktion wie bisher. */
+function berechneProfil(antworten, idx, praemissen) {
   var zustand = zustandAus(antworten, idx);
   var treffer = new Map();
+  var gezaehlt = new Set();
 
+  var schritte = [];
+  (praemissen || []).forEach(function (fid) {
+    if (antworten[fid] && !gezaehlt.has(fid)) {
+      gezaehlt.add(fid);
+      schritte.push({ frage_id: fid, antwort: antworten[fid], rolle: null,
+                      praemisse: true });
+    }
+  });
   laufeAlles(antworten, idx).forEach(function (lauf) {
+    lauf.schritte.forEach(function (s) {
+      if (!gezaehlt.has(s.frage_id)) { gezaehlt.add(s.frage_id); schritte.push(s); }
+    });
+  });
+
+  [{ schritte: schritte }].forEach(function (lauf) {
     lauf.schritte.forEach(function (s) {
       (idx.mappingJeFrage.get(s.frage_id) || []).forEach(function (m) {
         var passt = m.antwort_alle || m.antworten.some(function (a) {
@@ -377,8 +396,8 @@ function berechneProfil(antworten, idx) {
 /* Aus dem Profil das fertige Ergebnis bauen: gruppiert nach Kapitel und Typ,
    eingeordnet in die Zeitleiste, mit Begründung für Ausgeschlossenes und den
    offenen Punkten für die juristische Prüfung. */
-function baueErgebnis(antworten, idx) {
-  var profil = berechneProfil(antworten, idx);
+function baueErgebnis(antworten, idx, praemissen) {
+  var profil = berechneProfil(antworten, idx, praemissen);
   var laeufe = laufeAlles(antworten, idx);
 
   function anreichern(e) {
@@ -506,9 +525,18 @@ function umbruch(text, proZeile, maxZeilen) {
   return zeilen;
 }
 
-function baueBaum(modulId, antworten, idx) {
+/* 'mass' erlaubt einer Oberfläche eigene Knotengrößen, ohne dass das
+   Layoutverfahren doppelt existiert: knotenBreite, spalte, luecke und
+   optionenHoehe (zusätzliche Höhe je Antwortoption einer Frage). */
+function baueBaum(modulId, antworten, idx, mass) {
   var modul = idx.module.filter(function (m) { return m.modul === modulId; })[0];
   if (!modul) return null;
+  mass = mass || {};
+  var breiteJeKnoten = mass.knotenBreite || BAUM.knotenBreite;
+  var spalte = mass.spalte || BAUM.spalte;
+  var luecke = mass.luecke || BAUM.luecke;
+  var optionenHoehe = mass.optionenHoehe || 0;
+  var proZeile = Math.max(14, Math.round(breiteJeKnoten / 7.2));
   var zustand = zustandAus(antworten, idx);
   var lauf = laufeModul(modulId, antworten, idx);
 
@@ -652,15 +680,17 @@ function baueBaum(modulId, antworten, idx) {
   schichten.forEach(function (liste, tiefe) {
     var y = BAUM.rand;
     liste.forEach(function (k) {
-      k.zeilen = umbruch(k.titel, 26, k.art === "frage" ? 3 : 4);
+      k.zeilen = umbruch(k.titel, proZeile, k.art === "frage" ? 3 : 4);
       // Knoten mit eigener Kennzeile (Frage-ID bzw. "Einzelfallprüfung")
       // brauchen oben eine Zeile mehr Platz.
       k.hatKennung = k.art === "frage" || !!k.unsicher;
-      k.hoehe = 18 + k.zeilen.length * 15 + (k.hatKennung ? 14 : 0);
-      k.breite = BAUM.knotenBreite;
-      k.x = BAUM.rand + tiefe * BAUM.spalte;
+      k.optionen = k.art === "frage" && k.frage ? k.frage.antwortoptionen : [];
+      k.hoehe = 18 + k.zeilen.length * 15 + (k.hatKennung ? 14 : 0)
+                + (k.art === "frage" ? k.optionen.length * optionenHoehe : 0);
+      k.breite = breiteJeKnoten;
+      k.x = BAUM.rand + tiefe * spalte;
       k.y = y;
-      y += k.hoehe + BAUM.luecke;
+      y += k.hoehe + luecke;
     });
     maxHoehe = Math.max(maxHoehe, y);
   });
@@ -671,7 +701,7 @@ function baueBaum(modulId, antworten, idx) {
     modul: modulId, lauf: lauf,
     knoten: Array.from(knoten.values()),
     kanten: kanten,
-    breite: BAUM.rand * 2 + maxTiefe * BAUM.spalte + BAUM.knotenBreite,
+    breite: BAUM.rand * 2 + maxTiefe * spalte + breiteJeKnoten,
     hoehe: maxHoehe + BAUM.rand
   };
 }
@@ -679,8 +709,14 @@ function baueBaum(modulId, antworten, idx) {
 /* Antworten, die nach einer Korrektur nicht mehr erreichbar sind, entfernen.
    Wird bis zum Fixpunkt wiederholt, weil das Streichen einer Antwort weitere
    Fragen unerreichbar machen kann. */
-function bereinige(antworten, idx) {
+/* 'geschuetzt' nennt Frage-IDs, deren Antwort erhalten bleibt, auch wenn sie
+   in keinem gegangenen Pfad vorkommt - etwa Vorbelegungen aus einem
+   Unternehmensprofil. Sie müssen schon während der Schleife stehen bleiben:
+   Fiele eine Rollenantwort im ersten Durchgang weg, wären im zweiten ganze
+   Module nicht mehr anwendbar und deren Antworten würden mitgerissen. */
+function bereinige(antworten, idx, geschuetzt) {
   var aktuell = Object.assign({}, antworten);
+  var schutz = new Set(geschuetzt || []);
   var entfernt = [];
   for (var runde = 0; runde < 12; runde++) {
     var erreichbar = new Set();
@@ -688,7 +724,9 @@ function bereinige(antworten, idx) {
       lauf.schritte.forEach(function (s) { erreichbar.add(s.frage_id); });
       if (lauf.aktuell) erreichbar.add(lauf.aktuell);
     });
-    var weg = Object.keys(aktuell).filter(function (fid) { return !erreichbar.has(fid); });
+    var weg = Object.keys(aktuell).filter(function (fid) {
+      return !erreichbar.has(fid) && !schutz.has(fid);
+    });
     if (!weg.length) break;
     weg.forEach(function (fid) {
       entfernt.push({ frage_id: fid, modul: (idx.fragen.get(fid) || {}).modul });

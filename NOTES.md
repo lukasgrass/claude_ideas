@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-16T15:08:01 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-17T08:59:33 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -334,6 +334,53 @@ keine auslösende Wirkung. Nach der Rangfolge zählen sie weder zu den anwendbar
 ausgeschlossenen Anforderungen. Sie verschwinden nicht, sondern stehen im Ergebnisprofil im
 eigenen Abschnitt „Nur eingeschränkt berührt". Auch QS-Abschnitt 6 zählt sie in keiner der
 beiden Spalten – die Lesart deckt sich also mit der Quelle.
+
+**16 – Zuschnitt auf die Inverso GmbH: was aus der Excel stammt und was nicht (hoch)**
+`data-act-inverso.html` zeigt zwei Bäume statt sieben Modulen. Alle Anforderungen,
+Fragen, Erklärtexte und Fundstellen kommen unverändert aus der Excel. **Nicht aus der
+Excel** stammen ausschließlich die Angaben in `profil-inverso.json`; jede trägt dort
+ihre Begründung und ist in der Oberfläche sichtbar und umstellbar:
+
+| Frage | Vorbelegt | Begründung aus der Unternehmensbeschreibung |
+|---|---|---|
+| EIN-01 | D + E | Gesamtes Leistungsspektrum eines IT-Dienstleisters; nutzt selbst Cloud-Dienste |
+| EIN-05 | Ja | Sitz München, Niederlassungen Ilmenau und Jena |
+| VI-02 | Nein | Produktivbetrieb seit 1997, keine befristete Testversion |
+| VI-04 | B | Software- und Consultinghaus auf Anwendungsebene, kein Infrastrukturdienst |
+
+`VI-04` ist die folgenreichste dieser vier: Sie entscheidet zwischen Art. 30 Abs. 1
+(Infrastruktur) und Art. 30 Abs. 2–4 (Plattform/Software). Bei Hybrid- oder
+Managed-Diensten ist sie zu prüfen.
+
+**17 – Größe, Konzernbindung und Torwächterstatus sind für diese beiden Bäume ohne Einfluss (mittel)**
+Geprüft über alle Anzeige-, Kanten- und Mappingbedingungen der 14 Fragen von M-VI und
+M-IV: `GROESSE`, `KONZERN`, `MITTEL_NEU` und `TORWAECHTER` kommen dort **nicht vor**.
+Ihre Mappingzeilen betreffen ausschließlich die Kapitel II, III und V. Der Jahresumsatz
+der Inverso ist nicht bekannt und wurde deshalb **nicht angenommen**, sondern im Profil
+ausdrücklich als ohne Einfluss ausgewiesen. Für eine Prüfung der Kapitel II oder V wäre
+er erheblich — dort greifen die KMU-Ausnahmen des Art. 7 Abs. 1 und des Art. 15 Abs. 2,
+und die Konzernbindung an Versicherungskammer und Provinzial würde sie ausschließen.
+
+**18 – Was die beiden Bäume nicht abdecken (mittel)**
+Für das angenommene Rollenprofil lösen alle Module zusammen 65 Anforderungen aus; die
+beiden Bäume und der Grundlagenblock erreichen 62 davon. Die übrigen drei — `DA-I-003`,
+`DA-V-001`, `DA-V-005` — hängen an Kapitel V (Datenverlangen öffentlicher Stellen) und
+sind derzeit latent, weil kein Verlangen vorliegt. Sie werden nicht verschwiegen,
+sondern stehen im Abschnitt „Nicht in diesen Bäumen geprüft". Der vollständige
+Entscheidungsbaum dazu bleibt in `data-act-check.html`.
+
+**19 – Vorbelegungen sind Prämissen, keine Wegpunkte (Hinweis zur Umsetzung)**
+Beim Bauen zeigte sich zweimal, dass diese Unterscheidung trägt:
+- `bereinige()` streicht Antworten auf Fragen, die im aktuellen Pfad nicht erreichbar
+  sind. Auf EIN-01 angewandt hätte das die Rollen gelöscht, womit im nächsten Durchgang
+  ganze Module nicht mehr anwendbar gewesen wären und deren Antworten mitgerissen
+  hätte. Die Funktion nimmt deshalb jetzt eine Liste geschützter Frage-IDs entgegen.
+- `berechneProfil()` zählte Mappingzeilen nur für Fragen, die in einem Modullauf
+  vorkommen. EIN-05 ist vorbelegt, gehört aber zu keinem der beiden Bäume — seine
+  Anforderung (Art. 37 Abs. 10) fiel dadurch unter den Tisch. Die Funktion nimmt jetzt
+  Prämissen entgegen, deren Mapping unabhängig vom Lauf greift.
+Beide Erweiterungen sind rückwärtskompatibel; das allgemeine Werkzeug übergibt nichts
+und verhält sich unverändert.
 <!-- MANUELL:END -->
 
 ### 4b Maschinell abgeleitet

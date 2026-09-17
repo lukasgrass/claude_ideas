@@ -49,7 +49,14 @@ pruefe("localStorage nur in try/catch",
    vollständige Durchläufe mit zufälligen Antworten gefahren – mit festem
    Startwert, damit der Lauf wiederholbar ist. Jeder Treffer ist ein Beleg;
    eine Frage ohne Beleg wird als nicht erreichbar gemeldet. */
-const alleFragen = new Set(DATEN.fragen.map(f => f.id));
+/* Vorbelegte Fragen eines Zuschnitts sind Prämissen und kommen in keinem
+   Modullauf vor; sie werden bei der Reichweite nicht mitgezählt. */
+const PRAEMISSEN = new Set(Object.keys((DATEN.profil || {}).vorbelegt || {})
+  .filter(fid => {
+    const f = DATEN.fragen.filter(x => x.id === fid)[0];
+    return f && !idx.module.some(m => m.modul === f.modul);
+  }));
+const alleFragen = new Set(DATEN.fragen.map(f => f.id).filter(id => !PRAEMISSEN.has(id)));
 const beleg = new Map();
 const doppelt = [];
 const sackgassen = [];
@@ -76,8 +83,15 @@ function moeglichkeiten(frage) {
   return aus;
 }
 
+/* Bei einem Zuschnitt sind die Vorbelegungen die Ausgangslage - ohne sie wäre
+   kein Modul anwendbar und nichts erreichbar. */
+const START_ANTWORTEN = {};
+Object.keys((DATEN.profil || {}).vorbelegt || {}).forEach(fid => {
+  START_ANTWORTEN[fid] = (DATEN.profil.vorbelegt[fid].antwort || []).slice();
+});
+
 for (let runde = 0; runde < DURCHLAEUFE; runde++) {
-  const antworten = {};
+  const antworten = Object.assign({}, START_ANTWORTEN);
   let wache = 0;
   for (const def of idx.module) {
     for (;;) {
@@ -139,18 +153,44 @@ pruefe('"Unsicher" führt bei allen ' + mitUnsicher + " Fragen weiter",
 
 /* --- 4 Korrektur setzt unerreichbare Antworten zurück ------------------- */
 (function () {
-  let a = {};
-  a["EIN-01"] = ["A"];
-  a["EIN-02"] = [idx.fragen.get("EIN-02").antwortoptionen[2].schluessel]; /* Mittel */
-  const lauf1 = E.laufeModul("EIN", a, idx);
-  a[lauf1.aktuell] = [idx.fragen.get(lauf1.aktuell).antwortoptionen[0].schluessel];
-  const lauf2 = E.laufeModul("EIN", a, idx);
-  const vorher = Object.keys(a).length;
-  a["EIN-02"] = [idx.fragen.get("EIN-02").antwortoptionen[3].schluessel]; /* Groß */
-  const bereinigt = E.bereinige(a, idx);
-  pruefe("Korrektur räumt unerreichbare Folgeantworten ab",
-         bereinigt.entfernt.length > 0 && lauf2.schritte.length >= 2,
-         "entfernt: " + bereinigt.entfernt.map(e => e.frage_id).join(", "));
+  /* Ein Modul mit mindestens zwei Fragen suchen, die erste beantworten,
+     danach die Folgefrage, dann die erste Antwort umstellen. */
+  const schutz = Object.keys(START_ANTWORTEN);
+  const modul = idx.module.filter(m => (idx.fragenJeModul.get(m.modul) || []).length > 2)[0];
+  if (!modul) { console.log("  (übersprungen) Korrekturprobe"); return; }
+  let a = Object.assign({}, START_ANTWORTEN);
+  const erste = E.laufeModul(modul.modul, a, idx).aktuell;
+  if (!erste) { console.log("  (übersprungen) Korrekturprobe: kein Einstieg"); return; }
+  const optionen = idx.fragen.get(erste).antwortoptionen.map(o => o.schluessel);
+  a[erste] = [optionen[0]];
+  let tiefe = 0;
+  for (;;) {
+    const l = E.laufeModul(modul.modul, a, idx);
+    if (!l.aktuell || tiefe >= 2) break;
+    a[l.aktuell] = [idx.fragen.get(l.aktuell).antwortoptionen[0].schluessel];
+    tiefe++;
+  }
+  /* Irgendeine Änderung an einer der gegebenen Antworten muss Folgeantworten
+     unerreichbar machen - welche, hängt vom Modul ab. */
+  let geprunt = null, geschuetztDa = true;
+  Object.keys(a).forEach(fid => {
+    if (geprunt || schutz.indexOf(fid) >= 0) return;
+    idx.fragen.get(fid).antwortoptionen.forEach(o => {
+      if (geprunt || a[fid].indexOf(o.schluessel) >= 0) return;
+      const probe = Object.assign({}, a);
+      probe[fid] = [o.schluessel];
+      const b2 = E.bereinige(probe, idx, schutz);
+      if (b2.entfernt.length) {
+        geprunt = fid + " -> " + o.schluessel + ", entfernt: "
+                + b2.entfernt.map(e => e.frage_id).join(", ");
+        geschuetztDa = schutz.every(s => b2.antworten[s]);
+      }
+    });
+  });
+  pruefe("Korrektur räumt unerreichbare Folgeantworten ab, Vorbelegungen bleiben",
+         tiefe >= 1 && !!geprunt && geschuetztDa,
+         geprunt ? geprunt + " | Vorbelegungen erhalten: " + geschuetztDa
+                 : "keine Änderung führte zu einer Bereinigung");
 })();
 
 /* --- 4b Begriffsmarkierungen ------------------------------------------- */
@@ -228,6 +268,10 @@ pruefe('"Unsicher" führt bei allen ' + mitUnsicher + " Fragen weiter",
   const leer = E.berechneProfil({}, idx);
   pruefe("leeres Profil zählt null Anforderungen", leer.anzahl === 0);
   const vergleich = "testprofile_antworten.json";
+  if (DATEN.profil) {
+    console.log("  (übersprungen) QS-Testprofile - gilt für das vollständige Werkzeug");
+    return;
+  }
   if (!fs.existsSync(vergleich)) {
     console.log("  (übersprungen) Gegenprobe zu verify_data.py – "
                 + vergleich + " fehlt");
@@ -277,6 +321,89 @@ pruefe('"Unsicher" führt bei allen ' + mitUnsicher + " Fragen weiter",
   });
   console.log("  Summe der Abweichungen gegenüber QS-Abschnitt 6: " + summe);
 })();
+
+/* --- 5b Zugeschnittene Fassung ------------------------------------------ */
+if (DATEN.profil) {
+  const P = DATEN.profil;
+
+  /* Jede Vorbelegung muss eine gültige Antwortoption sein */
+  const ungueltig = [];
+  Object.keys(P.vorbelegt || {}).forEach(fid => {
+    const f = idx.fragen.get(fid);
+    if (!f) { ungueltig.push(fid + ": Frage fehlt"); return; }
+    const gueltig = f.antwortoptionen.map(o => o.schluessel);
+    (P.vorbelegt[fid].antwort || []).forEach(a => {
+      if (gueltig.indexOf(a) < 0) ungueltig.push(fid + ": '" + a + "' ist keine Option");
+    });
+    if (!P.vorbelegt[fid].grund) ungueltig.push(fid + ": Begründung fehlt");
+  });
+  pruefe(Object.keys(P.vorbelegt || {}).length
+         + " Vorbelegungen sind gültige Antwortoptionen mit Begründung",
+         ungueltig.length === 0, ungueltig.join(" | "));
+
+  /* Beide Bäume müssen bestehen und alle ihre Fragen enthalten */
+  const baumProbleme = [];
+  P.baeume.forEach(b => {
+    const baum = E.baueBaum(b.modul, {}, idx, { optionenHoehe: 20 });
+    if (!baum) { baumProbleme.push(b.id + ": kein Baum"); return; }
+    (idx.fragenJeModul.get(b.modul) || []).forEach(f => {
+      if (!baum.knoten.some(k => k.id === f.id)) {
+        baumProbleme.push(b.id + ": " + f.id + " fehlt");
+      }
+    });
+  });
+  pruefe(P.baeume.length + " Bäume vollständig aufgebaut",
+         baumProbleme.length === 0, baumProbleme.join(" | "));
+
+  /* Deckungsprobe: derselbe Antwortsatz muss im zugeschnittenen und im
+     vollständigen Werkzeug dieselben Anforderungen ergeben. */
+  const vollDatei = "data-act-check.html";
+  if (!fs.existsSync(vollDatei)) {
+    console.log("  (übersprungen) Deckungsprobe - " + vollDatei + " fehlt");
+  } else {
+    const vollHtml = fs.readFileSync(vollDatei, "utf8");
+    const VOLL = JSON.parse(vollHtml.match(
+      /<script id="daten" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+    const vollIdx = E.baueIndex(VOLL);
+    const praem = Object.keys(P.vorbelegt || {});
+
+    /* Antwortsatz: Vorbelegungen plus je erste Option in beiden Bäumen */
+    const antworten = {};
+    praem.forEach(fid => { antworten[fid] = P.vorbelegt[fid].antwort.slice(); });
+    for (let runde = 0; runde < 30; runde++) {
+      let offen = null;
+      P.baeume.forEach(b => {
+        if (offen) return;
+        const l = E.laufeModul(b.modul, antworten, idx);
+        if (l.aktuell) offen = l.aktuell;
+      });
+      if (!offen) break;
+      antworten[offen] = [idx.fragen.get(offen).antwortoptionen[0].schluessel];
+    }
+
+    const schmal = E.baueErgebnis(antworten, idx, praem);
+    const voll = E.baueErgebnis(antworten, vollIdx, praem);
+    /* Im vollständigen Werkzeug laufen weitere Module mit; verglichen wird
+       deshalb nur, was aus den Fragen dieses Zuschnitts stammt. */
+    const eigeneFragen = new Set(DATEN.fragen.map(f => f.id));
+    const ausVoll = voll.ausgeloest
+      .filter(e => e.belege.some(b => eigeneFragen.has(b.frage_id)))
+      .map(e => e.req_id).sort();
+    const ausSchmal = schmal.ausgeloest.map(e => e.req_id).sort();
+    const fehlt = ausVoll.filter(r => ausSchmal.indexOf(r) < 0);
+    const zuviel = ausSchmal.filter(r => ausVoll.indexOf(r) < 0);
+    pruefe("Deckungsprobe: " + ausSchmal.length + " Anforderungen wie im "
+           + "vollständigen Werkzeug", fehlt.length === 0 && zuviel.length === 0,
+           (fehlt.length ? "fehlt: " + fehlt.join(", ") + " " : "")
+           + (zuviel.length ? "zusätzlich: " + zuviel.join(", ") : ""));
+
+    /* Die drei ausgewiesenen Anforderungen dürfen in keinem Baum vorkommen */
+    const drin = (P.ausserhalb || { req_ids: [] }).req_ids
+      .filter(r => ausSchmal.indexOf(r) >= 0);
+    pruefe("als \"nicht geprüft\" ausgewiesene Anforderungen erscheinen in "
+           + "keinem Baum", drin.length === 0, drin.join(", "));
+  }
+}
 
 /* --- 6 Umfang der Auslieferungsdatei ------------------------------------ */
 (function () {

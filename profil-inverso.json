@@ -1,0 +1,70 @@
+{
+  "_hinweis": "Zuschnitt des Data-Act-Werkzeugs auf ein konkretes Unternehmen. Alle Inhalte der Anforderungen stammen weiterhin aus DataAct_Anforderungen.xlsx. Was hier steht, sind ausschließlich Angaben zum Unternehmen und die daraus abgeleiteten Vorbelegungen - jede mit Begründung, jede in der Oberfläche sichtbar und umstellbar.",
+
+  "unternehmen": {
+    "name": "Inverso GmbH",
+    "lang": "Inverso Gesellschaft für innovative Versicherungssoftware mbH",
+    "sitz": "München, Niederlassungen Ilmenau und Jena",
+    "kurz": "IT-Dienstleister für Versicherungssoftware, rund 200 Mitarbeitende, gegründet 1997"
+  },
+
+  "vorbelegt": {
+    "EIN-01": {
+      "antwort": ["D", "E"],
+      "grund": "Inverso bietet das gesamte Leistungsspektrum eines IT-Dienstleisters von der Lösungsentwicklung über die Implementierung bis zum Anwendersupport (D) und nutzt dafür selbst Dienste anderer Anbieter (E). Herstellung vernetzter Produkte, Nutzung fremder IoT-Produkte, Datenempfang aus solchen Produkten und Datenraum-Teilnahme sind in der Unternehmensbeschreibung nicht angelegt."
+    },
+    "EIN-05": {
+      "antwort": ["Ja"],
+      "grund": "Firmensitz München, Niederlassungen in Ilmenau und Jena."
+    },
+    "VI-02": {
+      "antwort": ["Nein"],
+      "grund": "Produktivbetrieb für Kunden der Sparkassen-Finanzgruppe seit 1997; keine auf Test- und Bewertungszwecke befristete Version."
+    },
+    "VI-04": {
+      "antwort": ["B"],
+      "grund": "Software- und Consultinghaus auf Anwendungsebene. Inverso stellt keine Server, Netze oder virtuellen Ressourcen bereit, sondern Anwendungssoftware und deren Betrieb.",
+      "gewicht": "Diese Antwort entscheidet zwischen Art. 30 Abs. 1 (Infrastruktur) und Art. 30 Abs. 2 bis 4 (Plattform/Software). Bei Hybrid- oder Managed-Diensten bitte prüfen."
+    }
+  },
+
+  "ohne_einfluss": [
+    {
+      "variablen": ["GROESSE", "KONZERN", "MITTEL_NEU"],
+      "titel": "Unternehmensgröße und Konzernbindung",
+      "text": "Rund 200 Mitarbeitende; Mutterkonzerne sind die Versicherungskammer und seit 2025 die Provinzial Holding. In den Bedingungen dieser beiden Bäume kommen GROESSE, KONZERN und MITTEL_NEU nicht vor - sie ändern hier keine einzige Anforderung. Für die Kapitel II, III und V wären sie erheblich; dort greifen die KMU-Ausnahmen des Art. 7 Abs. 1 und des Art. 15 Abs. 2. Der Jahresumsatz wurde deshalb nicht angenommen."
+    },
+    {
+      "variablen": ["TORWAECHTER"],
+      "titel": "Torwächterstatus nach dem Digital Markets Act",
+      "text": "Wirkt ausschließlich in Kapitel II (Art. 5 Abs. 3, Art. 6 Abs. 2 Buchst. d) und damit nicht in diesen beiden Bäumen."
+    }
+  ],
+
+  "baeume": [
+    {
+      "id": "cloud",
+      "modul": "M-VI",
+      "titel": "Inverso als Anbieter und als Kunde von Datenverarbeitungsdiensten",
+      "untertitel": "Kapitel VI und VII - Anbieterwechsel, Wechselentgelte, Schutz vor Drittstaatszugriff",
+      "einstieg": "Der Angelpunkt ist gleich die erste Frage: Ist das, was Inverso für seine Kunden betreibt, ein Datenverarbeitungsdienst im Sinne des Art. 2 Nr. 8? Davon hängt der gesamte Pflichtenkatalog des Kapitels VI ab."
+    },
+    {
+      "id": "vertraege",
+      "modul": "M-IV",
+      "titel": "Inverso als Vertragspartner",
+      "untertitel": "Kapitel IV - missbräuchliche Klauseln über Datenzugang und Datennutzung",
+      "einstieg": "Kapitel IV gilt für jeden Vertrag zwischen Unternehmen, der den Zugang zu Daten oder deren Nutzung regelt - unabhängig von IoT und Cloud. Entscheidend ist, wer die Klauseln vorgibt und wann der Vertrag geschlossen wurde."
+    }
+  ],
+
+  "ausserhalb": {
+    "titel": "Nicht in diesen Bäumen geprüft",
+    "text": "Diese Anforderungen treffen Inverso ebenfalls, hängen aber an Kapitel V (Datenverlangen öffentlicher Stellen). Sie sind derzeit latent, weil kein Verlangen vorliegt; sobald eines eingeht, laufen Fristen von fünf bzw. dreißig Arbeitstagen. Der vollständige Entscheidungsbaum dazu steht im allgemeinen Werkzeug data-act-check.html.",
+    "req_ids": ["DA-I-003", "DA-V-001", "DA-V-005"]
+  },
+
+  "warnungen": {
+    "IV-03": "Die Excel sagt nicht, welche Antwort hier welchen Wert der Variablen VERTRAG_ALT setzt. In der Reihenfolgelesart überspringt Antwort B die Folgefrage IV-04, obwohl B gerade der Altvertragsfall ist. Siehe NOTES.md Punkt 1; mit build_data.py --annahmen annahmen.json wird die geprüfte Lesart gebaut."
+  }
+}
