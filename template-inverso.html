@@ -184,6 +184,14 @@ button { font: inherit; color: inherit; }
 .chip:hover { background: var(--flaeche); border-color: var(--grau); }
 .chip--an { background: var(--akzent); border-color: var(--akzent);
             color: var(--papier); font-weight: 600; }
+/* Buchstabenoptionen tragen ihren Text mit und belegen je eine eigene Zeile -
+   nebeneinander wären sie in einer Säule von rund 15 rem unlesbar. */
+.chip--lang {
+  flex: 1 1 100%; white-space: normal; text-align: left;
+  display: grid; grid-template-columns: 1.1rem minmax(0, 1fr);
+  gap: var(--a2); align-items: baseline; line-height: 1.35;
+}
+.chip__nr { font-family: var(--tabellar); font-weight: 600; }
 .karte--aus .chip { cursor: default; }
 
 /* Ergebnisknoten im Strang */
@@ -362,6 +370,15 @@ button { font: inherit; color: inherit; }
   margin-bottom: var(--a2);
 }
 .erkl__zeile { margin-top: var(--a2); font-size: var(--t-meta); color: var(--grau); }
+/* Antwortmöglichkeiten im Erklärfeld */
+.erkl__optionen {
+  display: grid; grid-template-columns: 1.2rem minmax(0, 1fr);
+  gap: var(--a1) var(--a2); margin: var(--a2) 0 0;
+  font-size: var(--t-meta); color: var(--grau);
+}
+.erkl__optionen dt { font-family: var(--tabellar); }
+.erkl__optionen dd { margin: 0; }
+.erkl__gewaehlt { color: var(--tinte); font-weight: 600; }
 .erkl__zeile b { color: var(--tinte); font-weight: 500; }
 
 

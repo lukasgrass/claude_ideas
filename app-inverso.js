@@ -46,7 +46,12 @@ function sage(t) { document.getElementById("live").textContent = t; }
 function anzahlText(n) { return n === 1 ? "1 Anforderung" : n + " Anforderungen"; }
 function kurz(t, n) {
   if (!t) return "";
-  return t.length <= n ? t : t.slice(0, n - 1).replace(/\s+\S*$/, "") + "…";
+  if (t.length <= n) return t;
+  var k = t.slice(0, n - 1).replace(/\s+\S*$/, "");
+  /* An der Wortgrenze zu kürzen kann alles wegnehmen ("Nein, Einzelunter-
+     nehmen/natürliche Person" wurde zu "Nein,"). Dann lieber hart schneiden. */
+  if (k.length < n / 2) k = t.slice(0, n - 1);
+  return k + "…";
 }
 
 /* -------------------------------------------------------------- Speicher */
@@ -135,6 +140,20 @@ function erklBegriff(name) {
 function erklFrage(f) {
   var aus = [el("div", { class: "erkl__kopf", text: f.id }),
              el("p", {}, [textMitBegriffen(f.frage, f.frage_begriffe)])];
+  /* Bei Buchstabenoptionen steht am Chip nur eine gekürzte Beschriftung -
+     hier der volle Wortlaut, die gewählte Antwort hervorgehoben. */
+  if (f.antwortoptionen.some(function (o) { return o.form === "buchstabe"; })) {
+    var gewaehlt = S.antworten[f.id] || [];
+    var liste = el("dl", { class: "erkl__optionen" });
+    f.antwortoptionen.forEach(function (o) {
+      var an = gewaehlt.indexOf(o.schluessel) >= 0;
+      liste.appendChild(el("dt", { class: an ? "erkl__gewaehlt" : null,
+                                   text: o.schluessel }));
+      liste.appendChild(el("dd", { class: an ? "erkl__gewaehlt" : null,
+                                   text: o.text }));
+    });
+    aus.push(liste);
+  }
   if (f.erklaertext) {
     aus.push(el("div", { class: "erkl__zeile" }, [
       textMitBegriffen(kurz(f.erklaertext, 340), f.erklaertext_begriffe)]));
@@ -557,14 +576,23 @@ function frageKarte(fid, lauf, menge) {
                           "aria-label": "Antwort auf " + fid });
   f.antwortoptionen.forEach(function (o) {
     var an = !!gegeben && gegeben.indexOf(o.schluessel) >= 0;
-    var text = o.form === "buchstabe" ? o.schluessel : kurz(o.schluessel, 22);
-    chips.appendChild(el("button", {
-      class: "chip" + (an ? " chip--an" : ""), type: "button",
+    var buchstabe = o.form === "buchstabe";
+    var knopf = el("button", {
+      class: "chip" + (an ? " chip--an" : "") + (buchstabe ? " chip--lang" : ""),
+      type: "button",
       "aria-pressed": an ? "true" : "false",
-      title: o.form === "buchstabe" ? o.text : o.schluessel,
-      text: text,
+      /* Vorgelesen wird der volle Wortlaut, nicht die gekürzte Beschriftung */
+      "aria-label": buchstabe ? o.schluessel + ": " + o.text : o.schluessel,
+      title: buchstabe ? o.text : o.schluessel,
       onclick: function () { beantworte(fid, [o.schluessel]); }
-    }));
+    });
+    if (buchstabe) {
+      knopf.appendChild(el("span", { class: "chip__nr", text: o.schluessel }));
+      knopf.appendChild(el("span", { text: kurz(o.text, 80) }));
+    } else {
+      knopf.textContent = kurz(o.schluessel, 22);
+    }
+    chips.appendChild(knopf);
   });
   karte.appendChild(chips);
   return karte;
