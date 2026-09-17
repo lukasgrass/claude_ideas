@@ -2000,13 +2000,17 @@ def pruefe_profil(daten: dict, profil: dict):
     """Das Profil gegen die Excel prüfen, damit es nicht still veraltet."""
     fragen = {f["id"]: f for f in daten["fragen"]}
     module = {m["modul"] for m in daten["module"]}
-    reqs = {a["req_id"] for a in daten["anforderungen"]}
     fehler = []
 
+    def frage_pruefen(fid, wo):
+        if fid not in fragen:
+            fehler.append(f"{wo}: Frage {fid} gibt es nicht")
+            return None
+        return fragen[fid]
+
     for fid, eintrag in (profil.get("vorbelegt") or {}).items():
-        frage = fragen.get(fid)
+        frage = frage_pruefen(fid, "vorbelegt")
         if not frage:
-            fehler.append(f"vorbelegt: Frage {fid} gibt es nicht")
             continue
         gueltig = {o["schluessel"] for o in frage["antwortoptionen"]}
         for a in eintrag.get("antwort", []):
@@ -2016,24 +2020,74 @@ def pruefe_profil(daten: dict, profil: dict):
         if not eintrag.get("grund"):
             fehler.append(f"vorbelegt {fid}: Begründung fehlt")
 
-    for baum in profil.get("baeume") or []:
-        if baum.get("modul") not in module:
-            fehler.append(f"Baum {baum.get('id')}: Modul {baum.get('modul')} "
-                          "gibt es nicht")
-        elif not [f for f in daten["fragen"] if f["modul"] == baum["modul"]]:
-            fehler.append(f"Baum {baum.get('id')}: Modul {baum['modul']} hat "
-                          "keine Fragen")
+    modell = profil.get("vorgehensmodell") or {}
+    if not modell:
+        fehler.append("vorgehensmodell fehlt")
+    if len(modell.get("stufen") or []) != 5:
+        fehler.append("vorgehensmodell: es werden genau fünf Stufen erwartet")
 
-    for req in (profil.get("ausserhalb") or {}).get("req_ids", []):
-        if req not in reqs:
-            fehler.append(f"ausserhalb: {req} gibt es nicht")
+    # Stufe 1: Die Rollen müssen Antwortoptionen der Rollenfrage sein.
+    rollenfrage = next((f for f in daten["fragen"]
+                        if any(gv.get("wert_sonst") for gv in f["gesetzte_variablen"])),
+                       None)
+    position = modell.get("position") or {}
+    if rollenfrage:
+        gueltig = {o["schluessel"] for o in rollenfrage["antwortoptionen"]}
+        genannt = [e["antwort"] for e in position.get("liegen_vor", [])]
+        genannt += (position.get("liegen_nicht_vor") or {}).get("antworten", [])
+        for a in genannt:
+            if a not in gueltig:
+                fehler.append(f"position: '{a}' ist keine Antwortoption von "
+                              f"{rollenfrage['id']}")
+        if set(genannt) != gueltig - {"G"} and set(genannt) != gueltig:
+            fehlend = sorted(gueltig - set(genannt) - {"G"})
+            if fehlend:
+                fehler.append("position: diese Rollen sind weder als vorhanden "
+                              "noch als nicht vorhanden genannt: "
+                              + ", ".join(fehlend))
+    else:
+        fehler.append("position: keine Frage mit Rollenvariablen gefunden")
 
+    for e in modell.get("ausgeschlossen") or []:
+        if e.get("modul") not in module:
+            fehler.append(f"ausgeschlossen: Modul {e.get('modul')} gibt es nicht")
+    for fid in modell.get("ausnahmen") or []:
+        frage_pruefen(fid, "ausnahmen")
+
+    vorhandene_rollen = {e["antwort"] for e in position.get("liegen_vor", [])}
+    for a in modell.get("anknuepfungspunkte") or []:
+        rolle = a.get("rolle")
+        if rolle is None:
+            if not a.get("rollenunabhaengig"):
+                fehler.append(f"Anknüpfungspunkt {a.get('id')}: weder "
+                              f"rollenunabhängig noch einer Rolle zugeordnet")
+        elif rolle not in vorhandene_rollen:
+            fehler.append(f"Anknüpfungspunkt {a.get('id')}: Rolle '{rolle}' "
+                          f"liegt nach Stufe 1 gar nicht vor")
+
+    anknuepfungen = {a["id"] for a in modell.get("anknuepfungspunkte") or []}
+    for strang in modell.get("straenge") or []:
+        if strang.get("anknuepfung") not in anknuepfungen:
+            fehler.append(f"Strang {strang.get('id')}: unbekannter "
+                          f"Anknüpfungspunkt {strang.get('anknuepfung')}")
+        if not strang.get("fragen"):
+            fehler.append(f"Strang {strang.get('id')}: keine Fragen")
+        im_strang = set()
+        for fid in strang.get("fragen", []):
+            f = frage_pruefen(fid, f"Strang {strang.get('id')}")
+            if f:
+                im_strang.add(f["modul"])
+        if len(im_strang) > 1:
+            fehler.append(f"Strang {strang.get('id')}: Fragen aus mehreren "
+                          f"Modulen ({', '.join(sorted(im_strang))})")
+
+    for fid in (modell.get("grundlagen") or {}).get("fragen", []):
+        frage_pruefen(fid, "grundlagen")
     for fid in (profil.get("warnungen") or {}):
-        if fid not in fragen:
-            fehler.append(f"warnungen: Frage {fid} gibt es nicht")
+        frage_pruefen(fid, "warnungen")
 
+    bekannt = {v["name"] for v in daten["variablen"]}
     for gruppe in profil.get("ohne_einfluss") or []:
-        bekannt = {v["name"] for v in daten["variablen"]}
         for v in gruppe.get("variablen", []):
             if v not in bekannt:
                 fehler.append(f"ohne_einfluss: Variable {v} gibt es nicht")
@@ -2043,28 +2097,39 @@ def pruefe_profil(daten: dict, profil: dict):
                  + "\n  ".join(fehler))
 
 
+def profil_fragen(profil: dict) -> set:
+    """Alle Frage-IDs, die das Vorgehensmodell ausdrücklich nennt."""
+    modell = profil.get("vorgehensmodell") or {}
+    ids = set(profil.get("vorbelegt") or {})
+    ids |= set(modell.get("ausnahmen") or [])
+    ids |= set((modell.get("grundlagen") or {}).get("fragen", []))
+    for strang in modell.get("straenge") or []:
+        ids |= set(strang.get("fragen") or [])
+    return ids
+
+
 def verschlanke_auf_profil(daten: dict, profil: dict) -> dict:
-    """Nur die Fragen, Mappingzeilen und Anforderungen der beiden Bäume."""
-    module = [b["modul"] for b in profil["baeume"]]
-    vorbelegt = set((profil.get("vorbelegt") or {}).keys())
+    """Nur die Fragen, Mappingzeilen und Anforderungen des Vorgehensmodells."""
+    genannt = profil_fragen(profil)
+    nach_id = {f["id"]: f for f in daten["fragen"]}
+    # Die Module der Stränge kommen vollständig mit - ein Strang wird als
+    # Modullauf gerechnet, dazu gehören auch dessen Zwischenfragen. Fragen aus
+    # anderen Modulen (Vorbelegungen des Einstiegs) kommen einzeln dazu.
+    strangmodule = {nach_id[fid]["modul"]
+                    for s in (profil["vorgehensmodell"].get("straenge") or [])
+                    for fid in s["fragen"] if fid in nach_id}
 
     fragen = [f for f in daten["fragen"]
-              if f["modul"] in module or f["id"] in vorbelegt]
+              if f["modul"] in strangmodule or f["id"] in genannt]
     frage_ids = {f["id"] for f in fragen}
     mapping = [m for m in daten["mapping"] if m["frage_id"] in frage_ids]
 
     gebraucht = {m["req_id"] for m in mapping}
-    gebraucht |= set((profil.get("ausserhalb") or {}).get("req_ids", []))
-
-    # Nur die Module der beiden Bäume. Die Fragen des Einstiegs sind
-    # Vorbelegungen und werden als Prämissen gerechnet, nicht als Modullauf -
-    # sonst bräche der Lauf an den nicht mitgelieferten Einstiegsfragen ab.
-    gehalten_module = [m for m in daten["module"] if m["modul"] in module]
 
     schlank = dict(daten)
     schlank["fragen"] = fragen
     schlank["mapping"] = mapping
-    schlank["module"] = gehalten_module
+    schlank["module"] = [m for m in daten["module"] if m["modul"] in strangmodule]
     schlank["anforderungen"] = [a for a in daten["anforderungen"]
                                 if a["req_id"] in gebraucht]
     schlank["ergebnisse"] = [e for e in daten["ergebnisse"]
@@ -2072,6 +2137,7 @@ def verschlanke_auf_profil(daten: dict, profil: dict) -> dict:
     schlank["profil"] = profil
     schlank["meta"] = dict(daten["meta"], zuschnitt=profil["unternehmen"]["name"])
     return schlank
+
 
 
 def schreibe_inverso(daten: dict, profil: dict, vorlage: str, oberflaeche: str,

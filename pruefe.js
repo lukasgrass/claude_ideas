@@ -325,6 +325,7 @@ pruefe('"Unsicher" führt bei allen ' + mitUnsicher + " Fragen weiter",
 /* --- 5b Zugeschnittene Fassung ------------------------------------------ */
 if (DATEN.profil) {
   const P = DATEN.profil;
+  const M = P.vorgehensmodell;
 
   /* Jede Vorbelegung muss eine gültige Antwortoption sein */
   const ungueltig = [];
@@ -341,19 +342,38 @@ if (DATEN.profil) {
          + " Vorbelegungen sind gültige Antwortoptionen mit Begründung",
          ungueltig.length === 0, ungueltig.join(" | "));
 
-  /* Beide Bäume müssen bestehen und alle ihre Fragen enthalten */
-  const baumProbleme = [];
-  P.baeume.forEach(b => {
-    const baum = E.baueBaum(b.modul, {}, idx, { optionenHoehe: 20 });
-    if (!baum) { baumProbleme.push(b.id + ": kein Baum"); return; }
-    (idx.fragenJeModul.get(b.modul) || []).forEach(f => {
-      if (!baum.knoten.some(k => k.id === f.id)) {
-        baumProbleme.push(b.id + ": " + f.id + " fehlt");
-      }
-    });
+  /* Jede Frage, die das Vorgehensmodell nennt, muss es geben und im Modullauf
+     vorkommen - sonst zeigt die Oberfläche eine Karte, die nie erreichbar ist. */
+  const genannt = [];
+  (M.ausnahmen || []).forEach(fid => genannt.push(["ausnahmen", fid]));
+  (M.straenge || []).forEach(s =>
+    (s.fragen || []).forEach(fid => genannt.push(["Strang " + s.id, fid])));
+  (M.grundlagen || { fragen: [] }).fragen.forEach(fid => genannt.push(["grundlagen", fid]));
+  const unerreichbar = [];
+  genannt.forEach(([wo, fid]) => {
+    const f = idx.fragen.get(fid);
+    if (!f) { unerreichbar.push(wo + ": " + fid + " gibt es nicht"); return; }
+    /* Vorbelegte Einstiegsfragen liegen vor jedem Modullauf */
+    if (PRAEMISSEN.has(fid)) return;
+    if (!beleg.has(fid)) unerreichbar.push(wo + ": " + fid + " wird nie gestellt");
   });
-  pruefe(P.baeume.length + " Bäume vollständig aufgebaut",
-         baumProbleme.length === 0, baumProbleme.join(" | "));
+  pruefe(genannt.length + " Fragen des Vorgehensmodells sind erreichbar",
+         unerreichbar.length === 0, unerreichbar.join(" | "));
+
+  /* Die Oberfläche läuft je Strang genau ein Modul (zeichneSaeule,
+     istStrangAktiv). Fragen aus zwei Modulen wären dort still verloren. */
+  const gemischt = [];
+  (M.straenge || []).forEach(s => {
+    const module = new Set((s.fragen || []).map(fid => {
+      const f = idx.fragen.get(fid);
+      return f ? f.modul : "?";
+    }));
+    if (module.size !== 1) {
+      gemischt.push(s.id + ": " + [...module].sort().join(", "));
+    }
+  });
+  pruefe((M.straenge || []).length + " Stränge stammen aus je einem Modul",
+         gemischt.length === 0, gemischt.join(" | "));
 
   /* Deckungsprobe: derselbe Antwortsatz muss im zugeschnittenen und im
      vollständigen Werkzeug dieselben Anforderungen ergeben. */
@@ -367,14 +387,18 @@ if (DATEN.profil) {
     const vollIdx = E.baueIndex(VOLL);
     const praem = Object.keys(P.vorbelegt || {});
 
-    /* Antwortsatz: Vorbelegungen plus je erste Option in beiden Bäumen */
+    /* Antwortsatz: Vorbelegungen plus je erste Option in jedem Strangmodul */
+    const strangModule = [...new Set((M.straenge || []).map(s => {
+      const f = idx.fragen.get(s.fragen[0]);
+      return f ? f.modul : null;
+    }).filter(Boolean))];
     const antworten = {};
     praem.forEach(fid => { antworten[fid] = P.vorbelegt[fid].antwort.slice(); });
-    for (let runde = 0; runde < 30; runde++) {
+    for (let runde = 0; runde < 60; runde++) {
       let offen = null;
-      P.baeume.forEach(b => {
+      strangModule.forEach(modul => {
         if (offen) return;
-        const l = E.laufeModul(b.modul, antworten, idx);
+        const l = E.laufeModul(modul, antworten, idx);
         if (l.aktuell) offen = l.aktuell;
       });
       if (!offen) break;
@@ -397,11 +421,28 @@ if (DATEN.profil) {
            (fehlt.length ? "fehlt: " + fehlt.join(", ") + " " : "")
            + (zuviel.length ? "zusätzlich: " + zuviel.join(", ") : ""));
 
-    /* Die drei ausgewiesenen Anforderungen dürfen in keinem Baum vorkommen */
-    const drin = (P.ausserhalb || { req_ids: [] }).req_ids
-      .filter(r => ausSchmal.indexOf(r) >= 0);
-    pruefe("als \"nicht geprüft\" ausgewiesene Anforderungen erscheinen in "
-           + "keinem Baum", drin.length === 0, drin.join(", "));
+    /* Verteilung wie auswertung() in app-inverso.js: was kein Strang
+       beansprucht, fällt in die Grundlagen. Damit kann nichts verschwinden -
+       geprüft wird deshalb, dass jede Anforderung im Auffangfach auch aus
+       einer Frage stammt, die das Bild zeigt. Eine neue Frage in der Excel
+       fiele hier auf. */
+    const gezeigt = new Set([
+      ...(M.ausnahmen || []),
+      ...(M.grundlagen || { fragen: [] }).fragen,
+      ...(M.straenge || []).flatMap(s => s.fragen)
+    ]);
+    const fremd = new Map();
+    schmal.ausgeloest.forEach(e => {
+      const trifft = (M.straenge || []).some(s =>
+        e.belege.some(b => s.fragen.indexOf(b.frage_id) >= 0));
+      if (trifft) return;
+      e.belege.forEach(b => {
+        if (!gezeigt.has(b.frage_id)) fremd.set(e.req_id, b.frage_id);
+      });
+    });
+    pruefe("jede ausgelöste Anforderung stammt aus einer Frage, die das Bild "
+           + "zeigt", fremd.size === 0,
+           [...fremd].map(([r, f]) => r + " über " + f).join(", "));
   }
 }
 

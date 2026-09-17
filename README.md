@@ -77,16 +77,30 @@ Schalter wird ausschließlich die Excel ausgewertet.
 
 ### Zugeschnittene Fassung für ein einzelnes Unternehmen
 
-`data-act-inverso.html` (rund 450 KiB) ist dieselbe Prüfung, zugeschnitten auf
-die Inverso GmbH: **zwei Entscheidungsbäume statt sieben Module**, die man
-grafisch abgeht, mit vorbelegtem Firmenprofil und aufklappbaren Anforderungen
-am Ende jedes Baums.
+`data-act-inverso.html` (rund 510 KiB) ist dieselbe Prüfung, zugeschnitten auf
+die Inverso GmbH: **ein einziges Bild statt sieben Modulen**, senkrecht von oben
+nach unten, mit vorbelegtem Firmenprofil und aufklappbaren Anforderungen am Fuß
+jeder Säule.
 
 ```
 python3 build_data.py --inline --inverso   # beide Auslieferungsdateien
 node pruefe.js                             # allgemeine Fassung, 17 Prüfungen
-node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 20 Prüfungen
+node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 21 Prüfungen
 ```
+
+Aufbau des Bildes — es folgt der Entscheidungslogik, nicht einer Gliederung:
+
+1. **Ausgangslage** — welche Rollen vorliegen und welche nicht.
+2. **Was entfällt** — die Kapitel, die für das Unternehmen wegfallen, daneben
+   die Ausnahmefragen, die noch zu beantworten sind.
+3. **Vor der Verzweigung** — was unabhängig vom Pfad gilt.
+4. **Die Säulen** — je Sachverhalt eine durchgehende Spalte von der ersten Frage
+   bis zu ihren Anforderungen, gruppiert unter ihrem Anknüpfungspunkt.
+
+Am linken Rand läuft eine **Schrittleiste** mit den fünf Schritten des
+Vorgehensmodells mit, das in der Präsentation unmittelbar vor der Datei gezeigt
+wird. Sie ist Orientierung, kein Gliederungsprinzip: sie sagt nur, wo im Bild man
+gerade steht, und trägt keine Bedienung.
 
 - **Ein Motor, zwei Oberflächen.** `--inverso` schneidet die Ablauflogik aus
   `app.js` heraus (Block zwischen `/*ENGINE-START*/` und `/*ENGINE-ENDE*/`) und
@@ -94,11 +108,16 @@ node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 20 Prüfung
   keinen zweiten Auswerter; `pruefe.js` rechnet beide Fassungen gegeneinander.
 - **Der Zuschnitt ist Daten, kein Code:** `profil-inverso.json` nennt die
   Vorbelegungen jeweils mit Begründung aus der Unternehmensbeschreibung, die
-  Variablen ohne Einfluss, die beiden Bäume und die Anforderungen, die außerhalb
-  bleiben. Der Build prüft jede Angabe gegen die Excel und bricht ab, wenn das
-  Profil nicht mehr passt — so veraltet es nicht still.
-- **Eingebettet wird nur, was die beiden Bäume brauchen:** 16 statt 49 Fragen,
-  rund 70 statt 189 Anforderungen.
+  Variablen ohne Einfluss und das Vorgehensmodell mit seinen Schritten,
+  Anknüpfungspunkten und Strängen. Der Build prüft jede Angabe gegen die Excel
+  und bricht ab, wenn das Profil nicht mehr passt — so veraltet es nicht still.
+- **Eingebettet wird nur, was das Bild braucht:** 23 statt 49 Fragen, 101 statt
+  189 Anforderungen.
+- **Anforderungen dürfen mehrfach erscheinen.** Inverso ist zugleich Anbieter
+  und Kunde von Datenverarbeitungsdiensten; einzelne Anforderungen werden
+  deshalb in zwei Säulen ausgelöst und dort jeweils mit dem Verweis „auch:
+  <anderer Strang>" gezeigt. Was kein Strang beansprucht, fällt nicht heraus,
+  sondern in den Block „gilt unabhängig vom Pfad".
 
 Ein anderes Unternehmen bekommt eine eigene Profildatei:
 
