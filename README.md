@@ -75,6 +75,34 @@ Mit `--annahmen annahmen.json` werden zusätzlich die dort bestätigten
 Antwort-Wert-Zuordnungen eingesetzt (siehe NOTES.md, Punkt 1). Ohne diesen
 Schalter wird ausschließlich die Excel ausgewertet.
 
+### Dreiklang-Fassung — die Vorgehensfolie als Werkzeug
+
+`data-act-dreiklang.html` (rund 47 KiB) bildet die Folie „Ableitung von
+Rechtsfolgen" ab:
+
+> **Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge**
+
+Sieben Zeilen, alle gleichzeitig sichtbar, anklickbar. Ein Klick füllt die
+Gleichung und zeigt die Anforderungen der Rechtsfolge — je eine Zeile mit
+Req-ID, Fundstelle und Kurztext. In fünf bis zehn Minuten durchzugehen.
+
+```
+python3 build_data.py --inline --inverso --dreiklang --annahmen annahmen.json
+node pruefe.js data-act-dreiklang.html     # 9 Prüfungen
+```
+
+- **Die Rechtsfolge wird berechnet, nicht behauptet.** `dreiklang.json` nennt
+  nur, welche Fragen zu welcher Zeile gehören und was die Folie angibt; welche
+  Anforderungen herauskommen, entscheidet das Mapping der Excel. Widerspricht
+  das Ergebnis der Folie, bricht der Build ab — außer die Abweichung ist als
+  `abweichung_bekannt` vermerkt. So ist die Parallelnutzungszeile aufgefallen.
+- **Aufgelöst beim Bauen:** die Datei trägt keine Fragen, kein Mapping, keine
+  Begriffe. Deshalb 47 KiB statt 871 KiB — der Unterschied zwischen einem
+  E-Mail-Anhang und einem, der hängenbleibt.
+- **Haupt- und Nebenkapitel getrennt:** Als Rechtsfolge zählt, was die Folie
+  nennt oder mindestens ein Fünftel der Anforderungen trägt. Randtreffer stehen
+  als „Zusätzlich berührt" darunter.
+
 ### Zugeschnittene Fassung für ein einzelnes Unternehmen
 
 `data-act-inverso.html` (rund 860 KiB) ist dieselbe Prüfung, zugeschnitten auf

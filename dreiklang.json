@@ -1,0 +1,88 @@
+{
+  "_hinweis": "Der Dreiklang Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge ist ein Ordnungsrahmen der Vorgehensfolie, nicht der Excel. Die Excel kennt ihn nicht. Was hier steht, ist deshalb: welche Fragen der Excel zu welcher Zeile gehören, und was die Folie als Rechtsfolge angibt. WELCHE ANFORDERUNGEN herauskommen und in WELCHEM KAPITEL sie liegen, entscheidet allein das Mapping der Excel - der Build rechnet es aus und bricht ab, wenn es der Folie widerspricht.",
+  "titel": "EU Data Act — Ableitung von Rechtsfolgen",
+  "formel": ["Bewertungsgegenstand", "Anknüpfungspunkt", "Sachverhalt", "Rechtsfolge"],
+  "unternehmen": {
+    "name": "Inverso GmbH",
+    "kurz": "IT-Dienstleister für Versicherungssoftware"
+  },
+  "marken": {
+    "ja":   "trifft zu",
+    "offen": "noch offen",
+    "nein": "trifft nicht zu"
+  },
+  "zeilen": [
+    {
+      "id": "anbieter-wechsel",
+      "gegenstand": "DV-Dienst",
+      "anknuepfung": "Anbieter",
+      "sachverhalt": "Anbieterwechsel",
+      "folie_kapitel": ["VI"],
+      "fragen": ["VI-01", "VI-02", "VI-03", "VI-04", "VI-05"],
+      "marke": "ja",
+      "grund": "Inverso bietet Cloud-, Hosting- und Anwendungsdienste an (EIN-01 D)."
+    },
+    {
+      "id": "anbieter-parallel",
+      "gegenstand": "DV-Dienst",
+      "anknuepfung": "Anbieter",
+      "sachverhalt": "Parallelnutzung",
+      "folie_kapitel": ["VIII"],
+      "fragen": ["VI-10"],
+      "abweichung_bekannt": true,
+      "abweichung": "Die Folie nennt nur Kapitel VIII. Die Excel erreicht die Parallelnutzungspflichten (Art. 34) aber nur über VI-10 — die Kundenfrage —, und dieselbe Frage löst auch die Wechselpflichten des Kapitels VI aus. Eine eigene Anbieterfrage zur Parallelnutzung gibt es nicht.",
+      "marke": "ja",
+      "grund": "Inverso ist zugleich Anbieter und Kunde von Datenverarbeitungsdiensten."
+    },
+    {
+      "id": "anbieter-drittstaat",
+      "gegenstand": "DV-Dienst",
+      "anknuepfung": "Anbieter",
+      "sachverhalt": "Drittstaatenzugriff",
+      "folie_kapitel": ["VII"],
+      "fragen": ["VI-06", "VI-07", "VI-08"],
+      "marke": "ja",
+      "grund": "Gilt für jeden Anbieter eines Datenverarbeitungsdienstes."
+    },
+    {
+      "id": "kunde-wechsel",
+      "gegenstand": "DV-Dienst",
+      "anknuepfung": "Kunde",
+      "sachverhalt": "Anbieterwechsel",
+      "folie_kapitel": ["VI"],
+      "fragen": ["VI-09", "VI-10"],
+      "marke": "ja",
+      "grund": "Inverso nutzt selbst Cloud- und SaaS-Dienste anderer Anbieter (EIN-01 E)."
+    },
+    {
+      "id": "dateninhaber-bereitstellung",
+      "gegenstand": "Datenbestand",
+      "anknuepfung": "Dateninhaber",
+      "sachverhalt": "Datenbereitstellung",
+      "folie_kapitel": ["III"],
+      "fragen": ["III-01", "III-02", "III-03", "III-04", "III-05"],
+      "marke": "offen",
+      "grund": "Ob Inverso Dateninhaber i. S. v. Art. 2 Nr. 13 ist, ist die offene Kernfrage: Der Data Act knüpft an vernetzte Produkte und verbundene Dienste an, und nach EG 22 sind Auftragsverarbeiter keine Dateninhaber. Vor dem Anwaltsgespräch nicht zu entscheiden."
+    },
+    {
+      "id": "dateninhaber-behoerden",
+      "gegenstand": "Datenbestand",
+      "anknuepfung": "Dateninhaber",
+      "sachverhalt": "Behördenverlangen",
+      "folie_kapitel": ["V"],
+      "fragen": ["V-01", "V-02", "V-03", "V-04", "V-05", "V-06", "V-07"],
+      "marke": "offen",
+      "grund": "Setzt ebenfalls die Dateninhaberschaft voraus. Zusätzlich gilt: Kapitel V trifft nur juristische Personen außer öffentlichen Stellen (Art. 14)."
+    },
+    {
+      "id": "vertrag-klauseln",
+      "gegenstand": "Vertrag",
+      "anknuepfung": "Rollenunabhängig",
+      "sachverhalt": "Einseitig auferlegte datenbezogene Klauseln",
+      "folie_kapitel": ["IV"],
+      "fragen": ["IV-01", "IV-02", "IV-03", "IV-04"],
+      "marke": "ja",
+      "grund": "Gilt rollenunabhängig für jedes Unternehmen mit B2B-Verträgen, die Datenklauseln enthalten."
+    }
+  ]
+}

@@ -23,6 +23,7 @@ Aufruf:
 from __future__ import annotations
 
 import argparse
+import collections
 import datetime
 import json
 import os
@@ -2240,6 +2241,134 @@ def schreibe_inverso(daten: dict, profil: dict, vorlage: str, oberflaeche: str,
     return schreibe_html(schlank, vorlage, skript, ziel)
 
 
+# ---------------------------------------------------------------------------
+# 13  Dreiklang-Fassung (--dreiklang)
+#
+# Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge. Der
+# Dreiklang ist der Ordnungsrahmen der Vorgehensfolie, nicht der der Excel.
+# Aufgelöst wird er hier, beim Bauen: welche Anforderungen zu welcher Zeile
+# gehören, entscheidet allein das Mapping. Die Auslieferungsdatei trägt danach
+# nur noch die fertigen Listen - keine Fragen, kein Mapping, keine Begriffe.
+# ---------------------------------------------------------------------------
+
+PFLICHTTYPEN = ("Handlungspflicht", "Informationspflicht", "Unterlassungspflicht")
+
+
+def _kurzzeile(kurztitel: str, anforderung: str, fundstelle: str, typ: str) -> str:
+    """Eine Zeile, die etwas sagt.
+
+    Die Kurztitel der Excel tragen zweierlei Form. Meist sind sie brauchbar
+    ("Wechsel ermöglichen"), manchmal wiederholen sie nur Fundstelle, Typ und
+    Adressat ("Art. 13 Abs. 4 Buchst. a – Unterlassungspflicht (Verwender von
+    Vertragsklauseln)"). Das steht in der Liste alles schon daneben. In diesem
+    Fall wird der Anfang des Anforderungstextes genommen, der den Inhalt nennt.
+    """
+    t = (kurztitel or "").strip()
+    if fundstelle and t.startswith(fundstelle):
+        t = t[len(fundstelle):].lstrip(" –-–—:·").strip()
+    if typ and t.startswith(typ):
+        t = ""                                   # sagt nur den Typ, nichts sonst
+    if not t:
+        t = (anforderung or "").strip()
+    if len(t) > 96:
+        gekuerzt = t[:95].rsplit(" ", 1)[0]
+        t = (gekuerzt if len(gekuerzt) > 48 else t[:95]) + "…"
+    return t
+
+
+def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
+    """Je Zeile die ausgelösten Anforderungen sammeln und die Rechtsfolge
+    ausrechnen. Bricht ab, wenn die Excel der Folie widerspricht."""
+    fragen = {f["id"] for f in daten["fragen"]}
+    anf = {a["req_id"]: a for a in daten["anforderungen"]}
+    erg = {e["req_id"]: e for e in daten["ergebnisse"]}
+    fehler, hinweise = [], []
+    zeilen = []
+
+    for z in modell.get("zeilen") or []:
+        fehlend = [q for q in z.get("fragen", []) if q not in fragen]
+        if fehlend:
+            fehler.append(f"Zeile {z['id']}: Frage(n) {', '.join(fehlend)} gibt es nicht")
+            continue
+
+        req_ids = sorted({m["req_id"] for m in daten["mapping"]
+                          if m["frage_id"] in z["fragen"] and m["wirkung"] == "löst aus"
+                          and m["req_id"] in anf},
+                         key=lambda r: (anf[r]["kapitel"], anf[r]["zeile"]))
+        if not req_ids:
+            fehler.append(f"Zeile {z['id']}: löst keine einzige Anforderung aus")
+            continue
+
+        nach_kapitel = collections.Counter(anf[r]["kapitel"] for r in req_ids)
+        haupt = nach_kapitel.most_common(1)[0][0]
+        erwartet = z.get("folie_kapitel") or []
+
+        # Die Folie nennt eine Rechtsfolge, das Mapping streut: neben dem
+        # tragenden Kapitel stehen oft ein, zwei Randtreffer (Anwendungsbereich,
+        # Schlussbestimmungen). Als Rechtsfolge zählt, was die Folie nennt oder
+        # mindestens ein Fünftel der Anforderungen trägt; der Rest wird als
+        # "zusätzlich berührt" ausgewiesen, statt die Aussage zu verwässern.
+        schwelle = max(1, len(req_ids) // 5)
+        rechtsfolge = [k for k, n in nach_kapitel.most_common()
+                       if k in erwartet or n >= schwelle]
+        neben = [{"kapitel": k, "zahl": n} for k, n in nach_kapitel.most_common()
+                 if k not in rechtsfolge]
+
+        if erwartet and haupt not in erwartet:
+            meldung = (f"Zeile {z['id']} ({z['sachverhalt']}): Die Folie nennt "
+                       f"Kapitel {', '.join(erwartet)}, die Excel liefert "
+                       + ", ".join(f"{k}: {n}" for k, n in nach_kapitel.most_common()))
+            if z.get("abweichung_bekannt"):
+                hinweise.append(meldung)
+            else:
+                fehler.append(meldung + " - als 'abweichung_bekannt' vermerken "
+                              "oder die Zuordnung berichtigen")
+
+        eintraege = [{
+            "id": r,
+            "kapitel": anf[r]["kapitel"],
+            "fundstelle": anf[r]["fundstelle"],
+            "typ": anf[r]["typ"],
+            "titel": _kurzzeile((erg.get(r) or {}).get("kurztitel"),
+                                anf[r]["anforderung"], anf[r]["fundstelle"],
+                                anf[r]["typ"]),
+        } for r in req_ids]
+
+        zeilen.append(dict(z, **{
+            "kapitel": rechtsfolge,
+            "neben": neben,
+            "kapitel_zahl": dict(nach_kapitel),
+            "anforderungen": eintraege,
+            "zahl": {
+                "gesamt": len(eintraege),
+                "pflicht": sum(1 for e in eintraege if e["typ"] in PFLICHTTYPEN),
+                "recht": sum(1 for e in eintraege if e["typ"] == "Recht"),
+                "ausnahme": sum(1 for e in eintraege if e["typ"] == "Ausnahme"),
+            },
+        }))
+
+    if fehler:
+        sys.exit("dreiklang.json passt nicht zur Excel:\n  " + "\n  ".join(fehler))
+    for h in hinweise:
+        print("  Bekannte Abweichung: " + h)
+
+    return {
+        "meta": dict(daten["meta"], fassung="dreiklang"),
+        "titel": modell.get("titel", ""),
+        "formel": modell.get("formel") or [],
+        "unternehmen": modell.get("unternehmen") or {},
+        "marken": modell.get("marken") or {},
+        "zeilen": zeilen,
+    }
+
+
+def schreibe_dreiklang(daten: dict, modell: dict, vorlage: str,
+                       oberflaeche: str, ziel: str) -> dict:
+    schlank = loese_dreiklang_auf(daten, modell)
+    skript = '(function () {\n"use strict";\n' + oberflaeche + "\n})();\n"
+    return schreibe_html(schlank, vorlage, skript, ziel)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -2253,6 +2382,13 @@ def main(argv=None) -> int:
                    help="Datei mit bestätigten Antwort->Wert-Zuordnungen "
                         "(z. B. annahmen.json). Ohne Angabe wird ausschließlich "
                         "die Excel ausgewertet.")
+    p.add_argument("--dreiklang", action="store_true",
+                   help="zusätzlich data-act-dreiklang.html schreiben: die "
+                        "Vorgehensfolie als klickbare Karte")
+    p.add_argument("--dreiklang-modell", default="dreiklang.json")
+    p.add_argument("--dreiklang-vorlage", default="template-dreiklang.html")
+    p.add_argument("--dreiklang-oberflaeche", default="app-dreiklang.js")
+    p.add_argument("--dreiklang-html", default="data-act-dreiklang.html")
     p.add_argument("--inverso", action="store_true",
                    help="zusätzlich die zugeschnittene Fassung "
                         "data-act-inverso.html schreiben")
@@ -2350,6 +2486,23 @@ def main(argv=None) -> int:
         print(f"{args.inverso_html} geschrieben: {info['bytes']/1024:.1f} KiB "
               f"(davon Daten {info['daten_bytes']/1024:.1f} KiB), zugeschnitten "
               f"auf {profil['unternehmen']['name']}")
+
+    if args.dreiklang:
+        fehlend = [p for p in (args.dreiklang_modell, args.dreiklang_vorlage,
+                               args.dreiklang_oberflaeche)
+                   if not os.path.exists(p)]
+        if fehlend:
+            print("FEHLER: nicht gefunden: " + ", ".join(fehlend), file=sys.stderr)
+            return 2
+        modell = json.load(open(args.dreiklang_modell, encoding="utf-8"))
+        info = schreibe_dreiklang(
+            daten, modell,
+            open(args.dreiklang_vorlage, encoding="utf-8").read(),
+            open(args.dreiklang_oberflaeche, encoding="utf-8").read(),
+            args.dreiklang_html)
+        print(f"{args.dreiklang_html} geschrieben: {info['bytes']/1024:.1f} KiB "
+              f"(davon Daten {info['daten_bytes']/1024:.1f} KiB), "
+              f"{len(modell['zeilen'])} Zeilen der Vorgehensfolie")
 
     warnungen = warn.nach_schwere("warnung")
     print(f"\nWarnliste ({len(warnungen)} nicht eindeutig parsebare Stellen):")

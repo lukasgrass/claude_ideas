@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-18T06:19:09 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-18T12:18:10 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -523,6 +523,63 @@ deshalb ein Feld `begriff`; der Ankertitel bekommt den vorhandenen
 Begriffs-Hover, und die Karte zeigt die Abgrenzung gekürzt an. Kein neuer Text —
 nur verknüpft. Vorbelegt wird die Dateninhaberschaft bewusst **nicht**: das war
 schon einmal der Fehler.
+**20 – Dreiklang-Fassung: die Vorgehensfolie als Werkzeug (hoch)**
+`data-act-dreiklang.html` bildet die Folie „Ableitung von Rechtsfolgen" ab:
+Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge. Sieben
+Zeilen, alle gleichzeitig sichtbar, anklickbar, mit rudimentärer
+Anforderungsliste. **47 KB statt 871 KB**, weil die Zuordnung Zeile →
+Anforderungen beim Bauen aufgelöst wird: die Datei trägt keine Fragen, kein
+Mapping, keine Begriffe, nur die fertigen Listen.
+
+**Der Dreiklang steht nicht in der Excel.** Er ist der Ordnungsrahmen der Folie.
+`dreiklang.json` nennt deshalb nur, welche Fragen zu welcher Zeile gehören und
+was die Folie als Rechtsfolge angibt. Welche Anforderungen herauskommen und in
+welchem Kapitel sie liegen, rechnet der Build aus dem Mapping aus — und **bricht
+ab**, wenn das der Folie widerspricht, sofern die Abweichung nicht ausdrücklich
+als `abweichung_bekannt` vermerkt ist.
+
+**Gegengeprüft: sechs von sieben Zeilen bestätigt die Excel exakt.**
+
+| Bewertungsgegenstand | Anknüpfung | Sachverhalt | Folie | Excel |
+|---|---|---|---|---|
+| DV-Dienst | Anbieter | Anbieterwechsel | VI | VI: 35 |
+| DV-Dienst | Anbieter | Parallelnutzung | VIII | **VI: 13**, VIII: 2 |
+| DV-Dienst | Anbieter | Drittstaatenzugriff | VII | VII: 6 |
+| DV-Dienst | Kunde | Anbieterwechsel | VI | VI: 20 |
+| Datenbestand | Dateninhaber | Datenbereitstellung | III | III: 20 |
+| Datenbestand | Dateninhaber | Behördenverlangen | V | V: 24 |
+| Vertrag | Rollenunabhängig | Einseitige Klauseln | IV | IV: 17 |
+
+Die Abweichung: Die Excel erreicht die Parallelnutzungspflichten (`DA-VIII-003`,
+`DA-VIII-004`, Art. 34) nur über `VI-10` — und das ist die **Kundenfrage**. Eine
+eigene Anbieterfrage zur Parallelnutzung gibt es nicht; dieselbe Frage löst
+zusätzlich 13 Wechselpflichten des Kapitels VI aus. Die Zeile nennt deshalb
+beide Kapitel und erklärt den Unterschied, statt eines von beidem zu
+unterschlagen.
+
+**20a – Haupt- und Nebenkapitel getrennt (mittel)**
+Eine erste Fassung zeigte als Rechtsfolge alles, was das Mapping hergab — bei
+„Anbieterwechsel" etwa „Kap. VI + VIII + I + III". Die Randkapitel sind
+Einzeltreffer (Anwendungsbereich, Schlussbestimmungen) und keine Rechtsfolge;
+die Aussage der Folie ging darin unter. Als Rechtsfolge zählt jetzt, was die
+Folie nennt **oder** mindestens ein Fünftel der Anforderungen der Zeile trägt.
+Der Rest steht als „Zusätzlich berührt: Kap. I (1), Kap. III (1)" darunter —
+nichts verschwindet, aber die Gleichung bleibt lesbar.
+
+**20b – Kurzzeilen, die etwas sagen (gering)**
+Die Kurztitel der Excel tragen zweierlei Form. Meist sind sie brauchbar
+(„Wechsel ermöglichen"), manchmal wiederholen sie nur Fundstelle, Typ und
+Adressat („Art. 13 Abs. 4 Buchst. a – Unterlassungspflicht (Verwender von
+Vertragsklauseln)") — in Kapitel IV zehnmal hintereinander dasselbe. Da all das
+in der Liste ohnehin nebendran steht, nimmt der Build in diesem Fall den Anfang
+des Anforderungstextes, der den Inhalt nennt.
+
+**20c – Rollenverteilung der drei Fassungen**
+`data-act-dreiklang.html` ist die Mandantendatei fürs Gespräch: fünf bis zehn
+Minuten, sieben Zeilen, ein Bildschirm. `data-act-inverso.html` bleibt die
+geführte Betroffenheitsprüfung mit den 49 Fragen. `data-act-check.html` ist das
+vollständige Werkzeug und der Nachweis, woher jede Zahl stammt — `pruefe.js`
+rechnet die Dreiklang-Fassung gegen dessen Katalog gegen.
 <!-- MANUELL:END -->
 
 ### 4b Maschinell abgeleitet

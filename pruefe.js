@@ -14,12 +14,20 @@ const datenTreffer = html.match(
 if (!datenTreffer) { console.error("Kein Datenblock gefunden."); process.exit(2); }
 const DATEN = JSON.parse(datenTreffer[1]);
 
+/* Die Dreiklang-Fassung trägt keine Ablauflogik: sie zeigt nur, was der Build
+   aus dem Mapping aufgelöst hat. Für sie gilt ein eigener Prüfzweig weiter
+   unten; der Motor wird dort nicht gebraucht. */
+const istDreiklang = !!(DATEN.zeilen && DATEN.formel);
+
 const von = html.indexOf("/*ENGINE-START*/");
 const bis = html.indexOf("/*ENGINE-ENDE*/");
-if (von < 0 || bis < 0) { console.error("Ablauflogik nicht abgegrenzt."); process.exit(2); }
-const block = html.slice(von + "/*ENGINE-START*/".length, bis);
-const E = new Function(block + "\nreturn ENGINE;")();
-const idx = E.baueIndex(DATEN);
+if (!istDreiklang && (von < 0 || bis < 0)) {
+  console.error("Ablauflogik nicht abgegrenzt."); process.exit(2);
+}
+const E = istDreiklang ? null
+  : new Function(html.slice(von + "/*ENGINE-START*/".length, bis)
+                 + "\nreturn ENGINE;")();
+const idx = istDreiklang ? null : E.baueIndex(DATEN);
 
 /* --- Prüfrahmen -------------------------------------------------------- */
 let fehler = 0, geprueft = 0;
@@ -42,6 +50,61 @@ pruefe("localStorage nur in try/catch",
   (html.match(/localStorage/g) || []).length ===
   (html.match(/try\s*\{[^}]*localStorage/g) || []).length,
   "jeder Zugriff muss in einem try-Block stehen");
+
+/* --- 1b Dreiklang-Fassung: eigene Prüfungen, dann fertig ---------------- */
+if (istDreiklang) {
+  const Z = DATEN.zeilen;
+  pruefe(Z.length + " Zeilen der Vorgehensfolie", Z.length > 0);
+
+  const leer = Z.filter(z => !z.anforderungen || !z.anforderungen.length);
+  pruefe("jede Zeile löst mindestens eine Anforderung aus",
+         leer.length === 0, leer.map(z => z.id).join(", "));
+
+  /* Die Rechtsfolge muss das nennen, was die Folie sagt - oder die Abweichung
+     ist ausdrücklich vermerkt. Genau hier ist die Parallelnutzung aufgefallen. */
+  const abweichend = Z.filter(z =>
+    (z.folie_kapitel || []).length
+    && !(z.folie_kapitel || []).every(k => (z.kapitel || []).indexOf(k) >= 0)
+    && !z.abweichung_bekannt);
+  pruefe("jede Rechtsfolge enthält das Kapitel der Folie",
+         abweichend.length === 0,
+         abweichend.map(z => z.id + ": Folie " + z.folie_kapitel.join("+")
+                             + ", berechnet " + (z.kapitel || []).join("+")).join(" | "));
+
+  /* Zählung muss zur Liste passen - sonst steht eine Zahl da, die niemand
+     nachrechnen kann. */
+  const zahlFehler = Z.filter(z =>
+    z.zahl.gesamt !== z.anforderungen.length
+    || z.zahl.pflicht + z.zahl.recht + z.zahl.ausnahme !== z.anforderungen.length);
+  pruefe("die Zahlen decken sich mit der Liste darunter",
+         zahlFehler.length === 0, zahlFehler.map(z => z.id).join(", "));
+
+  /* Deckungsprobe: jede Req-ID muss im vollständigen Katalog stehen. */
+  const vollDatei = "data-act-check.html";
+  if (!fs.existsSync(vollDatei)) {
+    console.log("  (übersprungen) Deckungsprobe - " + vollDatei + " fehlt");
+  } else {
+    const VOLL = JSON.parse(fs.readFileSync(vollDatei, "utf8").match(
+      /<script id="daten" type="application\/json">([\s\S]*?)<\/script>/)[1]);
+    const katalog = new Map(VOLL.anforderungen.map(a => [a.req_id, a]));
+    const fremd = [], falschesKapitel = [];
+    Z.forEach(z => z.anforderungen.forEach(e => {
+      const a = katalog.get(e.id);
+      if (!a) fremd.push(z.id + "/" + e.id);
+      else if (a.kapitel !== e.kapitel || a.fundstelle !== e.fundstelle) {
+        falschesKapitel.push(e.id);
+      }
+    }));
+    pruefe("alle Req-IDs stehen so im vollständigen Katalog",
+           fremd.length === 0 && falschesKapitel.length === 0,
+           (fremd.length ? "unbekannt: " + fremd.slice(0, 5).join(", ") + " " : "")
+           + (falschesKapitel.length ? "abweichend: " + falschesKapitel.slice(0, 5).join(", ") : ""));
+  }
+
+  console.log("\n" + (fehler ? fehler + " von " + geprueft + " Prüfungen fehlgeschlagen"
+                              : geprueft + " Prüfungen bestanden"));
+  process.exit(fehler ? 1 : 0);
+}
 
 /* --- 2 Alle Fragen erreichbar, keine zweimal ---------------------------- */
 /* Reichweite wird konstruktiv gezeigt: Für jede Frage wird ein Antwortsatz
