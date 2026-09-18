@@ -11,6 +11,7 @@
   --tinte:   #14181C;
   --grau:    #5B6369;
   --linie:   #D8DBDE;
+  --ast:     #A7AEB5;   /* die gezeichneten Äste - dunkler als eine Trennlinie */
   --flaeche: #F5F6F7;
   --papier:  #FFFFFF;
   --akzent:  #0F6152;
@@ -55,155 +56,239 @@ button { font: inherit; color: inherit; }
 .kopf__zeile { font-size: var(--t-klein); color: var(--grau); margin-top: var(--a1); }
 .kopf__hinweis { font-size: var(--t-mini); color: var(--grau); margin-top: var(--a2); }
 
-/* ------------------------------------------------------------- Formel */
-/* Der Kern der Folie: die Gleichung füllt sich beim Klicken. */
-.formel {
-  display: grid; align-items: stretch; gap: var(--a2);
-  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
-  margin-bottom: var(--a5);
-}
-.formel__feld {
-  border: 1px solid var(--linie); border-radius: 2px;
-  background: var(--flaeche); padding: var(--a2) var(--a3); min-width: 0;
-  text-align: left; font: inherit; color: inherit;
-}
-button.formel__feld { cursor: pointer; }
-button.formel__feld:hover { border-color: var(--grau); }
-.formel__feld--voll { background: var(--papier); border-color: var(--tinte); }
-.formel__feld--ziel { background: var(--akzent); border-color: var(--akzent);
-                      color: var(--papier); }
-.formel__marke {
-  font-family: var(--tabellar); font-size: var(--t-mini);
-  text-transform: uppercase; letter-spacing: .05em; opacity: .75;
-}
-.formel__wert { font-size: var(--t-klein); font-weight: 600; margin-top: var(--a1);
-                min-height: 1.3em; }
-.formel__wert--leer { font-weight: 400; opacity: .45; }
-.formel__op { align-self: center; font-size: var(--t-gross); color: var(--grau); }
-
-/* ------------------------------------------------------------- Spalten */
-/* Jede Ebene neben der vorigen: der ganze Weg bleibt sichtbar. */
-.spalten {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--a3); align-items: start; margin-bottom: var(--a5);
-}
-.spalte { border: 1px solid var(--linie); border-radius: 2px; min-width: 0; }
-.spalte--leer { border-style: dashed; background: var(--flaeche); }
-.spalte__kopf {
-  display: flex; gap: var(--a2); align-items: center;
-  background: var(--tinte); color: var(--papier);
-  padding: var(--a2) var(--a3); font-size: var(--t-mini);
-  text-transform: uppercase; letter-spacing: .05em;
-}
-.spalte--leer .spalte__kopf { background: var(--grau); }
-.spalte__nr {
-  display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem;
-  border-radius: 2px; background: rgba(255,255,255,.2);
-  font-family: var(--tabellar); font-weight: 600;
-}
-.spalte__leer { padding: var(--a3); font-size: var(--t-meta); color: var(--grau); }
-
-.knoten {
-  display: grid; gap: var(--a1); width: 100%; text-align: left;
-  background: none; border: 0; border-left: 3px solid transparent;
-  padding: var(--a3); cursor: pointer;
-  transition: background-color .12s ease-out, border-color .12s ease-out;
-}
-.knoten + .knoten { border-top: 1px solid var(--linie); }
-.knoten:hover { background: var(--flaeche); border-left-color: var(--grau); }
-.knoten--an { background: var(--flaeche); border-left-color: var(--akzent); }
-.knoten__name { font-size: var(--t-klein); }
-.knoten--an .knoten__name { font-weight: 600; }
-.knoten__erg { color: var(--akzent); font-weight: 600; }
-.knoten__kurz { font-size: var(--t-mini); color: var(--grau); }
-.knoten__kap {
-  justify-self: start; font-family: var(--tabellar); font-size: var(--t-mini);
-  background: var(--tinte); color: var(--papier);
-  padding: .1rem var(--a2); border-radius: 2px;
-}
-.knoten--an .knoten__kap { background: var(--akzent); }
-.knoten__marke { font-size: var(--t-mini); color: var(--grau); }
-.knoten__marke--offen { color: var(--warn); }
-
-/* ------------------------------------------------------------ Ergebnis */
-.ergebnis { margin-top: var(--a5); border-top: 2px solid var(--tinte);
-            padding-top: var(--a4); }
-.ergebnis__leer { color: var(--grau); font-size: var(--t-klein); }
-.ergebnis__kopf {
-  display: flex; flex-wrap: wrap; gap: var(--a2) var(--a4); align-items: baseline;
-  margin-bottom: var(--a3);
-}
-.ergebnis__kopf h2 { font-size: var(--t-text); }
-.ergebnis__zahl {
-  font-family: var(--tabellar); font-size: var(--t-klein); color: var(--grau);
-}
-.ergebnis__artikel {
-  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
-  margin-left: auto;
-}
-.ergebnis__hinweis {
-  font-size: var(--t-meta); color: var(--grau); margin-bottom: var(--a3);
-  max-width: 62rem;
-}
-.ergebnis__hinweis--warn {
-  border-left: 3px solid var(--warn); padding-left: var(--a3); color: var(--tinte);
-}
-
-.liste { display: grid; gap: 1px; background: var(--linie);
-         border: 1px solid var(--linie); }
-.req {
-  display: grid; grid-template-columns: 6.5rem 10.5rem minmax(0, 1fr) 11rem 5.5rem;
-  gap: var(--a3); align-items: baseline; background: var(--papier);
-  padding: var(--a2) var(--a3); font-size: var(--t-klein);
-}
-/* Richtet sich die Anforderung an jemand anderen, ist sie für die gewählte
-   Rolle keine eigene Pflicht - entweder ein durchsetzbarer Anspruch oder eine
-   Pflicht der Gegenseite. Beides gehört sichtbar unterschieden. */
-.req--fremd { background: var(--flaeche); }
-.req--fremd .req__titel { color: var(--grau); }
-.req--anspruch { border-left: 3px solid var(--akzent); }
-.req__id, .req__stelle {
-  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
-}
-.req__adressat { font-size: var(--t-mini); color: var(--grau); font-style: italic; }
-.req__typ { font-size: var(--t-mini); color: var(--grau); white-space: nowrap; }
-
-/* --------------------------------------------------------------- Fuß */
-.fuss {
-  margin-top: var(--a6); padding-top: var(--a3); border-top: 1px solid var(--linie);
-  display: flex; flex-wrap: wrap; gap: var(--a2) var(--a4);
-  font-size: var(--t-mini); color: var(--grau);
-}
-.fuss__stand { flex-basis: 100%; max-width: 62rem; }
-.fuss__luecke {
-  flex-basis: 100%; border-left: 3px solid var(--linie); padding-left: var(--a3);
-  margin-bottom: var(--a2); max-width: 62rem; color: var(--tinte);
-  font-size: var(--t-meta);
-}
+/* ======================================================= Steuerung */
+.steuer { display: flex; flex-wrap: wrap; gap: var(--a2); align-items: center;
+          margin-bottom: var(--a5); }
+.steuer__hinweis { font-size: var(--t-meta); color: var(--grau); margin-left: auto; }
 .tat {
-  background: none; border: 0; padding: 0; color: var(--akzent);
-  font-size: var(--t-mini); font-weight: 500; cursor: pointer;
-  border-bottom: 1px solid transparent;
+  border: 1px solid var(--linie); background: var(--papier); color: var(--tinte);
+  border-radius: 4px; padding: var(--a2) var(--a3); font-size: var(--t-klein);
+  cursor: pointer;
 }
-.tat:hover { border-bottom-color: var(--akzent); }
+.tat:hover { background: var(--flaeche); border-color: var(--grau); }
 
-@media (max-width: 52rem) {
-  .formel { grid-template-columns: 1fr; }
-  .formel__op { display: none; }
-  .req { grid-template-columns: 1fr; gap: var(--a1); }
-  .req__titel { font-weight: 500; }
-  .spalten { grid-template-columns: 1fr; }
+/* ============================================================ Ein Baum */
+/* Senkrecht von oben nach unten: Wurzel, Gabelfrage, zwei Aeste, je Ast
+   seine Sachverhalte an einem Strang. Gezeichnet wird mit Rahmenkanten auf
+   Pseudo-Elementen - kein SVG, kein Skript fuer das Bild. */
+.baum { margin: 0 0 var(--a6); padding-bottom: var(--a5);
+        border-bottom: 1px solid var(--linie); }
+.baum:last-of-type { border-bottom: 0; }
+
+/* -------------------------------------------------------------- Wurzel */
+.wurzel {
+  max-width: 32rem; margin: 0 auto; text-align: center;
+  border: 2px solid var(--tinte); border-radius: 6px;
+  padding: var(--a3) var(--a4); background: var(--papier);
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition: none !important; }
+.wurzel__marke {
+  display: block; font-size: var(--t-mini); letter-spacing: .09em;
+  text-transform: uppercase; color: var(--grau);
 }
+.wurzel h2 { font-size: 1.125rem; margin-top: var(--a1); }
+.wurzel__kurz { margin: var(--a1) 0 0; font-size: var(--t-klein); color: var(--grau); }
+.wurzel__vor {
+  margin: var(--a2) 0 0; font-size: var(--t-meta); color: var(--grau);
+  border-top: 1px dashed var(--linie); padding-top: var(--a2);
+}
+.wurzel__marke--firma {
+  display: inline-block; margin-top: var(--a2); border-radius: 999px;
+  padding: 1px var(--a2); font-size: var(--t-mini);
+  background: var(--flaeche); color: var(--grau); text-transform: none;
+  letter-spacing: 0;
+}
+.wurzel__marke--ja   { background: #E6F0ED; color: var(--akzent); }
+.wurzel__marke--offen{ background: #F6EEDF; color: var(--warn); }
+
+/* --------------------------------------------------- Gabelfrage (Ast 1) */
+.gabel {
+  position: relative; max-width: 44rem; margin: 0 auto; text-align: center;
+  margin-top: var(--a5); padding: var(--a3) var(--a4);
+  border: 1px solid var(--ast); border-radius: 6px; background: var(--flaeche);
+}
+.gabel::before {                       /* Linie von der Wurzel herunter */
+  content: ""; position: absolute; left: 50%; top: calc(-1 * var(--a5));
+  height: var(--a5); border-left: 2px solid var(--ast);
+}
+.gabel__id {
+  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
+  letter-spacing: .04em;
+}
+.gabel__text { display: block; margin-top: var(--a1); font-size: var(--t-klein); }
+
+/* ------------------------------------------------------- Die Verzweigung */
+/* Kein Abstand zwischen den Aesten: der waagerechte Balken laeuft ueber beide
+   hinweg, eine Flex-Luecke risse ihn genau in der Mitte auf. Getrennt werden
+   die Aeste durch ihr eigenes seitliches Polster. */
+.aeste {
+  position: relative; display: flex; justify-content: center;
+  align-items: stretch; gap: 0; padding-top: var(--a5);
+}
+.aeste::before {                       /* Linie von der Gabelfrage herunter */
+  content: ""; position: absolute; left: 50%; top: 0;
+  height: var(--a5); border-left: 2px solid var(--ast);
+}
+.ast { position: relative; flex: 1 1 0; min-width: 0;
+       padding: var(--a5) var(--a2) 0; }
+/* Waagerechter Balken und der Abgang in den Knoten: die linke Haelfte traegt
+   ::before, die rechte ::after. Am ersten Ast faellt die linke Haelfte weg, am
+   letzten die rechte - der Abgang kommt dort vom jeweils anderen Rand. */
+.ast::before, .ast::after {
+  content: ""; position: absolute; top: 0; right: 50%; width: 50%;
+  height: var(--a5); border-top: 2px solid var(--ast);
+}
+.ast::after { right: auto; left: 50%; border-left: 2px solid var(--ast); }
+.ast:first-child::before { border: 0; }
+.ast:last-child::after   { border: 0; }
+.ast:first-child::after  { border-top-left-radius: 6px; }
+.ast:last-child::before  { border-right: 2px solid var(--ast);
+                           border-top-right-radius: 6px; }
+.ast:only-child::before { display: none; }
+.ast:only-child::after  { border-top: 0; border-left: 2px solid var(--ast); }
+
+/* ------------------------------------------------- Anknuepfungspunkt */
+.anker {
+  border: 2px solid var(--tinte); border-radius: 6px; background: var(--papier);
+  padding: var(--a3);
+}
+.anker__zeile { display: flex; align-items: baseline; gap: var(--a2); }
+.anker__taste {
+  flex: 0 0 auto; font-family: var(--tabellar); font-size: var(--t-meta);
+  background: var(--tinte); color: var(--papier); border-radius: 3px;
+  padding: 1px 6px;
+}
+.anker__name { font-weight: 600; }
+.anker__opt {
+  display: block; margin-top: var(--a2); font-size: var(--t-meta);
+  color: var(--grau); font-style: italic;
+}
+.anker__hinweis {
+  display: block; margin-top: var(--a2); padding-top: var(--a2);
+  border-top: 1px solid var(--ast); font-size: var(--t-meta);
+  color: var(--grau);
+}
+.anker--anspruch { border-color: var(--warn); }
+.anker--anspruch .anker__taste { background: var(--warn); }
+
+/* -------------------------------------------- Sachverhalte am Strang */
+.blaetter { position: relative; padding-top: var(--a4); }
+.blaetter::before {                    /* aus dem Knoten heraus nach unten */
+  content: ""; position: absolute; left: 15px; top: 0; height: var(--a4);
+  border-left: 2px solid var(--ast);
+}
+.blatt { position: relative; padding-left: 32px; margin-top: var(--a3); }
+.blatt:first-child { margin-top: 0; }
+.blatt::before {                       /* der Ellenbogen in den Sachverhalt */
+  content: ""; position: absolute; left: 15px; top: 0; width: 15px; height: 20px;
+  border-left: 2px solid var(--ast); border-bottom: 2px solid var(--ast);
+  border-bottom-left-radius: 6px;
+}
+.blatt:not(:last-child)::after {       /* der Strang laeuft weiter */
+  content: ""; position: absolute; left: 15px; top: 0;
+  bottom: calc(-1 * var(--a3)); border-left: 2px solid var(--ast);
+}
+
+/* --------------------------------------------------- Frage am Sachverhalt */
+.blatt__frage {
+  font-size: var(--t-meta); color: var(--grau); margin-bottom: var(--a1);
+  padding-left: var(--a1);
+}
+.blatt__fid { font-family: var(--tabellar); letter-spacing: .04em; }
+.blatt__antwort {
+  display: inline-block; border: 1px solid var(--akzent); color: var(--akzent);
+  border-radius: 999px; padding: 0 6px; font-size: var(--t-mini);
+  white-space: nowrap;
+}
+.blatt__warn { display: block; color: var(--warn); margin-top: 2px; }
+
+/* ------------------------------------------------- Sachverhalt + Folge */
+.knoten {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  border: 1px solid var(--linie); border-left: 4px solid var(--akzent);
+  border-radius: 4px; background: var(--papier); padding: var(--a2) var(--a3);
+}
+.knoten:hover { background: var(--flaeche); }
+.knoten--auf { background: var(--flaeche); }
+.knoten--anspruch { border-left-color: var(--warn); }
+.knoten__zeile { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--a2); }
+.knoten__name { font-weight: 600; font-size: var(--t-klein); }
+.knoten__erg { color: var(--grau); font-weight: 400; }
+.knoten__kap {
+  font-weight: 600; font-size: var(--t-meta); color: var(--akzent);
+  white-space: nowrap;
+}
+.knoten--anspruch .knoten__kap { color: var(--warn); }
+.knoten__pfeil { margin-left: auto; color: var(--grau); font-size: var(--t-meta); }
+.knoten__zahl { display: block; margin-top: 2px; font-size: var(--t-meta); color: var(--grau); }
+.knoten__art {
+  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
+}
+
+/* ------------------------------------------------- Anforderungsliste */
+.liste { margin-top: var(--a2); border: 1px solid var(--linie); border-radius: 4px; }
+.req {
+  display: grid; grid-template-columns: 6rem 8.5rem minmax(0, 1fr) 9rem 5rem;
+  gap: var(--a2); padding: var(--a2) var(--a3);
+  border-top: 1px solid var(--linie); font-size: var(--t-meta);
+}
+.req:first-child { border-top: 0; }
+.req--fremd { background: var(--flaeche); }
+.req--anspruch { background: #FBF6EC; }
+.req__id, .req__stelle { font-family: var(--tabellar); font-size: var(--t-mini);
+                         color: var(--grau); }
+.req__titel { color: var(--tinte); }
+.req__adressat { color: var(--grau); font-style: italic; }
+.req__typ { color: var(--grau); text-align: right; }
+
+/* ---------------------------------------------------------------- Fuss */
+.fuss { margin-top: var(--a6); padding-top: var(--a4);
+        border-top: 2px solid var(--tinte); font-size: var(--t-meta);
+        color: var(--grau); display: grid; gap: var(--a2); }
+.fuss__luecke { border-left: 3px solid var(--warn); padding-left: var(--a3);
+                color: var(--tinte); }
+.fuss__stand { }
+
+/* --------------------------- Senkrechte Verzweigung: schmal und im Druck */
+/* Statt Balken und Abgang traegt jeder Ast denselben Ellenbogen wie ein
+   Sachverhalt. Schmal, weil zwei Spalten nicht nebeneinanderpassen; im Druck,
+   weil die Anforderungszeile auf halber Seitenbreite ineinanderlaeuft. */
+@media (max-width: 62rem), print {
+  .aeste { display: block; padding-top: var(--a4); padding-left: 32px; }
+  .aeste::before { left: 15px; height: var(--a4); }
+  .ast { padding: 0 0 0 0; margin-top: var(--a4); }
+  .ast:first-child { margin-top: 0; }
+  .ast::before {
+    top: 0; left: -17px; right: auto; width: 15px; height: 20px;
+    border-top: 0; border-left: 2px solid var(--ast);
+    border-bottom: 2px solid var(--ast); border-right: 0;
+    border-radius: 0 0 0 6px;
+  }
+  .ast::after { display: none; }
+}
+
+/* ------------------------------------------------------- Schmale Sicht */
+@media (max-width: 62rem) {
+  .seite { padding: var(--a4) var(--a3) var(--a6); }
+  /* Schmal wird aus der Zeile ein kleiner Absatz: Kennung und Fundstelle
+     nebeneinander, darunter Titel, Adressat und Typ je auf voller Breite.
+     Sonst quetscht sich der Titel in die 5,5rem der ersten Spalte. */
+  .req { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 2px var(--a2); }
+  .req__id       { grid-column: 1; grid-row: 1; }
+  .req__stelle   { grid-column: 2; grid-row: 1; }
+  .req__titel    { grid-column: 1 / -1; grid-row: 2; }
+  .req__adressat { grid-column: 1 / -1; grid-row: 3; }
+  .req__typ      { grid-column: 1 / -1; grid-row: 4; text-align: left; }
+}
+
+/* --------------------------------------------------------------- Druck */
 @media print {
-  .tat { display: none !important; }
+  .tat, .steuer { display: none !important; }
   body { font-size: 9pt; color: #000; }
   .seite { max-width: none; padding: 0; }
-  .ergebnis, .req { break-inside: avoid; }
-  /* Der Formelstreifen bleibt ganz und bleibt bei seinem Ergebnis. */
-  .formel { break-inside: avoid; break-after: avoid; }
+  .baum { break-before: page; }
+  .baum:first-of-type { break-before: auto; }
+  .blatt, .wurzel, .gabel, .anker, .req { break-inside: avoid; }
+  .knoten__pfeil { display: none; }
   @page { margin: 12mm; size: A4 portrait; }
 }
 
@@ -213,23 +298,26 @@ button.formel__feld:hover { border-color: var(--grau); }
 <div class="seite" id="seite"></div>
 <p class="verborgen" id="live" role="status" aria-live="polite"></p>
 
-<script id="daten" type="application/json">{"meta":{"quelle":"DataAct_Anforderungen.xlsx","erzeugt_am":"2026-09-18T12:42:38","erzeugt_durch":"build_data.py","schema":"dataact-entscheidungsbaum/1","wirkungsrangfolge":["schließt aus","verschiebt Geltungsbeginn","löst aus","schränkt ein"],"hinweis":"Alle Inhalte stammen unverändert aus der Excel. Nicht eindeutig zerlegbare Stellen sind als Klartext erhalten (Ausdrucksatom 'unklar') und in 'warnungen' aufgeführt.","anzahl":{"module":8,"fragen":49,"kanten":150,"variablen":45,"mapping":797,"anforderungen":189,"ergebnisse":189,"begriffe":37,"fristen":25,"offene_punkte":38,"legende":8,"qs_abschnitte":8,"testprofile":6,"zeitleiste":10,"begriffsmarkierungen":964,"warnungen":6,"hinweise":146},"angewandte_annahmen":{"datei":"annahmen.json","beschreibung":"Geprüfte Ergänzungen zur Excel, die beim Bauen eingesetzt werden, ohne die Excel zu ändern. Zwei Arten: 'gesetzte_variablen' bestätigt eine Antwort-\u003eWert-Zuordnung, die die Excel nicht ausspricht. 'ergebnistexte' ergänzt einen Ergebnistext an einer Kante, an der die Excel keinen vorsieht - der Nutzer erführe sonst nicht, dass und warum ein Kapitel geprüft und verneint wurde. Jede Ergänzung nennt ihren Grund und die Fundstelle, auf die sie sich stützt. Keine Ergänzung erfindet eine Anforderung; sie verweisen ausschließlich auf Anforderungen, die im Katalog stehen.","zuordnungen":["IV-03/VERTRAG_ALT: A=Nein, B=Ja, C=Gemischt","V-01/C: Ergebnistext angehängt","IV-01/Nein: Ergebnistext gesetzt"]},"fassung":"dreiklang","eingebettet":true},"titel":"EU Data Act — Ableitung von Rechtsfolgen","formel":["Bewertungsgegenstand","Anknüpfungspunkt","Sachverhalt","Rechtsfolge"],"unternehmen":{"name":"Inverso GmbH","kurz":"IT-Dienstleister für Versicherungssoftware"},"marken":{"ja":"trifft zu","offen":"noch offen","nein":"trifft nicht zu"},"nicht_abgedeckt":{"titel":"Kapitel II — IoT-Datenzugang","text":"Kapitel II (Datenzugang bei vernetzten Produkten, 46 Anforderungen) bildet diese Übersicht nicht ab. Für die Inverso GmbH hat der Auftraggeber festgestellt, dass IoT nicht einschlägig ist. Wer vernetzte Produkte herstellt oder Daten daraus erhält, prüft das mit dem ausführlichen Werkzeug."},"baeume":[{"id":"dv-dienst","gegenstand":"DV-Dienst","kurz":"Cloud-, Hosting- und Softwaredienste (IaaS, PaaS, SaaS)","marke":"ja","grund":"Inverso bietet solche Dienste an und nutzt selbst fremde.","anknuepfungspunkte":[{"id":"anbieter","name":"Anbieter","rolle":"Anbieter von Datenverarbeitungsdienst","hinweis":"Kapitel VI richtet sich fast vollständig an den Anbieter — hier stehen die eigenen Pflichten.","sachverhalte":[{"id":"a-wechsel","name":"Anbieterwechsel","fundstellen":["Art. 23","Art. 24","Art. 26","Art. 27","Art. 28","Art. 30","Art. 31"],"folie_kapitel":["VI"],"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-001","kapitel":"VI","fundstelle":"Art. 23 Satz 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Wechsel ermöglichen"},{"id":"DA-VI-002","kapitel":"VI","fundstelle":"Art. 23 Satz 2 Buchst. a–e","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Keine Wechselhindernisse"},{"id":"DA-VI-003","kapitel":"VI","fundstelle":"Art. 24","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Die Verantwortung nach Art. 23, 25, 29, 30 und 34 beschränkt sich auf Dienste, Verträge oder…"},{"id":"DA-VI-017","kapitel":"VI","fundstelle":"Art. 26 Buchst. a","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Information über Wechselverfahren"},{"id":"DA-VI-018","kapitel":"VI","fundstelle":"Art. 26 Buchst. b","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Online-Register der Datenstrukturen"},{"id":"DA-VI-019","kapitel":"VI","fundstelle":"Art. 27","typ":"Handlungspflicht","adressat":"Alle Beteiligten, einschließlich übernehmender Anbieter von Datenverarbeitungsdiensten (und Dritte, die im Namen des Kunden handeln, EG 85)","eigen":true,"anspruch":false,"titel":"Zusammenarbeit nach Treu und Glauben"},{"id":"DA-VI-020","kapitel":"VI","fundstelle":"Art. 28 Abs. 1","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Website-Transparenz zu Gerichtsbarkeit und Schutzmaßnahmen"},{"id":"DA-VI-021","kapitel":"VI","fundstelle":"Art. 28 Abs. 2","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Verweis im Vertrag"},{"id":"DA-VI-027","kapitel":"VI","fundstelle":"Art. 30 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten für Infrastrukturressourcen (IaaS)","eigen":true,"anspruch":false,"titel":"Funktionsäquivalenz (IaaS)"},{"id":"DA-VI-028","kapitel":"VI","fundstelle":"Art. 30 Abs. 2","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS nach Abs. 1)","eigen":true,"anspruch":false,"titel":"Offene Schnittstellen (PaaS/SaaS)"},{"id":"DA-VI-029","kapitel":"VI","fundstelle":"Art. 30 Abs. 3","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":true,"anspruch":false,"titel":"Kompatibilität mit künftigen Normen"},{"id":"DA-VI-030","kapitel":"VI","fundstelle":"Art. 30 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":true,"anspruch":false,"titel":"Das Online-Register nach Art. 26 Buchst. b ist entsprechend den Pflichten nach Abs. 3 zu…"},{"id":"DA-VI-031","kapitel":"VI","fundstelle":"Art. 30 Abs. 5","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Export in maschinenlesbarem Format"},{"id":"DA-VI-032","kapitel":"VI","fundstelle":"Art. 30 Abs. 6","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Anbieter sind nicht verpflichtet, neue Technologien oder Dienste zu entwickeln,…"},{"id":"DA-VI-033","kapitel":"VI","fundstelle":"Art. 31 Abs. 1","typ":"Ausnahme","adressat":"Anbieter maßgeschneiderter Datenverarbeitungsdienste","eigen":false,"anspruch":false,"titel":"Die Pflichten aus Art. 23 Buchst. d, Art. 29 und Art. 30 Abs. 1 und 3 gelten nicht für…"},{"id":"DA-VI-034","kapitel":"VI","fundstelle":"Art. 31 Abs. 2","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Kapitel VI gilt nicht für Dienste, die nicht als Vollversion, sondern zu Test- und…"},{"id":"DA-VI-035","kapitel":"VI","fundstelle":"Art. 31 Abs. 3","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Information über nicht geltende Pflichten"}],"zahl":{"gesamt":17,"pflicht":13,"anspruch":0,"recht":0,"ausnahme":4,"gegenseite":0}},{"id":"a-entgelte","name":"Wechselentgelte","ergaenzt":true,"fundstellen":["Art. 29"],"folie_kapitel":["VI"],"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-022","kapitel":"VI","fundstelle":"Art. 29 Abs. 1","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Verbot von Wechselentgelten ab 12.01.2027"},{"id":"DA-VI-023","kapitel":"VI","fundstelle":"Art. 29 Abs. 2, 3","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Nur kostendeckende Wechselentgelte bis 12.01.2027"},{"id":"DA-VI-024","kapitel":"VI","fundstelle":"Art. 29 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Vorvertragliche Entgeltinformation"},{"id":"DA-VI-025","kapitel":"VI","fundstelle":"Art. 29 Abs. 5","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Anbieter informiert Kunden gegebenenfalls über Dienste, bei denen der Wechsel sehr…"},{"id":"DA-VI-026","kapitel":"VI","fundstelle":"Art. 29 Abs. 6","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Die Informationen nach Abs. 4 und 5 sind gegebenenfalls in einem gesonderten Website-Abschnitt…"}],"zahl":{"gesamt":5,"pflicht":5,"anspruch":0,"recht":0,"ausnahme":0,"gegenseite":0}},{"id":"a-parallel","name":"Parallelnutzung","fundstellen":["Art. 34"],"folie_kapitel":["VIII"],"kapitel":["VIII"],"anforderungen":[{"id":"DA-VIII-003","kapitel":"VIII","fundstelle":"Art. 34 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Interoperabilität für Multi-Cloud"},{"id":"DA-VIII-004","kapitel":"VIII","fundstelle":"Art. 34 Abs. 2","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Extraktionsentgelte nur zu Selbstkosten"}],"zahl":{"gesamt":2,"pflicht":2,"anspruch":0,"recht":0,"ausnahme":0,"gegenseite":0}},{"id":"a-drittstaat","name":"Drittstaatenzugriff","fundstellen":["Art. 32"],"folie_kapitel":["VII"],"kapitel":["VII"],"anforderungen":[{"id":"DA-VII-001","kapitel":"VII","fundstelle":"Art. 32 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Schutz vor Drittstaatszugriff"},{"id":"DA-VII-002","kapitel":"VII","fundstelle":"Art. 32 Abs. 2","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Drittstaatliche Gerichts- oder Behördenentscheidungen, die die Übermittlung von oder den…"},{"id":"DA-VII-003","kapitel":"VII","fundstelle":"Art. 32 Abs. 3 UAbs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Herausgabe ohne Abkommen nur bei Rechtsstaatsgarantien"},{"id":"DA-VII-004","kapitel":"VII","fundstelle":"Art. 32 Abs. 3 UAbs. 2","typ":"Recht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Adressat kann die Stellungnahme der zuständigen nationalen Stelle/Behörde für…"},{"id":"DA-VII-005","kapitel":"VII","fundstelle":"Art. 32 Abs. 4","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Sind die Voraussetzungen nach Abs. 2 oder 3 erfüllt, stellt der Anbieter nur die Mindestmenge…"},{"id":"DA-VII-006","kapitel":"VII","fundstelle":"Art. 32 Abs. 5","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Kunden vorab informieren"}],"zahl":{"gesamt":6,"pflicht":4,"anspruch":0,"recht":1,"ausnahme":1,"gegenseite":0}}]},{"id":"kunde","name":"Kunde","rolle":null,"hinweis":"Als Kunde treffen Sie hier keine eigenen Pflichten — Kapitel VI gibt Ihnen Ansprüche gegen Ihren Anbieter.","sachverhalte":[{"id":"k-wechsel","name":"Anbieterwechsel","fundstellen":["Art. 23","Art. 24","Art. 26","Art. 27","Art. 28","Art. 30","Art. 31"],"folie_kapitel":["VI"],"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-001","kapitel":"VI","fundstelle":"Art. 23 Satz 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Wechsel ermöglichen"},{"id":"DA-VI-002","kapitel":"VI","fundstelle":"Art. 23 Satz 2 Buchst. a–e","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Keine Wechselhindernisse"},{"id":"DA-VI-003","kapitel":"VI","fundstelle":"Art. 24","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Die Verantwortung nach Art. 23, 25, 29, 30 und 34 beschränkt sich auf Dienste, Verträge oder…"},{"id":"DA-VI-017","kapitel":"VI","fundstelle":"Art. 26 Buchst. a","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Information über Wechselverfahren"},{"id":"DA-VI-018","kapitel":"VI","fundstelle":"Art. 26 Buchst. b","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Online-Register der Datenstrukturen"},{"id":"DA-VI-019","kapitel":"VI","fundstelle":"Art. 27","typ":"Handlungspflicht","adressat":"Alle Beteiligten, einschließlich übernehmender Anbieter von Datenverarbeitungsdiensten (und Dritte, die im Namen des Kunden handeln, EG 85)","eigen":false,"anspruch":true,"titel":"Zusammenarbeit nach Treu und Glauben"},{"id":"DA-VI-020","kapitel":"VI","fundstelle":"Art. 28 Abs. 1","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Website-Transparenz zu Gerichtsbarkeit und Schutzmaßnahmen"},{"id":"DA-VI-021","kapitel":"VI","fundstelle":"Art. 28 Abs. 2","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Verweis im Vertrag"},{"id":"DA-VI-027","kapitel":"VI","fundstelle":"Art. 30 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten für Infrastrukturressourcen (IaaS)","eigen":false,"anspruch":true,"titel":"Funktionsäquivalenz (IaaS)"},{"id":"DA-VI-028","kapitel":"VI","fundstelle":"Art. 30 Abs. 2","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS nach Abs. 1)","eigen":false,"anspruch":true,"titel":"Offene Schnittstellen (PaaS/SaaS)"},{"id":"DA-VI-029","kapitel":"VI","fundstelle":"Art. 30 Abs. 3","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":false,"anspruch":true,"titel":"Kompatibilität mit künftigen Normen"},{"id":"DA-VI-030","kapitel":"VI","fundstelle":"Art. 30 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":false,"anspruch":true,"titel":"Das Online-Register nach Art. 26 Buchst. b ist entsprechend den Pflichten nach Abs. 3 zu…"},{"id":"DA-VI-031","kapitel":"VI","fundstelle":"Art. 30 Abs. 5","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Export in maschinenlesbarem Format"},{"id":"DA-VI-032","kapitel":"VI","fundstelle":"Art. 30 Abs. 6","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Anbieter sind nicht verpflichtet, neue Technologien oder Dienste zu entwickeln,…"},{"id":"DA-VI-033","kapitel":"VI","fundstelle":"Art. 31 Abs. 1","typ":"Ausnahme","adressat":"Anbieter maßgeschneiderter Datenverarbeitungsdienste","eigen":false,"anspruch":false,"titel":"Die Pflichten aus Art. 23 Buchst. d, Art. 29 und Art. 30 Abs. 1 und 3 gelten nicht für…"},{"id":"DA-VI-034","kapitel":"VI","fundstelle":"Art. 31 Abs. 2","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Kapitel VI gilt nicht für Dienste, die nicht als Vollversion, sondern zu Test- und…"},{"id":"DA-VI-035","kapitel":"VI","fundstelle":"Art. 31 Abs. 3","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Information über nicht geltende Pflichten"}],"zahl":{"gesamt":17,"pflicht":0,"anspruch":13,"recht":0,"ausnahme":4,"gegenseite":0}},{"id":"k-parallel","name":"Parallelnutzung","ergaenzt":true,"fundstellen":["Art. 34"],"folie_kapitel":["VIII"],"kapitel":["VIII"],"anforderungen":[{"id":"DA-VIII-003","kapitel":"VIII","fundstelle":"Art. 34 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Interoperabilität für Multi-Cloud"},{"id":"DA-VIII-004","kapitel":"VIII","fundstelle":"Art. 34 Abs. 2","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Extraktionsentgelte nur zu Selbstkosten"}],"zahl":{"gesamt":2,"pflicht":0,"anspruch":2,"recht":0,"ausnahme":0,"gegenseite":0}}],"anspruch_gegen":"Anbieter von Datenverarbeitungsdienst"}]},{"id":"datenbestand","gegenstand":"Datenbestand","kurz":"Daten, die Sie halten und bereitstellen müssen","marke":"offen","grund":"Ob Inverso Dateninhaber i. S. v. Art. 2 Nr. 13 ist, ist die offene Kernfrage: Der Data Act knüpft an vernetzte Produkte und verbundene Dienste an, und nach EG 22 sind Auftragsverarbeiter keine Dateninhaber.","anknuepfungspunkte":[{"id":"dateninhaber","name":"Dateninhaber","rolle":"Dateninhaber","hinweis":"Kapitel III und V richten sich teils an Sie, teils an die Gegenseite — die Liste weist das je Zeile aus.","sachverhalte":[{"id":"d-bereitstellung","name":"Datenbereitstellung","fundstellen":["Art. 8","Art. 9","Art. 10","Art. 11","Art. 12"],"folie_kapitel":["III"],"kapitel":["III"],"anforderungen":[{"id":"DA-III-001","kapitel":"III","fundstelle":"Art. 12 Abs. 1","typ":"Ausnahme","adressat":"Dateninhaber (B2B)","eigen":true,"anspruch":false,"titel":"Anwendungsbereich Kapitel III"},{"id":"DA-III-002","kapitel":"III","fundstelle":"Art. 8 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"FRAND-Bedingungen"},{"id":"DA-III-003","kapitel":"III","fundstelle":"Art. 8 Abs. 2","typ":"Ausnahme","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Vertragsklauseln über Datenzugang/-nutzung oder Haftung/Rechtsbehelfe sind nicht bindend, wenn…"},{"id":"DA-III-004","kapitel":"III","fundstelle":"Art. 8 Abs. 3 Satz 1","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Keine Diskriminierung zwischen Empfängern"},{"id":"DA-III-005","kapitel":"III","fundstelle":"Art. 8 Abs. 3 Satz 2","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Nachweis der Nichtdiskriminierung"},{"id":"DA-III-006","kapitel":"III","fundstelle":"Art. 8 Abs. 4","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Daten dürfen einem Datenempfänger – auch exklusiv – nur bereitgestellt werden, wenn der Nutzer…"},{"id":"DA-III-007","kapitel":"III","fundstelle":"Art. 8 Abs. 5","typ":"Recht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Beide Parteien müssen keine Informationen herausgeben, die über das zur Überprüfung der…"},{"id":"DA-III-008","kapitel":"III","fundstelle":"Art. 8 Abs. 6","typ":"Ausnahme","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Eine Bereitstellungspflicht verpflichtet nicht zur Offenlegung von Geschäftsgeheimnissen,…"},{"id":"DA-III-009","kapitel":"III","fundstelle":"Art. 9 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Angemessene Gegenleistung"},{"id":"DA-III-010","kapitel":"III","fundstelle":"Art. 9 Abs. 2, 3","typ":"Handlungspflicht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Bei der Einigung sind insbesondere zu berücksichtigen: (a) Kosten der Bereitstellung…"},{"id":"DA-III-011","kapitel":"III","fundstelle":"Art. 9 Abs. 4","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Kostendeckel für KMU und Forschung"},{"id":"DA-III-012","kapitel":"III","fundstelle":"Art. 9 Abs. 7","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Transparenz der Preisberechnung"},{"id":"DA-III-013","kapitel":"III","fundstelle":"Art. 10 Abs. 1","typ":"Recht","adressat":"Nutzer; Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Zugang zu einer zertifizierten Streitbeilegungsstelle für Streitigkeiten nach Art. 4 Abs. 3…"},{"id":"DA-III-014","kapitel":"III","fundstelle":"Art. 10 Abs. 2","typ":"Informationspflicht","adressat":"Streitbeilegungsstelle","eigen":false,"anspruch":false,"titel":"Die Streitbeilegungsstelle teilt den Parteien vor Antragstellung die Entgelte oder die Methode…"},{"id":"DA-III-015","kapitel":"III","fundstelle":"Art. 10 Abs. 3","typ":"Handlungspflicht","adressat":"Dateninhaber; Nutzer; Datenempfänger","eigen":true,"anspruch":false,"titel":"Entscheidet die Streitbeilegungsstelle zugunsten des Nutzers/Datenempfängers, trägt der…"},{"id":"DA-III-016","kapitel":"III","fundstelle":"Art. 10 Abs. 4","typ":"Recht","adressat":"Kunden; Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Kunden und Anbieter von Datenverarbeitungsdiensten haben Zugang zu einer zugelassenen…"},{"id":"DA-III-017","kapitel":"III","fundstelle":"Art. 10 Abs. 5–11","typ":"Handlungspflicht","adressat":"Streitbeilegungsstellen; Mitgliedstaaten","eigen":false,"anspruch":false,"titel":"Zulassungsvoraussetzungen (Unparteilichkeit, Fachwissen, elektronische Erreichbarkeit,…"},{"id":"DA-III-018","kapitel":"III","fundstelle":"Art. 10 Abs. 12, 13","typ":"Recht","adressat":"Alle Parteien eines Streitbeilegungsverfahrens","eigen":false,"anspruch":false,"titel":"Entscheidungen sind nur bindend, wenn die Parteien dem vorab ausdrücklich zugestimmt haben;…"},{"id":"DA-III-019","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 1","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Technische Schutzmaßnahmen zulässig"},{"id":"DA-III-020","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 2","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Technische Schutzmaßnahmen dürfen Datenempfänger nicht unterschiedlich behandeln und Nutzer…"},{"id":"DA-III-021","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 3","typ":"Unterlassungspflicht","adressat":"Nutzer; Dritte; Datenempfänger","eigen":false,"anspruch":false,"titel":"Nutzer, Dritte und Datenempfänger dürfen technische Schutzmaßnahmen nur mit Zustimmung des…"},{"id":"DA-III-022","kapitel":"III","fundstelle":"Art. 11 Abs. 2 i. V. m. Abs. 3","typ":"Handlungspflicht","adressat":"Dritter; Datenempfänger","eigen":false,"anspruch":false,"titel":"Rechtsfolgen bei Datenmissbrauch"},{"id":"DA-III-023","kapitel":"III","fundstelle":"Art. 11 Abs. 4","typ":"Handlungspflicht","adressat":"Nutzer; jede andere Partei, die Daten vom Nutzer unter Verstoß gegen die VO erhält","eigen":false,"anspruch":false,"titel":"Die Rechtsfolgen nach Abs. 2 gelten auch für Nutzer, die technische Schutzmaßnahmen…"},{"id":"DA-III-024","kapitel":"III","fundstelle":"Art. 11 Abs. 5","typ":"Recht","adressat":"Nutzer","eigen":false,"anspruch":false,"titel":"Bei Verstoß des Datenempfängers gegen Art. 6 Abs. 2 Buchst. a oder b hat der Nutzer dieselben…"},{"id":"DA-III-025","kapitel":"III","fundstelle":"Art. 12 Abs. 2","typ":"Ausnahme","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Klauseln einer Datenweitergabevereinbarung, die die Anwendung von Kapitel III zum Nachteil…"}],"zahl":{"gesamt":25,"pflicht":10,"anspruch":0,"recht":6,"ausnahme":4,"gegenseite":5}},{"id":"d-behoerden","name":"Behördenverlangen","fundstellen":["Art. 14","Art. 15","Art. 16","Art. 17","Art. 18","Art. 19","Art. 20","Art. 21","Art. 22"],"folie_kapitel":["V"],"kapitel":["V"],"anforderungen":[{"id":"DA-V-001","kapitel":"V","fundstelle":"Art. 14","typ":"Handlungspflicht","adressat":"Dateninhaber (juristische Personen außer öffentliche Stellen)","eigen":true,"anspruch":false,"titel":"Datenbereitstellung an Behörden bei außergewöhnlicher Notwendigkeit"},{"id":"DA-V-002","kapitel":"V","fundstelle":"Art. 15 Abs. 1 Buchst. a","typ":"Ausnahme","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Außergewöhnliche Notwendigkeit liegt vor, wenn die Daten zur Bewältigung eines öffentlichen…"},{"id":"DA-V-003","kapitel":"V","fundstelle":"Art. 15 Abs. 1 Buchst. b","typ":"Ausnahme","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Außerhalb eines Notstands nur für nicht-personenbezogene Daten, wenn (i) die Stelle…"},{"id":"DA-V-004","kapitel":"V","fundstelle":"Art. 15 Abs. 2","typ":"Ausnahme","adressat":"Kleinstunternehmen; Kleinunternehmen","eigen":false,"anspruch":false,"titel":"Schutz für Kleinst-/Kleinunternehmen"},{"id":"DA-V-005","kapitel":"V","fundstelle":"Art. 16 Abs. 1, 2","typ":"Ausnahme","adressat":"Dateninhaber; öffentliche Stellen","eigen":true,"anspruch":false,"titel":"Kapitel V lässt Berichts-, Informationszugangs- und Compliance-Nachweispflichten nach…"},{"id":"DA-V-006","kapitel":"V","fundstelle":"Art. 17 Abs. 1","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Ein Datenverlangen muss: (a) benötigte Daten und Metadaten angeben, (b) außergewöhnliche…"},{"id":"DA-V-007","kapitel":"V","fundstelle":"Art. 17 Abs. 2","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Das Verlangen muss schriftlich, klar und verständlich sein, sich auf Daten unter Kontrolle des…"},{"id":"DA-V-008","kapitel":"V","fundstelle":"Art. 17 Abs. 3","typ":"Unterlassungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Nach Kapitel V erlangte Daten dürfen nicht zur Weiterverwendung i. S. d. DGA bzw. der…"},{"id":"DA-V-009","kapitel":"V","fundstelle":"Art. 17 Abs. 4","typ":"Informationspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Bei Austausch der Daten mit anderen Stellen oder Weitergabe an beauftragte Dritte (öffentlich…"},{"id":"DA-V-010","kapitel":"V","fundstelle":"Art. 17 Abs. 5","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Hält der Dateninhaber seine Rechte durch Übermittlung/Bereitstellung der Daten für verletzt,…"},{"id":"DA-V-011","kapitel":"V","fundstelle":"Art. 18 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Unverzügliche Bereitstellung"},{"id":"DA-V-012","kapitel":"V","fundstelle":"Art. 18 Abs. 2","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Ablehnung oder Änderungsantrag fristgebunden"},{"id":"DA-V-013","kapitel":"V","fundstelle":"Art. 18 Abs. 3","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Bei Ablehnung/Änderungsantrag wegen eines früheren gleichartigen Verlangens (Abs. 2 Buchst. b)…"},{"id":"DA-V-014","kapitel":"V","fundstelle":"Art. 18 Abs. 4","typ":"Handlungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Anonymisieren/Pseudonymisieren"},{"id":"DA-V-015","kapitel":"V","fundstelle":"Art. 18 Abs. 5","typ":"Recht","adressat":"Dateninhaber; anfragende Stelle","eigen":true,"anspruch":false,"titel":"Bei beabsichtigtem Widerspruch der Stelle gegen eine Ablehnung oder Einspruch des…"},{"id":"DA-V-016","kapitel":"V","fundstelle":"Art. 19 Abs. 1","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union (und Dritte nach Art. 17 Abs. 4, Art. 21 Abs. 3)","eigen":false,"anspruch":false,"titel":"Die empfangende Stelle darf die Daten nicht zweckwidrig nutzen, muss technische und…"},{"id":"DA-V-017","kapitel":"V","fundstelle":"Art. 19 Abs. 2","typ":"Unterlassungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union; Dritte","eigen":false,"anspruch":false,"titel":"Empfänger dürfen die Daten oder daraus gewonnene Erkenntnisse über den Dateninhaber nicht zur…"},{"id":"DA-V-018","kapitel":"V","fundstelle":"Art. 19 Abs. 3","typ":"Handlungspflicht","adressat":"Dateninhaber (bzw. Geschäftsgeheimnisinhaber); empfangende Stelle","eigen":true,"anspruch":false,"titel":"Geschäftsgeheimnisse gegenüber Behörden"},{"id":"DA-V-019","kapitel":"V","fundstelle":"Art. 19 Abs. 4","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Die empfangende Stelle ist für die Sicherheit der erhaltenen Daten verantwortlich."},{"id":"DA-V-020","kapitel":"V","fundstelle":"Art. 20 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber (außer Kleinst-/Kleinunternehmen); empfangende Stelle","eigen":true,"anspruch":false,"titel":"Unentgeltlichkeit bei Notstand"},{"id":"DA-V-021","kapitel":"V","fundstelle":"Art. 20 Abs. 2","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Anspruch auf faire Gegenleistung"},{"id":"DA-V-022","kapitel":"V","fundstelle":"Art. 20 Abs. 3","typ":"Recht","adressat":"Kleinstunternehmen; Kleinunternehmen","eigen":false,"anspruch":false,"titel":"Gegenleistung für Kleinst-/Kleinunternehmen auch bei Notstand"},{"id":"DA-V-023","kapitel":"V","fundstelle":"Art. 21 Abs. 1–5","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union; Forschungseinrichtungen/statistische Ämter","eigen":false,"anspruch":false,"titel":"Empfangende Stellen dürfen die Daten an gemeinnützige/im öffentlichen Interesse handelnde…"},{"id":"DA-V-024","kapitel":"V","fundstelle":"Art. 22 Abs. 3, 4","typ":"Handlungspflicht","adressat":"Öffentliche Stellen, Kommission, EZB, Einrichtungen der Union; zuständige Behörde","eigen":false,"anspruch":false,"titel":"Bei Verlangen an einen Dateninhaber in einem anderen Mitgliedstaat ist zunächst die dortige…"}],"zahl":{"gesamt":24,"pflicht":6,"anspruch":0,"recht":5,"ausnahme":4,"gegenseite":9}}]}]},{"id":"vertrag","gegenstand":"Vertrag","kurz":"B2B-Verträge mit datenbezogenen Klauseln","marke":"ja","grund":"Gilt rollenunabhängig für jedes Unternehmen mit solchen Verträgen.","anknuepfungspunkte":[{"id":"rollenunabhaengig","name":"Rollenunabhängig","rolle":null,"hinweis":"Gilt unabhängig davon, welche Rolle Sie sonst einnehmen.","sachverhalte":[{"id":"v-klauseln","name":"Einseitig auferlegte datenbezogene Klauseln","fundstellen":["Art. 13"],"folie_kapitel":["IV"],"kapitel":["IV"],"anforderungen":[{"id":"DA-IV-001","kapitel":"IV","fundstelle":"Art. 13 Abs. 1","typ":"Ausnahme","adressat":"Unternehmen, das einem anderen Unternehmen Vertragsklauseln einseitig auferlegt","eigen":false,"anspruch":false,"titel":"Missbräuchliche Klauseln unwirksam"},{"id":"DA-IV-002","kapitel":"IV","fundstelle":"Art. 13 Abs. 2","typ":"Ausnahme","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Klauseln, die zwingenden Bestimmungen des Unionsrechts entsprechen oder die bei Fehlen einer…"},{"id":"DA-IV-003","kapitel":"IV","fundstelle":"Art. 13 Abs. 3","typ":"Ausnahme","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Generalklausel: Eine Klausel ist missbräuchlich, wenn ihre Anwendung eine grobe Abweichung von…"},{"id":"DA-IV-004","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. a","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Stets missbräuchlich (schwarze Liste): Ausschluss oder Beschränkung der Haftung des…"},{"id":"DA-IV-005","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. b","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Stets missbräuchlich: Ausschluss der Rechtsbehelfe der anderen Partei bei Nichterfüllung oder…"},{"id":"DA-IV-006","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. c","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Stets missbräuchlich: ausschließliches Recht des Verwenders, über die Vertragsgemäßheit der…"},{"id":"DA-IV-007","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. a","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Vermutet missbräuchlich (graue Liste): unangemessene Beschränkung von Rechtsmitteln/Haftung…"},{"id":"DA-IV-008","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. b","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Vermutet missbräuchlich: Zugangs-/Nutzungsrecht des Verwenders an Daten der anderen Partei,…"},{"id":"DA-IV-009","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. c","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, die von ihr bereitgestellten oder…"},{"id":"DA-IV-010","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. d","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, die Vereinbarung innerhalb einer…"},{"id":"DA-IV-011","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. e","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, während der Laufzeit oder in…"},{"id":"DA-IV-012","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. f","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Vermutet missbräuchlich: Kündigungsrecht des Verwenders mit unangemessen kurzer Frist – unter…"},{"id":"DA-IV-013","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. g","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Vermutet missbräuchlich: einseitige wesentliche Änderung von Preis oder wesentlichen…"},{"id":"DA-IV-014","kapitel":"IV","fundstelle":"Art. 13 Abs. 6","typ":"Handlungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":false,"titel":"Beweislast des Verwenders"},{"id":"DA-IV-015","kapitel":"IV","fundstelle":"Art. 13 Abs. 7","typ":"Ausnahme","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Ist die missbräuchliche Klausel abtrennbar, bleiben die übrigen Vertragsklauseln bindend."},{"id":"DA-IV-016","kapitel":"IV","fundstelle":"Art. 13 Abs. 8","typ":"Ausnahme","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Art. 13 gilt weder für Klauseln über den Hauptgegenstand des Vertrags noch für die…"},{"id":"DA-IV-017","kapitel":"IV","fundstelle":"Art. 13 Abs. 9","typ":"Unterlassungspflicht","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Die Parteien dürfen die Anwendung von Art. 13 nicht ausschließen, davon abweichen oder seine…"}],"zahl":{"gesamt":17,"pflicht":12,"anspruch":0,"recht":0,"ausnahme":5,"gegenseite":0}},{"id":"v-wechselbedingungen","name":"Vertragliche Wechselbedingungen","ergaenzt":true,"fundstellen":["Art. 25"],"folie_kapitel":["VI"],"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-004","kapitel":"VI","fundstelle":"Art. 25 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Schriftlicher Vertrag mit Wechselklauseln"},{"id":"DA-VI-005","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. a","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"30-Tage-Übergang mit Unterstützung"},{"id":"DA-VI-006","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. b","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Der Vertrag muss die Verpflichtung des Anbieters enthalten, die Ausstiegsstrategie des Kunden…"},{"id":"DA-VI-007","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. c","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Der Vertrag muss eine Klausel enthalten, wonach der Vertrag als beendet gilt und der Kunde…"},{"id":"DA-VI-008","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. d","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Maximale Kündigungsfrist 2 Monate"},{"id":"DA-VI-009","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. e","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Liste exportierbarer Datenkategorien"},{"id":"DA-VI-010","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. f","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Liste ausgenommener interner Daten"},{"id":"DA-VI-011","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. g","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Abrufzeitraum mindestens 30 Tage"},{"id":"DA-VI-012","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. h","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Löschung nach Abruf"},{"id":"DA-VI-013","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. i","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Der Vertrag muss die nach Art. 29 zulässigen Wechselentgelte ausweisen."},{"id":"DA-VI-014","kapitel":"VI","fundstelle":"Art. 25 Abs. 3","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Der Vertrag muss Klauseln enthalten, wonach der Kunde nach Ablauf der maximalen…"},{"id":"DA-VI-015","kapitel":"VI","fundstelle":"Art. 25 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Verlängerter Übergang nur begründet"},{"id":"DA-VI-016","kapitel":"VI","fundstelle":"Art. 25 Abs. 5","typ":"Recht","adressat":"Anbieter von Datenverarbeitungsdiensten (Vertragsgestaltung); Kunde (Recht)","eigen":false,"anspruch":false,"titel":"Der Vertrag muss dem Kunden das Recht einräumen, den Übergangszeitraum einmal um einen von ihm…"}],"zahl":{"gesamt":13,"pflicht":12,"anspruch":0,"recht":1,"ausnahme":0,"gegenseite":0}}]}]}]}</script>
+<script id="daten" type="application/json">{"meta":{"quelle":"DataAct_Anforderungen.xlsx","erzeugt_am":"2026-09-18T13:07:28","erzeugt_durch":"build_data.py","schema":"dataact-entscheidungsbaum/1","wirkungsrangfolge":["schließt aus","verschiebt Geltungsbeginn","löst aus","schränkt ein"],"hinweis":"Alle Inhalte stammen unverändert aus der Excel. Nicht eindeutig zerlegbare Stellen sind als Klartext erhalten (Ausdrucksatom 'unklar') und in 'warnungen' aufgeführt.","anzahl":{"module":8,"fragen":49,"kanten":150,"variablen":45,"mapping":797,"anforderungen":189,"ergebnisse":189,"begriffe":37,"fristen":25,"offene_punkte":38,"legende":8,"qs_abschnitte":8,"testprofile":6,"zeitleiste":10,"begriffsmarkierungen":964,"warnungen":6,"hinweise":146},"angewandte_annahmen":{"datei":"annahmen.json","beschreibung":"Geprüfte Ergänzungen zur Excel, die beim Bauen eingesetzt werden, ohne die Excel zu ändern. Zwei Arten: 'gesetzte_variablen' bestätigt eine Antwort-\u003eWert-Zuordnung, die die Excel nicht ausspricht. 'ergebnistexte' ergänzt einen Ergebnistext an einer Kante, an der die Excel keinen vorsieht - der Nutzer erführe sonst nicht, dass und warum ein Kapitel geprüft und verneint wurde. Jede Ergänzung nennt ihren Grund und die Fundstelle, auf die sie sich stützt. Keine Ergänzung erfindet eine Anforderung; sie verweisen ausschließlich auf Anforderungen, die im Katalog stehen.","zuordnungen":["IV-03/VERTRAG_ALT: A=Nein, B=Ja, C=Gemischt","V-01/C: Ergebnistext angehängt","IV-01/Nein: Ergebnistext gesetzt"]},"fassung":"dreiklang","eingebettet":true},"titel":"EU Data Act — Ableitung von Rechtsfolgen","formel":["Bewertungsgegenstand","Anknüpfungspunkt","Sachverhalt","Rechtsfolge"],"unternehmen":{"name":"Inverso GmbH","kurz":"IT-Dienstleister für Versicherungssoftware"},"marken":{"ja":"trifft zu","offen":"noch offen","nein":"trifft nicht zu"},"nicht_abgedeckt":{"titel":"Kapitel II — IoT-Datenzugang","text":"Kapitel II (Datenzugang bei vernetzten Produkten, 46 Anforderungen) bildet diese Übersicht nicht ab. Für die Inverso GmbH hat der Auftraggeber festgestellt, dass IoT nicht einschlägig ist. Wer vernetzte Produkte herstellt oder Daten daraus erhält, prüft das mit dem ausführlichen Werkzeug."},"baeume":[{"id":"dv-dienst","gegenstand":"Datenverarbeitungsdienst","kurz":"Cloud-, Hosting- und Softwaredienste (IaaS, PaaS, SaaS)","marke":"ja","grund":"Inverso bietet solche Dienste an und nutzt selbst fremde.","gabelfrage":"EIN-01","anknuepfungspunkte":[{"id":"anbieter","name":"Anbieter","antwort":{"schluessel":"D","text":"Wir bieten Cloud-, Hosting- oder Edge-Dienste an (IaaS, PaaS, SaaS)"},"rolle":"Anbieter von Datenverarbeitungsdienst","hinweis":"Kapitel VI richtet sich fast vollständig an den Anbieter — hier stehen die eigenen Pflichten.","sachverhalte":[{"id":"a-wechsel","name":"Anbieterwechsel","frage":{"id":"VI-01","text":"Bieten Sie Kunden einen Dienst an, bei dem sie über das Netz auf skalierbare Rechenressourcen (Rechenleistung, Speicher, Plattformen oder Software) zugreifen, die Sie mit anderen Kunden gemeinsam betreiben (IaaS, PaaS, SaaS, Edge)?","modul":"M-VI","antwort":{"schluessel":"Ja","text":"Ja"}},"antwort":"Ja","fundstellen":["Art. 23","Art. 24","Art. 26","Art. 27","Art. 28","Art. 30","Art. 31"],"folie_kapitel":["VI"],"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-001","kapitel":"VI","fundstelle":"Art. 23 Satz 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Wechsel ermöglichen"},{"id":"DA-VI-002","kapitel":"VI","fundstelle":"Art. 23 Satz 2 Buchst. a–e","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Keine Wechselhindernisse"},{"id":"DA-VI-003","kapitel":"VI","fundstelle":"Art. 24","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Die Verantwortung nach Art. 23, 25, 29, 30 und 34 beschränkt sich auf Dienste, Verträge oder…"},{"id":"DA-VI-017","kapitel":"VI","fundstelle":"Art. 26 Buchst. a","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Information über Wechselverfahren"},{"id":"DA-VI-018","kapitel":"VI","fundstelle":"Art. 26 Buchst. b","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Online-Register der Datenstrukturen"},{"id":"DA-VI-019","kapitel":"VI","fundstelle":"Art. 27","typ":"Handlungspflicht","adressat":"Alle Beteiligten, einschließlich übernehmender Anbieter von Datenverarbeitungsdiensten (und Dritte, die im Namen des Kunden handeln, EG 85)","eigen":true,"anspruch":false,"titel":"Zusammenarbeit nach Treu und Glauben"},{"id":"DA-VI-020","kapitel":"VI","fundstelle":"Art. 28 Abs. 1","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Website-Transparenz zu Gerichtsbarkeit und Schutzmaßnahmen"},{"id":"DA-VI-021","kapitel":"VI","fundstelle":"Art. 28 Abs. 2","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Verweis im Vertrag"},{"id":"DA-VI-027","kapitel":"VI","fundstelle":"Art. 30 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten für Infrastrukturressourcen (IaaS)","eigen":true,"anspruch":false,"titel":"Funktionsäquivalenz (IaaS)"},{"id":"DA-VI-028","kapitel":"VI","fundstelle":"Art. 30 Abs. 2","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS nach Abs. 1)","eigen":true,"anspruch":false,"titel":"Offene Schnittstellen (PaaS/SaaS)"},{"id":"DA-VI-029","kapitel":"VI","fundstelle":"Art. 30 Abs. 3","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":true,"anspruch":false,"titel":"Kompatibilität mit künftigen Normen"},{"id":"DA-VI-030","kapitel":"VI","fundstelle":"Art. 30 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":true,"anspruch":false,"titel":"Das Online-Register nach Art. 26 Buchst. b ist entsprechend den Pflichten nach Abs. 3 zu…"},{"id":"DA-VI-031","kapitel":"VI","fundstelle":"Art. 30 Abs. 5","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Export in maschinenlesbarem Format"},{"id":"DA-VI-032","kapitel":"VI","fundstelle":"Art. 30 Abs. 6","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Anbieter sind nicht verpflichtet, neue Technologien oder Dienste zu entwickeln,…"},{"id":"DA-VI-033","kapitel":"VI","fundstelle":"Art. 31 Abs. 1","typ":"Ausnahme","adressat":"Anbieter maßgeschneiderter Datenverarbeitungsdienste","eigen":false,"anspruch":false,"titel":"Die Pflichten aus Art. 23 Buchst. d, Art. 29 und Art. 30 Abs. 1 und 3 gelten nicht für…"},{"id":"DA-VI-034","kapitel":"VI","fundstelle":"Art. 31 Abs. 2","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Kapitel VI gilt nicht für Dienste, die nicht als Vollversion, sondern zu Test- und…"},{"id":"DA-VI-035","kapitel":"VI","fundstelle":"Art. 31 Abs. 3","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Information über nicht geltende Pflichten"}],"zahl":{"gesamt":17,"pflicht":13,"anspruch":0,"recht":0,"ausnahme":4,"gegenseite":0}},{"id":"a-wechselbed","name":"Vertragliche Wechselbedingungen","frage":{"id":"VI-03","text":"Sind die zentralen Funktionen des Dienstes speziell für einen einzelnen Kunden entwickelt und wird der Dienst nicht in Ihrem Standardkatalog im größeren Maßstab angeboten?","modul":"M-VI","antwort":{"schluessel":"Nein","text":"Nein"}},"antwort":"Nein","fundstellen":["Art. 25"],"folie_kapitel":["VI"],"ergaenzt":true,"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-004","kapitel":"VI","fundstelle":"Art. 25 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Schriftlicher Vertrag mit Wechselklauseln"},{"id":"DA-VI-005","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. a","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"30-Tage-Übergang mit Unterstützung"},{"id":"DA-VI-006","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. b","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Vertrag muss die Verpflichtung des Anbieters enthalten, die Ausstiegsstrategie des Kunden…"},{"id":"DA-VI-007","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. c","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Vertrag muss eine Klausel enthalten, wonach der Vertrag als beendet gilt und der Kunde…"},{"id":"DA-VI-008","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. d","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Maximale Kündigungsfrist 2 Monate"},{"id":"DA-VI-009","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. e","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Liste exportierbarer Datenkategorien"},{"id":"DA-VI-010","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. f","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Liste ausgenommener interner Daten"},{"id":"DA-VI-011","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. g","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Abrufzeitraum mindestens 30 Tage"},{"id":"DA-VI-012","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. h","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Löschung nach Abruf"},{"id":"DA-VI-013","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. i","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Vertrag muss die nach Art. 29 zulässigen Wechselentgelte ausweisen."},{"id":"DA-VI-014","kapitel":"VI","fundstelle":"Art. 25 Abs. 3","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Vertrag muss Klauseln enthalten, wonach der Kunde nach Ablauf der maximalen…"},{"id":"DA-VI-015","kapitel":"VI","fundstelle":"Art. 25 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Verlängerter Übergang nur begründet"},{"id":"DA-VI-016","kapitel":"VI","fundstelle":"Art. 25 Abs. 5","typ":"Recht","adressat":"Anbieter von Datenverarbeitungsdiensten (Vertragsgestaltung); Kunde (Recht)","eigen":true,"anspruch":false,"titel":"Der Vertrag muss dem Kunden das Recht einräumen, den Übergangszeitraum einmal um einen von ihm…"}],"zahl":{"gesamt":13,"pflicht":12,"anspruch":0,"recht":1,"ausnahme":0,"gegenseite":0}},{"id":"a-entgelte","name":"Wechselentgelte","frage":{"id":"VI-05","text":"Erheben Sie derzeit Entgelte für den Anbieterwechsel oder die Datenextraktion (Egress-Gebühren, Migrationsgebühren)?","modul":"M-VI","antwort":{"schluessel":"Ja","text":"Ja"}},"antwort":"Ja","fundstellen":["Art. 29"],"folie_kapitel":["VI"],"ergaenzt":true,"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-022","kapitel":"VI","fundstelle":"Art. 29 Abs. 1","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Verbot von Wechselentgelten ab 12.01.2027"},{"id":"DA-VI-023","kapitel":"VI","fundstelle":"Art. 29 Abs. 2, 3","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Nur kostendeckende Wechselentgelte bis 12.01.2027"},{"id":"DA-VI-024","kapitel":"VI","fundstelle":"Art. 29 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Vorvertragliche Entgeltinformation"},{"id":"DA-VI-025","kapitel":"VI","fundstelle":"Art. 29 Abs. 5","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Anbieter informiert Kunden gegebenenfalls über Dienste, bei denen der Wechsel sehr…"},{"id":"DA-VI-026","kapitel":"VI","fundstelle":"Art. 29 Abs. 6","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Die Informationen nach Abs. 4 und 5 sind gegebenenfalls in einem gesonderten Website-Abschnitt…"}],"zahl":{"gesamt":5,"pflicht":5,"anspruch":0,"recht":0,"ausnahme":0,"gegenseite":0}},{"id":"a-parallel","name":"Parallelnutzung","frage":{"id":"VI-10","text":"Handelt es sich um einen vollständigen Wechsel (Kündigung des bisherigen Dienstes) oder um eine parallele Nutzung mehrerer Anbieter (Multi-Cloud)?","modul":"M-VI","antwort":{"schluessel":"B","text":"Parallele Nutzung"}},"antwort":"B","fundstellen":["Art. 34"],"folie_kapitel":["VIII"],"frage_hinweis":"Die Excel stellt diese Frage aus Kundensicht; Art. 34 richtet sich an den Anbieter.","kapitel":["VIII"],"anforderungen":[{"id":"DA-VIII-003","kapitel":"VIII","fundstelle":"Art. 34 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Interoperabilität für Multi-Cloud"},{"id":"DA-VIII-004","kapitel":"VIII","fundstelle":"Art. 34 Abs. 2","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Extraktionsentgelte nur zu Selbstkosten"}],"zahl":{"gesamt":2,"pflicht":2,"anspruch":0,"recht":0,"ausnahme":0,"gegenseite":0}},{"id":"a-drittstaat","name":"Drittstaatenzugriff","frage":{"id":"VI-07","text":"Liegt Ihnen ein Herausgabe- oder Zugangsverlangen einer Behörde oder eines Gerichts aus einem Nicht-EU-Staat zu solchen Daten vor?","modul":"M-VI","antwort":{"schluessel":"Ja","text":"Ja"}},"antwort":"Ja","fundstellen":["Art. 32"],"folie_kapitel":["VII"],"kapitel":["VII"],"anforderungen":[{"id":"DA-VII-001","kapitel":"VII","fundstelle":"Art. 32 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Schutz vor Drittstaatszugriff"},{"id":"DA-VII-002","kapitel":"VII","fundstelle":"Art. 32 Abs. 2","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Drittstaatliche Gerichts- oder Behördenentscheidungen, die die Übermittlung von oder den…"},{"id":"DA-VII-003","kapitel":"VII","fundstelle":"Art. 32 Abs. 3 UAbs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Herausgabe ohne Abkommen nur bei Rechtsstaatsgarantien"},{"id":"DA-VII-004","kapitel":"VII","fundstelle":"Art. 32 Abs. 3 UAbs. 2","typ":"Recht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Der Adressat kann die Stellungnahme der zuständigen nationalen Stelle/Behörde für…"},{"id":"DA-VII-005","kapitel":"VII","fundstelle":"Art. 32 Abs. 4","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Sind die Voraussetzungen nach Abs. 2 oder 3 erfüllt, stellt der Anbieter nur die Mindestmenge…"},{"id":"DA-VII-006","kapitel":"VII","fundstelle":"Art. 32 Abs. 5","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":true,"anspruch":false,"titel":"Kunden vorab informieren"}],"zahl":{"gesamt":6,"pflicht":4,"anspruch":0,"recht":1,"ausnahme":1,"gegenseite":0}}]},{"id":"kunde","name":"Kunde","antwort":{"schluessel":"E","text":"Wir nutzen Cloud-/SaaS-Dienste anderer Anbieter"},"rolle":null,"anspruch_gegen":"Anbieter von Datenverarbeitungsdienst","hinweis":"Als Kunde treffen Sie hier keine eigenen Pflichten — Kapitel VI gibt Ihnen Ansprüche gegen Ihren Anbieter.","sachverhalte":[{"id":"k-wechsel","name":"Anbieterwechsel","frage":{"id":"VI-09","text":"Nutzen Sie Cloud- oder SaaS-Dienste anderer Anbieter und planen Sie einen Anbieterwechsel, eine Rückverlagerung ins eigene Rechenzentrum oder die parallele Nutzung mehrerer Anbieter?","modul":"M-VI","antwort":{"schluessel":"Ja","text":"Ja"}},"antwort":"Ja","fundstellen":["Art. 23","Art. 24","Art. 26","Art. 27","Art. 28","Art. 30","Art. 31"],"folie_kapitel":["VI"],"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-001","kapitel":"VI","fundstelle":"Art. 23 Satz 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Wechsel ermöglichen"},{"id":"DA-VI-002","kapitel":"VI","fundstelle":"Art. 23 Satz 2 Buchst. a–e","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Keine Wechselhindernisse"},{"id":"DA-VI-003","kapitel":"VI","fundstelle":"Art. 24","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Die Verantwortung nach Art. 23, 25, 29, 30 und 34 beschränkt sich auf Dienste, Verträge oder…"},{"id":"DA-VI-017","kapitel":"VI","fundstelle":"Art. 26 Buchst. a","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Information über Wechselverfahren"},{"id":"DA-VI-018","kapitel":"VI","fundstelle":"Art. 26 Buchst. b","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Online-Register der Datenstrukturen"},{"id":"DA-VI-019","kapitel":"VI","fundstelle":"Art. 27","typ":"Handlungspflicht","adressat":"Alle Beteiligten, einschließlich übernehmender Anbieter von Datenverarbeitungsdiensten (und Dritte, die im Namen des Kunden handeln, EG 85)","eigen":false,"anspruch":true,"titel":"Zusammenarbeit nach Treu und Glauben"},{"id":"DA-VI-020","kapitel":"VI","fundstelle":"Art. 28 Abs. 1","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Website-Transparenz zu Gerichtsbarkeit und Schutzmaßnahmen"},{"id":"DA-VI-021","kapitel":"VI","fundstelle":"Art. 28 Abs. 2","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Verweis im Vertrag"},{"id":"DA-VI-027","kapitel":"VI","fundstelle":"Art. 30 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten für Infrastrukturressourcen (IaaS)","eigen":false,"anspruch":true,"titel":"Funktionsäquivalenz (IaaS)"},{"id":"DA-VI-028","kapitel":"VI","fundstelle":"Art. 30 Abs. 2","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS nach Abs. 1)","eigen":false,"anspruch":true,"titel":"Offene Schnittstellen (PaaS/SaaS)"},{"id":"DA-VI-029","kapitel":"VI","fundstelle":"Art. 30 Abs. 3","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":false,"anspruch":true,"titel":"Kompatibilität mit künftigen Normen"},{"id":"DA-VI-030","kapitel":"VI","fundstelle":"Art. 30 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten (außer IaaS)","eigen":false,"anspruch":true,"titel":"Das Online-Register nach Art. 26 Buchst. b ist entsprechend den Pflichten nach Abs. 3 zu…"},{"id":"DA-VI-031","kapitel":"VI","fundstelle":"Art. 30 Abs. 5","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Export in maschinenlesbarem Format"},{"id":"DA-VI-032","kapitel":"VI","fundstelle":"Art. 30 Abs. 6","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Anbieter sind nicht verpflichtet, neue Technologien oder Dienste zu entwickeln,…"},{"id":"DA-VI-033","kapitel":"VI","fundstelle":"Art. 31 Abs. 1","typ":"Ausnahme","adressat":"Anbieter maßgeschneiderter Datenverarbeitungsdienste","eigen":false,"anspruch":false,"titel":"Die Pflichten aus Art. 23 Buchst. d, Art. 29 und Art. 30 Abs. 1 und 3 gelten nicht für…"},{"id":"DA-VI-034","kapitel":"VI","fundstelle":"Art. 31 Abs. 2","typ":"Ausnahme","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Kapitel VI gilt nicht für Dienste, die nicht als Vollversion, sondern zu Test- und…"},{"id":"DA-VI-035","kapitel":"VI","fundstelle":"Art. 31 Abs. 3","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Information über nicht geltende Pflichten"}],"zahl":{"gesamt":17,"pflicht":0,"anspruch":13,"recht":0,"ausnahme":4,"gegenseite":0}},{"id":"k-wechselbed","name":"Vertragliche Wechselbedingungen","frage":{"id":"VI-10","text":"Handelt es sich um einen vollständigen Wechsel (Kündigung des bisherigen Dienstes) oder um eine parallele Nutzung mehrerer Anbieter (Multi-Cloud)?","modul":"M-VI","antwort":{"schluessel":"A","text":"Wechsel"}},"antwort":"A","fundstellen":["Art. 25"],"folie_kapitel":["VI"],"ergaenzt":true,"kapitel":["VI"],"anforderungen":[{"id":"DA-VI-004","kapitel":"VI","fundstelle":"Art. 25 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Schriftlicher Vertrag mit Wechselklauseln"},{"id":"DA-VI-005","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. a","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"30-Tage-Übergang mit Unterstützung"},{"id":"DA-VI-006","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. b","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Der Vertrag muss die Verpflichtung des Anbieters enthalten, die Ausstiegsstrategie des Kunden…"},{"id":"DA-VI-007","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. c","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Der Vertrag muss eine Klausel enthalten, wonach der Vertrag als beendet gilt und der Kunde…"},{"id":"DA-VI-008","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. d","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Maximale Kündigungsfrist 2 Monate"},{"id":"DA-VI-009","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. e","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Liste exportierbarer Datenkategorien"},{"id":"DA-VI-010","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. f","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Liste ausgenommener interner Daten"},{"id":"DA-VI-011","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. g","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Abrufzeitraum mindestens 30 Tage"},{"id":"DA-VI-012","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. h","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Löschung nach Abruf"},{"id":"DA-VI-013","kapitel":"VI","fundstelle":"Art. 25 Abs. 2 Buchst. i","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Der Vertrag muss die nach Art. 29 zulässigen Wechselentgelte ausweisen."},{"id":"DA-VI-014","kapitel":"VI","fundstelle":"Art. 25 Abs. 3","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Der Vertrag muss Klauseln enthalten, wonach der Kunde nach Ablauf der maximalen…"},{"id":"DA-VI-015","kapitel":"VI","fundstelle":"Art. 25 Abs. 4","typ":"Informationspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Verlängerter Übergang nur begründet"},{"id":"DA-VI-016","kapitel":"VI","fundstelle":"Art. 25 Abs. 5","typ":"Recht","adressat":"Anbieter von Datenverarbeitungsdiensten (Vertragsgestaltung); Kunde (Recht)","eigen":false,"anspruch":true,"titel":"Der Vertrag muss dem Kunden das Recht einräumen, den Übergangszeitraum einmal um einen von ihm…"}],"zahl":{"gesamt":13,"pflicht":0,"anspruch":12,"recht":1,"ausnahme":0,"gegenseite":0}},{"id":"k-parallel","name":"Parallelnutzung","frage":{"id":"VI-10","text":"Handelt es sich um einen vollständigen Wechsel (Kündigung des bisherigen Dienstes) oder um eine parallele Nutzung mehrerer Anbieter (Multi-Cloud)?","modul":"M-VI","antwort":{"schluessel":"B","text":"Parallele Nutzung"}},"antwort":"B","fundstellen":["Art. 34"],"folie_kapitel":["VIII"],"ergaenzt":true,"kapitel":["VIII"],"anforderungen":[{"id":"DA-VIII-003","kapitel":"VIII","fundstelle":"Art. 34 Abs. 1","typ":"Handlungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Interoperabilität für Multi-Cloud"},{"id":"DA-VIII-004","kapitel":"VIII","fundstelle":"Art. 34 Abs. 2","typ":"Unterlassungspflicht","adressat":"Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":true,"titel":"Extraktionsentgelte nur zu Selbstkosten"}],"zahl":{"gesamt":2,"pflicht":0,"anspruch":2,"recht":0,"ausnahme":0,"gegenseite":0}}]}],"gabel":{"id":"EIN-01","text":"Welche der folgenden Tätigkeiten übt Ihr Unternehmen aus? (Mehrfachauswahl)","modul":"EIN"},"voraussetzung":null},{"id":"datenbestand","gegenstand":"Datenbestand","kurz":"Daten, die Sie halten, bereitstellen oder erhalten","marke":"offen","grund":"Ob Inverso Dateninhaber i. S. v. Art. 2 Nr. 13 ist, ist die offene Kernfrage: Der Data Act knüpft an vernetzte Produkte und verbundene Dienste an, und nach EG 22 sind Auftragsverarbeiter keine Dateninhaber.","gabelfrage":"III-01","anknuepfungspunkte":[{"id":"dateninhaber","name":"Dateninhaber","antwort":{"schluessel":"A","text":"Ja, wir müssen bereitstellen"},"rolle":"Dateninhaber","anspruch_gegen":"Datenempfänger","hinweis":"Kapitel III und V richten sich teils an Sie, teils an die Gegenseite — die Liste weist das je Zeile aus.","sachverhalte":[{"id":"d-bereitstellung","name":"Datenbereitstellung","frage":{"id":"III-02","text":"Beruht die Pflicht auf dem Data Act (Art. 5) oder auf einer Rechtsvorschrift, die nach dem 12.09.2025 in Kraft getreten ist?","modul":"M-III","antwort":{"schluessel":"Ja","text":"Ja"}},"antwort":"Ja","fundstellen":["Art. 8","Art. 9","Art. 10","Art. 11","Art. 12"],"folie_kapitel":["III"],"kapitel":["III"],"anforderungen":[{"id":"DA-III-001","kapitel":"III","fundstelle":"Art. 12 Abs. 1","typ":"Ausnahme","adressat":"Dateninhaber (B2B)","eigen":true,"anspruch":false,"titel":"Anwendungsbereich Kapitel III"},{"id":"DA-III-002","kapitel":"III","fundstelle":"Art. 8 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"FRAND-Bedingungen"},{"id":"DA-III-003","kapitel":"III","fundstelle":"Art. 8 Abs. 2","typ":"Ausnahme","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Vertragsklauseln über Datenzugang/-nutzung oder Haftung/Rechtsbehelfe sind nicht bindend, wenn…"},{"id":"DA-III-004","kapitel":"III","fundstelle":"Art. 8 Abs. 3 Satz 1","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Keine Diskriminierung zwischen Empfängern"},{"id":"DA-III-005","kapitel":"III","fundstelle":"Art. 8 Abs. 3 Satz 2","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Nachweis der Nichtdiskriminierung"},{"id":"DA-III-006","kapitel":"III","fundstelle":"Art. 8 Abs. 4","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Daten dürfen einem Datenempfänger – auch exklusiv – nur bereitgestellt werden, wenn der Nutzer…"},{"id":"DA-III-007","kapitel":"III","fundstelle":"Art. 8 Abs. 5","typ":"Recht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Beide Parteien müssen keine Informationen herausgeben, die über das zur Überprüfung der…"},{"id":"DA-III-008","kapitel":"III","fundstelle":"Art. 8 Abs. 6","typ":"Ausnahme","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Eine Bereitstellungspflicht verpflichtet nicht zur Offenlegung von Geschäftsgeheimnissen,…"},{"id":"DA-III-009","kapitel":"III","fundstelle":"Art. 9 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Angemessene Gegenleistung"},{"id":"DA-III-010","kapitel":"III","fundstelle":"Art. 9 Abs. 2, 3","typ":"Handlungspflicht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Bei der Einigung sind insbesondere zu berücksichtigen: (a) Kosten der Bereitstellung…"},{"id":"DA-III-011","kapitel":"III","fundstelle":"Art. 9 Abs. 4","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Kostendeckel für KMU und Forschung"},{"id":"DA-III-012","kapitel":"III","fundstelle":"Art. 9 Abs. 7","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Transparenz der Preisberechnung"},{"id":"DA-III-013","kapitel":"III","fundstelle":"Art. 10 Abs. 1","typ":"Recht","adressat":"Nutzer; Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Zugang zu einer zertifizierten Streitbeilegungsstelle für Streitigkeiten nach Art. 4 Abs. 3…"},{"id":"DA-III-014","kapitel":"III","fundstelle":"Art. 10 Abs. 2","typ":"Informationspflicht","adressat":"Streitbeilegungsstelle","eigen":false,"anspruch":false,"titel":"Die Streitbeilegungsstelle teilt den Parteien vor Antragstellung die Entgelte oder die Methode…"},{"id":"DA-III-015","kapitel":"III","fundstelle":"Art. 10 Abs. 3","typ":"Handlungspflicht","adressat":"Dateninhaber; Nutzer; Datenempfänger","eigen":true,"anspruch":false,"titel":"Entscheidet die Streitbeilegungsstelle zugunsten des Nutzers/Datenempfängers, trägt der…"},{"id":"DA-III-016","kapitel":"III","fundstelle":"Art. 10 Abs. 4","typ":"Recht","adressat":"Kunden; Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Kunden und Anbieter von Datenverarbeitungsdiensten haben Zugang zu einer zugelassenen…"},{"id":"DA-III-017","kapitel":"III","fundstelle":"Art. 10 Abs. 5–11","typ":"Handlungspflicht","adressat":"Streitbeilegungsstellen; Mitgliedstaaten","eigen":false,"anspruch":false,"titel":"Zulassungsvoraussetzungen (Unparteilichkeit, Fachwissen, elektronische Erreichbarkeit,…"},{"id":"DA-III-018","kapitel":"III","fundstelle":"Art. 10 Abs. 12, 13","typ":"Recht","adressat":"Alle Parteien eines Streitbeilegungsverfahrens","eigen":false,"anspruch":false,"titel":"Entscheidungen sind nur bindend, wenn die Parteien dem vorab ausdrücklich zugestimmt haben;…"},{"id":"DA-III-019","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 1","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Technische Schutzmaßnahmen zulässig"},{"id":"DA-III-020","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 2","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Technische Schutzmaßnahmen dürfen Datenempfänger nicht unterschiedlich behandeln und Nutzer…"},{"id":"DA-III-021","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 3","typ":"Unterlassungspflicht","adressat":"Nutzer; Dritte; Datenempfänger","eigen":false,"anspruch":true,"titel":"Nutzer, Dritte und Datenempfänger dürfen technische Schutzmaßnahmen nur mit Zustimmung des…"},{"id":"DA-III-022","kapitel":"III","fundstelle":"Art. 11 Abs. 2 i. V. m. Abs. 3","typ":"Handlungspflicht","adressat":"Dritter; Datenempfänger","eigen":false,"anspruch":true,"titel":"Rechtsfolgen bei Datenmissbrauch"},{"id":"DA-III-023","kapitel":"III","fundstelle":"Art. 11 Abs. 4","typ":"Handlungspflicht","adressat":"Nutzer; jede andere Partei, die Daten vom Nutzer unter Verstoß gegen die VO erhält","eigen":false,"anspruch":false,"titel":"Die Rechtsfolgen nach Abs. 2 gelten auch für Nutzer, die technische Schutzmaßnahmen…"},{"id":"DA-III-024","kapitel":"III","fundstelle":"Art. 11 Abs. 5","typ":"Recht","adressat":"Nutzer","eigen":false,"anspruch":false,"titel":"Bei Verstoß des Datenempfängers gegen Art. 6 Abs. 2 Buchst. a oder b hat der Nutzer dieselben…"},{"id":"DA-III-025","kapitel":"III","fundstelle":"Art. 12 Abs. 2","typ":"Ausnahme","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Klauseln einer Datenweitergabevereinbarung, die die Anwendung von Kapitel III zum Nachteil…"}],"zahl":{"gesamt":25,"pflicht":10,"anspruch":2,"recht":6,"ausnahme":4,"gegenseite":3}},{"id":"d-behoerden","name":"Behördenverlangen","frage":{"id":"V-02","text":"Liegt Ihnen aktuell ein Datenverlangen einer Behörde, der EU-Kommission, der EZB oder einer EU-Einrichtung vor, das sich auf den Data Act stützt?","modul":"M-V","antwort":{"schluessel":"Ja","text":"Ja"}},"antwort":"Ja","fundstellen":["Art. 14","Art. 15","Art. 16","Art. 17","Art. 18","Art. 19","Art. 20","Art. 21","Art. 22"],"folie_kapitel":["V"],"kapitel":["V"],"anforderungen":[{"id":"DA-V-001","kapitel":"V","fundstelle":"Art. 14","typ":"Handlungspflicht","adressat":"Dateninhaber (juristische Personen außer öffentliche Stellen)","eigen":true,"anspruch":false,"titel":"Datenbereitstellung an Behörden bei außergewöhnlicher Notwendigkeit"},{"id":"DA-V-002","kapitel":"V","fundstelle":"Art. 15 Abs. 1 Buchst. a","typ":"Ausnahme","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Außergewöhnliche Notwendigkeit liegt vor, wenn die Daten zur Bewältigung eines öffentlichen…"},{"id":"DA-V-003","kapitel":"V","fundstelle":"Art. 15 Abs. 1 Buchst. b","typ":"Ausnahme","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Außerhalb eines Notstands nur für nicht-personenbezogene Daten, wenn (i) die Stelle…"},{"id":"DA-V-004","kapitel":"V","fundstelle":"Art. 15 Abs. 2","typ":"Ausnahme","adressat":"Kleinstunternehmen; Kleinunternehmen","eigen":false,"anspruch":false,"titel":"Schutz für Kleinst-/Kleinunternehmen"},{"id":"DA-V-005","kapitel":"V","fundstelle":"Art. 16 Abs. 1, 2","typ":"Ausnahme","adressat":"Dateninhaber; öffentliche Stellen","eigen":true,"anspruch":false,"titel":"Kapitel V lässt Berichts-, Informationszugangs- und Compliance-Nachweispflichten nach…"},{"id":"DA-V-006","kapitel":"V","fundstelle":"Art. 17 Abs. 1","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Ein Datenverlangen muss: (a) benötigte Daten und Metadaten angeben, (b) außergewöhnliche…"},{"id":"DA-V-007","kapitel":"V","fundstelle":"Art. 17 Abs. 2","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Das Verlangen muss schriftlich, klar und verständlich sein, sich auf Daten unter Kontrolle des…"},{"id":"DA-V-008","kapitel":"V","fundstelle":"Art. 17 Abs. 3","typ":"Unterlassungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Nach Kapitel V erlangte Daten dürfen nicht zur Weiterverwendung i. S. d. DGA bzw. der…"},{"id":"DA-V-009","kapitel":"V","fundstelle":"Art. 17 Abs. 4","typ":"Informationspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Bei Austausch der Daten mit anderen Stellen oder Weitergabe an beauftragte Dritte (öffentlich…"},{"id":"DA-V-010","kapitel":"V","fundstelle":"Art. 17 Abs. 5","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Hält der Dateninhaber seine Rechte durch Übermittlung/Bereitstellung der Daten für verletzt,…"},{"id":"DA-V-011","kapitel":"V","fundstelle":"Art. 18 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Unverzügliche Bereitstellung"},{"id":"DA-V-012","kapitel":"V","fundstelle":"Art. 18 Abs. 2","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Ablehnung oder Änderungsantrag fristgebunden"},{"id":"DA-V-013","kapitel":"V","fundstelle":"Art. 18 Abs. 3","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Bei Ablehnung/Änderungsantrag wegen eines früheren gleichartigen Verlangens (Abs. 2 Buchst. b)…"},{"id":"DA-V-014","kapitel":"V","fundstelle":"Art. 18 Abs. 4","typ":"Handlungspflicht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Anonymisieren/Pseudonymisieren"},{"id":"DA-V-015","kapitel":"V","fundstelle":"Art. 18 Abs. 5","typ":"Recht","adressat":"Dateninhaber; anfragende Stelle","eigen":true,"anspruch":false,"titel":"Bei beabsichtigtem Widerspruch der Stelle gegen eine Ablehnung oder Einspruch des…"},{"id":"DA-V-016","kapitel":"V","fundstelle":"Art. 19 Abs. 1","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union (und Dritte nach Art. 17 Abs. 4, Art. 21 Abs. 3)","eigen":false,"anspruch":false,"titel":"Die empfangende Stelle darf die Daten nicht zweckwidrig nutzen, muss technische und…"},{"id":"DA-V-017","kapitel":"V","fundstelle":"Art. 19 Abs. 2","typ":"Unterlassungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union; Dritte","eigen":false,"anspruch":false,"titel":"Empfänger dürfen die Daten oder daraus gewonnene Erkenntnisse über den Dateninhaber nicht zur…"},{"id":"DA-V-018","kapitel":"V","fundstelle":"Art. 19 Abs. 3","typ":"Handlungspflicht","adressat":"Dateninhaber (bzw. Geschäftsgeheimnisinhaber); empfangende Stelle","eigen":true,"anspruch":false,"titel":"Geschäftsgeheimnisse gegenüber Behörden"},{"id":"DA-V-019","kapitel":"V","fundstelle":"Art. 19 Abs. 4","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union","eigen":false,"anspruch":false,"titel":"Die empfangende Stelle ist für die Sicherheit der erhaltenen Daten verantwortlich."},{"id":"DA-V-020","kapitel":"V","fundstelle":"Art. 20 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber (außer Kleinst-/Kleinunternehmen); empfangende Stelle","eigen":true,"anspruch":false,"titel":"Unentgeltlichkeit bei Notstand"},{"id":"DA-V-021","kapitel":"V","fundstelle":"Art. 20 Abs. 2","typ":"Recht","adressat":"Dateninhaber","eigen":true,"anspruch":false,"titel":"Anspruch auf faire Gegenleistung"},{"id":"DA-V-022","kapitel":"V","fundstelle":"Art. 20 Abs. 3","typ":"Recht","adressat":"Kleinstunternehmen; Kleinunternehmen","eigen":false,"anspruch":false,"titel":"Gegenleistung für Kleinst-/Kleinunternehmen auch bei Notstand"},{"id":"DA-V-023","kapitel":"V","fundstelle":"Art. 21 Abs. 1–5","typ":"Handlungspflicht","adressat":"Öffentliche Stelle, Kommission, EZB, Einrichtung der Union; Forschungseinrichtungen/statistische Ämter","eigen":false,"anspruch":false,"titel":"Empfangende Stellen dürfen die Daten an gemeinnützige/im öffentlichen Interesse handelnde…"},{"id":"DA-V-024","kapitel":"V","fundstelle":"Art. 22 Abs. 3, 4","typ":"Handlungspflicht","adressat":"Öffentliche Stellen, Kommission, EZB, Einrichtungen der Union; zuständige Behörde","eigen":false,"anspruch":false,"titel":"Bei Verlangen an einen Dateninhaber in einem anderen Mitgliedstaat ist zunächst die dortige…"}],"zahl":{"gesamt":24,"pflicht":6,"anspruch":0,"recht":5,"ausnahme":4,"gegenseite":9}}]},{"id":"datenempfaenger","name":"Datenempfänger","antwort":{"schluessel":"B","text":"Ja, wir erhalten Daten"},"rolle":"Datenempfänger","anspruch_gegen":"Dateninhaber","hinweis":"Dieselben Vorschriften, andere Seite: Was den Dateninhaber verpflichtet, ist für Sie ein Anspruch.","sachverhalte":[{"id":"e-bereitstellung","name":"Datenbereitstellung","frage":{"id":"III-02","text":"Beruht die Pflicht auf dem Data Act (Art. 5) oder auf einer Rechtsvorschrift, die nach dem 12.09.2025 in Kraft getreten ist?","modul":"M-III","antwort":{"schluessel":"Ja","text":"Ja"}},"antwort":"Ja","fundstellen":["Art. 8","Art. 9","Art. 10","Art. 11","Art. 12"],"folie_kapitel":["III"],"ergaenzt":true,"kapitel":["III"],"anforderungen":[{"id":"DA-III-001","kapitel":"III","fundstelle":"Art. 12 Abs. 1","typ":"Ausnahme","adressat":"Dateninhaber (B2B)","eigen":false,"anspruch":true,"titel":"Anwendungsbereich Kapitel III"},{"id":"DA-III-002","kapitel":"III","fundstelle":"Art. 8 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"FRAND-Bedingungen"},{"id":"DA-III-003","kapitel":"III","fundstelle":"Art. 8 Abs. 2","typ":"Ausnahme","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Vertragsklauseln über Datenzugang/-nutzung oder Haftung/Rechtsbehelfe sind nicht bindend, wenn…"},{"id":"DA-III-004","kapitel":"III","fundstelle":"Art. 8 Abs. 3 Satz 1","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Keine Diskriminierung zwischen Empfängern"},{"id":"DA-III-005","kapitel":"III","fundstelle":"Art. 8 Abs. 3 Satz 2","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Nachweis der Nichtdiskriminierung"},{"id":"DA-III-006","kapitel":"III","fundstelle":"Art. 8 Abs. 4","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Daten dürfen einem Datenempfänger – auch exklusiv – nur bereitgestellt werden, wenn der Nutzer…"},{"id":"DA-III-007","kapitel":"III","fundstelle":"Art. 8 Abs. 5","typ":"Recht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Beide Parteien müssen keine Informationen herausgeben, die über das zur Überprüfung der…"},{"id":"DA-III-008","kapitel":"III","fundstelle":"Art. 8 Abs. 6","typ":"Ausnahme","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Eine Bereitstellungspflicht verpflichtet nicht zur Offenlegung von Geschäftsgeheimnissen,…"},{"id":"DA-III-009","kapitel":"III","fundstelle":"Art. 9 Abs. 1","typ":"Handlungspflicht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Angemessene Gegenleistung"},{"id":"DA-III-010","kapitel":"III","fundstelle":"Art. 9 Abs. 2, 3","typ":"Handlungspflicht","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Bei der Einigung sind insbesondere zu berücksichtigen: (a) Kosten der Bereitstellung…"},{"id":"DA-III-011","kapitel":"III","fundstelle":"Art. 9 Abs. 4","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Kostendeckel für KMU und Forschung"},{"id":"DA-III-012","kapitel":"III","fundstelle":"Art. 9 Abs. 7","typ":"Informationspflicht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Transparenz der Preisberechnung"},{"id":"DA-III-013","kapitel":"III","fundstelle":"Art. 10 Abs. 1","typ":"Recht","adressat":"Nutzer; Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Zugang zu einer zertifizierten Streitbeilegungsstelle für Streitigkeiten nach Art. 4 Abs. 3…"},{"id":"DA-III-014","kapitel":"III","fundstelle":"Art. 10 Abs. 2","typ":"Informationspflicht","adressat":"Streitbeilegungsstelle","eigen":false,"anspruch":false,"titel":"Die Streitbeilegungsstelle teilt den Parteien vor Antragstellung die Entgelte oder die Methode…"},{"id":"DA-III-015","kapitel":"III","fundstelle":"Art. 10 Abs. 3","typ":"Handlungspflicht","adressat":"Dateninhaber; Nutzer; Datenempfänger","eigen":true,"anspruch":false,"titel":"Entscheidet die Streitbeilegungsstelle zugunsten des Nutzers/Datenempfängers, trägt der…"},{"id":"DA-III-016","kapitel":"III","fundstelle":"Art. 10 Abs. 4","typ":"Recht","adressat":"Kunden; Anbieter von Datenverarbeitungsdiensten","eigen":false,"anspruch":false,"titel":"Kunden und Anbieter von Datenverarbeitungsdiensten haben Zugang zu einer zugelassenen…"},{"id":"DA-III-017","kapitel":"III","fundstelle":"Art. 10 Abs. 5–11","typ":"Handlungspflicht","adressat":"Streitbeilegungsstellen; Mitgliedstaaten","eigen":false,"anspruch":false,"titel":"Zulassungsvoraussetzungen (Unparteilichkeit, Fachwissen, elektronische Erreichbarkeit,…"},{"id":"DA-III-018","kapitel":"III","fundstelle":"Art. 10 Abs. 12, 13","typ":"Recht","adressat":"Alle Parteien eines Streitbeilegungsverfahrens","eigen":false,"anspruch":false,"titel":"Entscheidungen sind nur bindend, wenn die Parteien dem vorab ausdrücklich zugestimmt haben;…"},{"id":"DA-III-019","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 1","typ":"Recht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Technische Schutzmaßnahmen zulässig"},{"id":"DA-III-020","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 2","typ":"Unterlassungspflicht","adressat":"Dateninhaber","eigen":false,"anspruch":true,"titel":"Technische Schutzmaßnahmen dürfen Datenempfänger nicht unterschiedlich behandeln und Nutzer…"},{"id":"DA-III-021","kapitel":"III","fundstelle":"Art. 11 Abs. 1 Satz 3","typ":"Unterlassungspflicht","adressat":"Nutzer; Dritte; Datenempfänger","eigen":true,"anspruch":false,"titel":"Nutzer, Dritte und Datenempfänger dürfen technische Schutzmaßnahmen nur mit Zustimmung des…"},{"id":"DA-III-022","kapitel":"III","fundstelle":"Art. 11 Abs. 2 i. V. m. Abs. 3","typ":"Handlungspflicht","adressat":"Dritter; Datenempfänger","eigen":true,"anspruch":false,"titel":"Rechtsfolgen bei Datenmissbrauch"},{"id":"DA-III-023","kapitel":"III","fundstelle":"Art. 11 Abs. 4","typ":"Handlungspflicht","adressat":"Nutzer; jede andere Partei, die Daten vom Nutzer unter Verstoß gegen die VO erhält","eigen":false,"anspruch":false,"titel":"Die Rechtsfolgen nach Abs. 2 gelten auch für Nutzer, die technische Schutzmaßnahmen…"},{"id":"DA-III-024","kapitel":"III","fundstelle":"Art. 11 Abs. 5","typ":"Recht","adressat":"Nutzer","eigen":false,"anspruch":false,"titel":"Bei Verstoß des Datenempfängers gegen Art. 6 Abs. 2 Buchst. a oder b hat der Nutzer dieselben…"},{"id":"DA-III-025","kapitel":"III","fundstelle":"Art. 12 Abs. 2","typ":"Ausnahme","adressat":"Dateninhaber; Datenempfänger","eigen":true,"anspruch":false,"titel":"Klauseln einer Datenweitergabevereinbarung, die die Anwendung von Kapitel III zum Nachteil…"}],"zahl":{"gesamt":25,"pflicht":5,"anspruch":7,"recht":6,"ausnahme":4,"gegenseite":3}}]}],"gabel":{"id":"III-01","text":"Sind Sie aufgrund einer gesetzlichen Pflicht (Data Act Art. 5 auf Nutzerverlangen oder anderes EU-/nationales Recht) verpflichtet, anderen Unternehmen Daten bereitzustellen – oder erhalten Sie Daten aufgrund einer solchen Pflicht?","modul":"M-III"},"voraussetzung":null},{"id":"vertrag","gegenstand":"Vertrag","kurz":"B2B-Verträge mit datenbezogenen Klauseln","marke":"ja","grund":"Gilt rollenunabhängig für jedes Unternehmen mit solchen Verträgen.","voraussetzung":{"id":"IV-01","text":"Schließen Sie mit anderen Unternehmen Verträge, die Regelungen zum Zugang zu Daten, zur Datennutzung oder zur Haftung bei datenbezogenen Pflichten enthalten (z. B. AGB, Plattformbedingungen, Lieferanten- oder Lizenzverträge)?","modul":"M-IV","antwort":{"schluessel":"Ja","text":"Ja"}},"gabelfrage":"IV-02","anknuepfungspunkte":[{"id":"verwender","name":"Verwender","antwort":{"schluessel":"A","text":"Wir geben die Klauseln vor"},"rolle":"Verwender von Vertragsklauseln","hinweis":"Kapitel IV bindet den, der die Klausel stellt — hier stehen die eigenen Grenzen.","sachverhalte":[{"id":"v-klauseln","name":"Einseitig auferlegte datenbezogene Klauseln","frage":{"id":"IV-03","text":"Wann wurden die betreffenden Verträge geschlossen?","modul":"M-IV","antwort":{"schluessel":"A","text":"Nach dem 12.09.2025"}},"antwort":"A","fundstellen":["Art. 13"],"folie_kapitel":["IV"],"kapitel":["IV"],"anforderungen":[{"id":"DA-IV-001","kapitel":"IV","fundstelle":"Art. 13 Abs. 1","typ":"Ausnahme","adressat":"Unternehmen, das einem anderen Unternehmen Vertragsklauseln einseitig auferlegt","eigen":false,"anspruch":false,"titel":"Missbräuchliche Klauseln unwirksam"},{"id":"DA-IV-002","kapitel":"IV","fundstelle":"Art. 13 Abs. 2","typ":"Ausnahme","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Klauseln, die zwingenden Bestimmungen des Unionsrechts entsprechen oder die bei Fehlen einer…"},{"id":"DA-IV-003","kapitel":"IV","fundstelle":"Art. 13 Abs. 3","typ":"Ausnahme","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Generalklausel: Eine Klausel ist missbräuchlich, wenn ihre Anwendung eine grobe Abweichung von…"},{"id":"DA-IV-004","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. a","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Stets missbräuchlich (schwarze Liste): Ausschluss oder Beschränkung der Haftung des…"},{"id":"DA-IV-005","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. b","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Stets missbräuchlich: Ausschluss der Rechtsbehelfe der anderen Partei bei Nichterfüllung oder…"},{"id":"DA-IV-006","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. c","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Stets missbräuchlich: ausschließliches Recht des Verwenders, über die Vertragsgemäßheit der…"},{"id":"DA-IV-007","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. a","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Vermutet missbräuchlich (graue Liste): unangemessene Beschränkung von Rechtsmitteln/Haftung…"},{"id":"DA-IV-008","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. b","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Vermutet missbräuchlich: Zugangs-/Nutzungsrecht des Verwenders an Daten der anderen Partei,…"},{"id":"DA-IV-009","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. c","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, die von ihr bereitgestellten oder…"},{"id":"DA-IV-010","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. d","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, die Vereinbarung innerhalb einer…"},{"id":"DA-IV-011","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. e","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, während der Laufzeit oder in…"},{"id":"DA-IV-012","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. f","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Vermutet missbräuchlich: Kündigungsrecht des Verwenders mit unangemessen kurzer Frist – unter…"},{"id":"DA-IV-013","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. g","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Vermutet missbräuchlich: einseitige wesentliche Änderung von Preis oder wesentlichen…"},{"id":"DA-IV-014","kapitel":"IV","fundstelle":"Art. 13 Abs. 6","typ":"Handlungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":true,"anspruch":false,"titel":"Beweislast des Verwenders"},{"id":"DA-IV-015","kapitel":"IV","fundstelle":"Art. 13 Abs. 7","typ":"Ausnahme","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Ist die missbräuchliche Klausel abtrennbar, bleiben die übrigen Vertragsklauseln bindend."},{"id":"DA-IV-016","kapitel":"IV","fundstelle":"Art. 13 Abs. 8","typ":"Ausnahme","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Art. 13 gilt weder für Klauseln über den Hauptgegenstand des Vertrags noch für die…"},{"id":"DA-IV-017","kapitel":"IV","fundstelle":"Art. 13 Abs. 9","typ":"Unterlassungspflicht","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Die Parteien dürfen die Anwendung von Art. 13 nicht ausschließen, davon abweichen oder seine…"}],"zahl":{"gesamt":17,"pflicht":11,"anspruch":0,"recht":0,"ausnahme":5,"gegenseite":1}}]},{"id":"betroffener","name":"Betroffener","antwort":{"schluessel":"B","text":"Unser Vertragspartner gibt sie vor"},"rolle":null,"anspruch_gegen":"Verwender von Vertragsklauseln","hinweis":"Wird die Klausel Ihnen gestellt, ist die Missbräuchlichkeit Ihre Einwendung, nicht Ihre Pflicht.","sachverhalte":[{"id":"b-klauseln","name":"Einseitig auferlegte datenbezogene Klauseln","frage":{"id":"IV-03","text":"Wann wurden die betreffenden Verträge geschlossen?","modul":"M-IV","antwort":{"schluessel":"A","text":"Nach dem 12.09.2025"}},"antwort":"A","fundstellen":["Art. 13"],"folie_kapitel":["IV"],"ergaenzt":true,"kapitel":["IV"],"anforderungen":[{"id":"DA-IV-001","kapitel":"IV","fundstelle":"Art. 13 Abs. 1","typ":"Ausnahme","adressat":"Unternehmen, das einem anderen Unternehmen Vertragsklauseln einseitig auferlegt","eigen":false,"anspruch":false,"titel":"Missbräuchliche Klauseln unwirksam"},{"id":"DA-IV-002","kapitel":"IV","fundstelle":"Art. 13 Abs. 2","typ":"Ausnahme","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Klauseln, die zwingenden Bestimmungen des Unionsrechts entsprechen oder die bei Fehlen einer…"},{"id":"DA-IV-003","kapitel":"IV","fundstelle":"Art. 13 Abs. 3","typ":"Ausnahme","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Generalklausel: Eine Klausel ist missbräuchlich, wenn ihre Anwendung eine grobe Abweichung von…"},{"id":"DA-IV-004","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. a","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Stets missbräuchlich (schwarze Liste): Ausschluss oder Beschränkung der Haftung des…"},{"id":"DA-IV-005","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. b","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Stets missbräuchlich: Ausschluss der Rechtsbehelfe der anderen Partei bei Nichterfüllung oder…"},{"id":"DA-IV-006","kapitel":"IV","fundstelle":"Art. 13 Abs. 4 Buchst. c","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Stets missbräuchlich: ausschließliches Recht des Verwenders, über die Vertragsgemäßheit der…"},{"id":"DA-IV-007","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. a","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Vermutet missbräuchlich (graue Liste): unangemessene Beschränkung von Rechtsmitteln/Haftung…"},{"id":"DA-IV-008","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. b","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Vermutet missbräuchlich: Zugangs-/Nutzungsrecht des Verwenders an Daten der anderen Partei,…"},{"id":"DA-IV-009","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. c","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, die von ihr bereitgestellten oder…"},{"id":"DA-IV-010","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. d","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, die Vereinbarung innerhalb einer…"},{"id":"DA-IV-011","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. e","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Vermutet missbräuchlich: Hinderung der anderen Partei, während der Laufzeit oder in…"},{"id":"DA-IV-012","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. f","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Vermutet missbräuchlich: Kündigungsrecht des Verwenders mit unangemessen kurzer Frist – unter…"},{"id":"DA-IV-013","kapitel":"IV","fundstelle":"Art. 13 Abs. 5 Buchst. g","typ":"Unterlassungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Vermutet missbräuchlich: einseitige wesentliche Änderung von Preis oder wesentlichen…"},{"id":"DA-IV-014","kapitel":"IV","fundstelle":"Art. 13 Abs. 6","typ":"Handlungspflicht","adressat":"Verwender von Vertragsklauseln","eigen":false,"anspruch":true,"titel":"Beweislast des Verwenders"},{"id":"DA-IV-015","kapitel":"IV","fundstelle":"Art. 13 Abs. 7","typ":"Ausnahme","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Ist die missbräuchliche Klausel abtrennbar, bleiben die übrigen Vertragsklauseln bindend."},{"id":"DA-IV-016","kapitel":"IV","fundstelle":"Art. 13 Abs. 8","typ":"Ausnahme","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Art. 13 gilt weder für Klauseln über den Hauptgegenstand des Vertrags noch für die…"},{"id":"DA-IV-017","kapitel":"IV","fundstelle":"Art. 13 Abs. 9","typ":"Unterlassungspflicht","adressat":"Vertragsparteien","eigen":false,"anspruch":false,"titel":"Die Parteien dürfen die Anwendung von Art. 13 nicht ausschließen, davon abweichen oder seine…"}],"zahl":{"gesamt":17,"pflicht":0,"anspruch":11,"recht":0,"ausnahme":5,"gegenseite":1}}]}],"gabel":{"id":"IV-02","text":"Werden diese Datenklauseln von einer Seite vorgegeben, ohne dass die andere Seite ihren Inhalt trotz Verhandlungsversuchs beeinflussen kann?","modul":"M-IV"}}]}</script>
 <script>(function () {
 "use strict";
-/* Drei Bäume nach dem Ordnungsrahmen der Vorgehensfolie.
+/* Drei senkrechte Entscheidungsbäume nach dem Ordnungsrahmen der Folie.
 
    Bewertungsgegenstand -> Anknüpfungspunkt -> Sachverhalt -> Rechtsfolge.
-   Spaltennavigation: jede Ebene erscheint neben der vorigen, der ganze Weg
-   bleibt sichtbar. Kein Assistent, der Vorheriges versteckt, und kein Raster,
-   das alles auf einmal zeigt - man soll sehen, wo man abgebogen ist.
 
-   Gerechnet wird hier nichts: build_data.py hat die Bäume aus den Fundstellen
-   der Excel aufgelöst und den Adressaten je Anforderung mit der Rolle des
-   Anknüpfungspunkts abgeglichen. */
+   Alle drei Bäume stehen vollständig auf der Seite: Wurzel, Gabelfrage, beide
+   Äste, jeder Sachverhalt an seinem Strang. Nichts klappt zu - man soll die
+   Verzweigung sehen, nicht sich durch sie hindurchklicken. Beweglich ist nur
+   die Anforderungsliste am einzelnen Sachverhalt, und die auch nur, weil 128
+   Zeilen auf einmal die Bäume unlesbar machen würden.
+
+   Gerechnet wird hier nichts: build_data.py hat die Bäume über die Fundstellen
+   aufgelöst, den Adressaten je Anforderung mit der Rolle des Anknüpfungspunkts
+   abgeglichen und die Fragetexte wortgetreu aus dem Blatt "Fragen" eingesetzt. */
 
 var D = JSON.parse(document.getElementById("daten").textContent);
-var SCHLUESSEL = "data-act-dreiklang/pfad/2";
-var S = { baum: null, punkt: null, sv: null };
+var SCHLUESSEL = "data-act-dreiklang/offen/3";
+var OFFEN = {};          /* baumId/punktId/svId -> true */
 
 var RECHTSSTAND = "Rechtsstand: 18. September 2026. Geprüft wird ausschließlich "
   + "die Verordnung (EU) 2023/2854. Die deutsche Umsetzung "
@@ -262,183 +350,102 @@ function el(tag, attrs, kinder) {
 function leere(n) { while (n.firstChild) n.removeChild(n.firstChild); }
 function sage(t) { document.getElementById("live").textContent = t; }
 function kapText(l) { return "Kap. " + (l || []).join(" + "); }
+function pfad(b, p, s) { return b.id + "/" + p.id + "/" + s.id; }
 
-/* ------------------------------------------------------------ Der Pfad */
-function baum()  { return D.baeume.filter(function (b) { return b.id === S.baum; })[0] || null; }
-function punkt() {
-  var b = baum();
-  return b ? b.anknuepfungspunkte.filter(function (p) { return p.id === S.punkt; })[0] || null : null;
-}
-function sachverhalt() {
-  var p = punkt();
-  return p ? p.sachverhalte.filter(function (x) { return x.id === S.sv; })[0] || null : null;
-}
-
-/* Eine Ebene wählen setzt die tieferen zurück - sonst zeigte der Pfad einen
-   Weg, den es nicht gibt. */
-function waehle(ebene, id) {
-  if (ebene === "baum")  { S.baum = S.baum === id ? null : id; S.punkt = null; S.sv = null; }
-  if (ebene === "punkt") {
-    /* Hat der Baum nur einen Anknüpfungspunkt, ist er automatisch aufgeklappt.
-       Ihn dann wegklicken zu können, führt ins Leere. */
-    var nurEiner = baum() && baum().anknuepfungspunkte.length === 1;
-    S.punkt = (S.punkt === id && !nurEiner) ? null : id;
-    S.sv = null;
-  }
-  if (ebene === "sv")    { S.sv = S.sv === id ? null : id; }
-
-  /* Hat ein Gegenstand nur einen Anknüpfungspunkt, ist die Frage danach keine
-     Frage - dann gleich mit aufklappen. */
-  var b = baum();
-  if (ebene === "baum" && b && b.anknuepfungspunkte.length === 1) {
-    S.punkt = b.anknuepfungspunkte[0].id;
-  }
-  speichere();
-  zeichne();
-  var s = sachverhalt();
-  if (s) {
-    sage(baum().gegenstand + ", " + punkt().name + ", " + s.name
-         + " ergibt " + kapText(s.kapitel) + " mit "
-         + s.zahl.gesamt + " Anforderungen");
-  }
-}
-
-function speichere() {
-  try { localStorage.setItem(SCHLUESSEL, JSON.stringify(S)); } catch (e) {}
-}
-function lade() {
-  try {
-    var w = JSON.parse(localStorage.getItem(SCHLUESSEL) || "null");
-    if (!w) return;
-    S.baum = w.baum; S.punkt = w.punkt; S.sv = w.sv;
-    if (!baum()) { S.baum = S.punkt = S.sv = null; return; }
-    if (!punkt()) { S.punkt = S.sv = null; return; }
-    if (!sachverhalt()) S.sv = null;
-  } catch (e) {}
-}
-
-/* -------------------------------------------------------------- Formel */
-function zeichneFormel() {
-  var b = baum(), p = punkt(), s = sachverhalt();
-  var werte = [b && b.gegenstand, p && p.name, s && s.name, s && kapText(s.kapitel)];
-  var zurueck = [
-    function () { waehle("baum", S.baum); },
-    function () { waehle("punkt", S.punkt); },
-    function () { waehle("sv", S.sv); },
-    null
-  ];
-  var formel = el("div", { class: "formel" });
-  D.formel.forEach(function (name, i) {
-    if (i > 0) {
-      formel.appendChild(el("div", { class: "formel__op", "aria-hidden": "true",
-                                     text: i === 3 ? "=" : "+" }));
-    }
-    var gefuellt = !!werte[i];
-    var feld = el(gefuellt && zurueck[i] ? "button" : "div", {
-      class: "formel__feld" + (i === 3 ? " formel__feld--ziel" : "")
-             + (gefuellt ? " formel__feld--voll" : ""),
-      type: gefuellt && zurueck[i] ? "button" : null,
-      title: gefuellt && zurueck[i] ? "Diese Ebene zurücksetzen" : null,
-      onclick: gefuellt && zurueck[i] ? zurueck[i] : null
-    }, [
-      el("div", { class: "formel__marke", text: name }),
-      el("div", { class: "formel__wert" + (gefuellt ? "" : " formel__wert--leer"),
-                  text: werte[i] || "—" })
-    ]);
-    formel.appendChild(feld);
+function alleBlaetter() {
+  var aus = [];
+  D.baeume.forEach(function (b) {
+    b.anknuepfungspunkte.forEach(function (p) {
+      p.sachverhalte.forEach(function (s) { aus.push([b, p, s]); });
+    });
   });
-  return formel;
+  return aus;
 }
 
-/* ------------------------------------------------------------- Spalten */
-function spalte(nr, titel, eintraege, aktiv, beiKlick, leerText) {
-  var s = el("div", { class: "spalte" + (eintraege.length ? "" : " spalte--leer") }, [
-    el("div", { class: "spalte__kopf" }, [
-      el("span", { class: "spalte__nr", text: String(nr) }),
-      el("span", { text: titel })
-    ])
-  ]);
-  if (!eintraege.length) {
-    s.appendChild(el("div", { class: "spalte__leer", text: leerText }));
-    return s;
-  }
-  eintraege.forEach(function (e) {
-    var an = aktiv === e.id;
-    s.appendChild(el("button", {
-      class: "knoten" + (an ? " knoten--an" : ""), type: "button",
-      "aria-pressed": an ? "true" : "false",
-      onclick: function () { beiKlick(e.id); }
-    }, [
-      el("span", { class: "knoten__name" }, [
-        e.name || e.gegenstand,
-        e.ergaenzt ? el("span", { class: "knoten__erg", text: " ⊕",
-                                  title: "über die Fundstelle ergänzt, nicht auf der Folie" }) : null
-      ]),
-      e.kapitel ? el("span", { class: "knoten__kap", text: kapText(e.kapitel) }) : null,
-      e.kurz ? el("span", { class: "knoten__kurz", text: e.kurz }) : null,
-      e.marke ? el("span", {
-        class: "knoten__marke" + (e.marke === "offen" ? " knoten__marke--offen" : ""),
-        text: D.unternehmen.name + ": " + (D.marken[e.marke] || e.marke)
-      }) : null
-    ]));
-  });
-  return s;
-}
-
-function zeichneSpalten() {
-  var w = el("div", { class: "spalten" });
-  var b = baum(), p = punkt();
-
-  w.appendChild(spalte(1, "Bewertungsgegenstand", D.baeume, S.baum,
-    function (id) { waehle("baum", id); }, ""));
-
-  w.appendChild(spalte(2, "Anknüpfungspunkt",
-    b ? b.anknuepfungspunkte : [], S.punkt,
-    function (id) { waehle("punkt", id); },
-    "Wählen Sie links einen Bewertungsgegenstand."));
-
-  w.appendChild(spalte(3, "Sachverhalt",
-    p ? p.sachverhalte : [], S.sv,
-    function (id) { waehle("sv", id); },
-    b ? "Wählen Sie einen Anknüpfungspunkt." : ""));
-
-  return w;
-}
-
-/* ------------------------------------------------------------ Ergebnis */
-function zeichneErgebnis() {
-  var w = el("div", { class: "ergebnis" });
-  var s = sachverhalt(), p = punkt();
-  if (!s) {
-    w.appendChild(el("p", { class: "ergebnis__leer", text:
-      "Gehen Sie die drei Ebenen von links nach rechts durch. Am Ende steht die "
-      + "Rechtsfolge mit ihren Anforderungen." }));
-    return w;
-  }
-
-  var n = s.zahl;
-  var teile = [];
+/* Die Rechtsfolge in Worten - je nachdem, ob der Anknüpfungspunkt die
+   Anforderung selbst trifft, sie gegen die Gegenseite gibt oder keines. */
+function folgeText(p, s) {
+  var n = s.zahl, teile = [];
   if (n.pflicht) teile.push(n.pflicht + (n.pflicht === 1 ? " Pflicht" : " Pflichten"));
-  if (n.anspruch) teile.push(n.anspruch
-    + (n.anspruch === 1 ? " Anspruch" : " Ansprüche") + " gegen den Anbieter");
+  if (n.anspruch) teile.push(n.anspruch + (n.anspruch === 1 ? " Anspruch" : " Ansprüche")
+    + " gegen " + (p.anspruch_gegen ? "den " + kurzRolle(p.anspruch_gegen) : "die Gegenseite"));
   if (n.recht) teile.push(n.recht + (n.recht === 1 ? " Recht" : " Rechte"));
   if (n.ausnahme) teile.push(n.ausnahme + (n.ausnahme === 1 ? " Ausnahme" : " Ausnahmen"));
   if (n.gegenseite) teile.push(n.gegenseite
     + (n.gegenseite === 1 ? " Pflicht der Gegenseite" : " Pflichten der Gegenseite"));
+  return teile.join(" · ");
+}
+function kurzRolle(r) {
+  return r.replace(/^Anbieter von Datenverarbeitungsdienst.*$/, "Anbieter");
+}
 
-  w.appendChild(el("div", { class: "ergebnis__kopf" }, [
-    el("h2", { text: kapText(s.kapitel) + " · " + s.name,
-               "data-fokus": true, tabindex: "-1" }),
-    el("span", { class: "ergebnis__zahl", text: teile.join(" · ") }),
-    el("span", { class: "ergebnis__artikel",
-                 text: (s.fundstellen || []).join(", ") })
-  ]));
+/* --------------------------------------------------------------- Speicher */
+function speichere() {
+  try { localStorage.setItem(SCHLUESSEL, JSON.stringify(OFFEN)); } catch (e) {}
+}
+function lade() {
+  try {
+    var w = JSON.parse(localStorage.getItem(SCHLUESSEL) || "null");
+    if (!w || typeof w !== "object") return;
+    /* Nur Pfade übernehmen, die es noch gibt - sonst hinge ein alter Stand. */
+    var gueltig = {};
+    alleBlaetter().forEach(function (t) {
+      var k = pfad(t[0], t[1], t[2]);
+      if (w[k]) gueltig[k] = true;
+    });
+    OFFEN = gueltig;
+  } catch (e) {}
+}
 
-  if (p && p.hinweis) {
-    w.appendChild(el("p", { class: "ergebnis__hinweis" + (p.rolle ? "" : " ergebnis__hinweis--warn"),
-                            text: p.hinweis }));
-  }
+function schalte(b, p, s) {
+  var k = pfad(b, p, s);
+  if (OFFEN[k]) delete OFFEN[k]; else OFFEN[k] = true;
+  speichere();
+  zeichne();
+  sage(s.name + (OFFEN[k] ? ": " + s.zahl.gesamt + " Anforderungen eingeblendet"
+                          : ": Liste zugeklappt"));
+}
 
+/* ------------------------------------------------------------- Ein Blatt */
+function zeichneBlatt(b, p, s) {
+  var auf = !!OFFEN[pfad(b, p, s)];
+  var anspruch = !!s.zahl.anspruch && !s.zahl.pflicht;
+
+  var frage = el("div", { class: "blatt__frage" }, [
+    el("span", { class: "blatt__fid", text: "Frage " + s.frage.id + " · " }),
+    s.frage.text + " ",
+    el("span", { class: "blatt__antwort", text: s.frage.antwort.schluessel === s.frage.antwort.text
+        ? s.frage.antwort.text
+        : s.frage.antwort.schluessel + " — " + s.frage.antwort.text }),
+    s.frage_hinweis ? el("span", { class: "blatt__warn", text: s.frage_hinweis }) : null
+  ]);
+
+  var knopf = el("button", {
+    class: "knoten" + (auf ? " knoten--auf" : "") + (anspruch ? " knoten--anspruch" : ""),
+    type: "button", "aria-expanded": auf ? "true" : "false",
+    onclick: function () { schalte(b, p, s); }
+  }, [
+    el("span", { class: "knoten__zeile" }, [
+      el("span", { class: "knoten__name" }, [
+        s.name,
+        s.ergaenzt ? el("span", { class: "knoten__erg", text: " ⊕",
+          title: "über die Fundstelle ergänzt, nicht auf der Folie" }) : null
+      ]),
+      el("span", { class: "knoten__kap", text: "→ " + kapText(s.kapitel) }),
+      el("span", { class: "knoten__pfeil", text: auf ? "▾ zuklappen" : "▸ Anforderungen" })
+    ]),
+    el("span", { class: "knoten__zahl" }, [
+      folgeText(p, s) + " · ",
+      el("span", { class: "knoten__art", text: (s.fundstellen || []).join(", ") })
+    ])
+  ]);
+
+  var blatt = el("div", { class: "blatt" }, [frage, knopf]);
+  if (auf) blatt.appendChild(zeichneListe(s));
+  return blatt;
+}
+
+function zeichneListe(s) {
   var liste = el("div", { class: "liste" });
   s.anforderungen.forEach(function (e) {
     liste.appendChild(el("div", { class: "req"
@@ -450,8 +457,52 @@ function zeichneErgebnis() {
       el("span", { class: "req__typ", text: TYP_KURZ[e.typ] || e.typ })
     ]));
   });
-  w.appendChild(liste);
-  return w;
+  return liste;
+}
+
+/* --------------------------------------------------------------- Ein Ast */
+function zeichneAst(b, p) {
+  var anspruch = !p.rolle && !!p.anspruch_gegen;
+  var anker = el("div", { class: "anker" + (anspruch ? " anker--anspruch" : "") }, [
+    el("span", { class: "anker__zeile" }, [
+      p.antwort ? el("span", { class: "anker__taste", text: p.antwort.schluessel }) : null,
+      el("span", { class: "anker__name", text: p.name })
+    ]),
+    p.antwort ? el("span", { class: "anker__opt", text: "„" + p.antwort.text + "“" }) : null,
+    p.hinweis ? el("span", { class: "anker__hinweis", text: p.hinweis }) : null
+  ]);
+
+  var blaetter = el("div", { class: "blaetter" });
+  p.sachverhalte.forEach(function (s) { blaetter.appendChild(zeichneBlatt(b, p, s)); });
+
+  return el("div", { class: "ast" }, [anker, blaetter]);
+}
+
+/* -------------------------------------------------------------- Ein Baum */
+function zeichneBaum(b, nr) {
+  var wurzel = el("div", { class: "wurzel" }, [
+    el("span", { class: "wurzel__marke",
+                 text: D.formel[0] + " " + nr + " von " + D.baeume.length }),
+    el("h2", { text: b.gegenstand }),
+    b.kurz ? el("p", { class: "wurzel__kurz", text: b.kurz }) : null,
+    b.marke ? el("span", { class: "wurzel__marke--firma wurzel__marke--" + b.marke,
+                           title: b.grund || null,
+                           text: D.unternehmen.name + ": " + (D.marken[b.marke] || b.marke) }) : null,
+    b.voraussetzung ? el("p", { class: "wurzel__vor",
+      text: "Voraussetzung — Frage " + b.voraussetzung.id + ": "
+            + b.voraussetzung.text + " → " + b.voraussetzung.antwort.text }) : null
+  ]);
+
+  var gabel = b.gabel ? el("div", { class: "gabel" }, [
+    el("span", { class: "gabel__id", text: "Frage " + b.gabel.id }),
+    el("span", { class: "gabel__text", text: b.gabel.text })
+  ]) : null;
+
+  var aeste = el("div", { class: "aeste" });
+  b.anknuepfungspunkte.forEach(function (p) { aeste.appendChild(zeichneAst(b, p)); });
+
+  return el("section", { class: "baum", "aria-label": D.formel[0] + ": " + b.gegenstand },
+            [wurzel, gabel, aeste]);
 }
 
 /* ---------------------------------------------------------------- Seite */
@@ -461,8 +512,31 @@ function kopf() {
     el("div", { class: "kopf__zeile",
                 text: D.unternehmen.name + " · " + D.unternehmen.kurz }),
     el("div", { class: "kopf__hinweis",
-                text: "Strukturierte Orientierung nach VO (EU) 2023/2854 · "
+                text: D.formel.join(" + ").replace(/ \+ ([^+]*)$/, " = $1")
+                      + " · Strukturierte Orientierung nach VO (EU) 2023/2854 · "
                       + "keine Rechtsberatung · Rechtsstand 18.09.2026" })
+  ]);
+}
+
+function steuer() {
+  var alle = alleBlaetter();
+  var offenZahl = alle.filter(function (t) { return OFFEN[pfad(t[0], t[1], t[2])]; }).length;
+  var alleAuf = offenZahl === alle.length;
+  return el("div", { class: "steuer" }, [
+    el("button", { class: "tat", type: "button",
+      text: alleAuf ? "Alle Anforderungen verbergen" : "Alle Anforderungen zeigen",
+      onclick: function () {
+        OFFEN = {};
+        if (!alleAuf) alle.forEach(function (t) { OFFEN[pfad(t[0], t[1], t[2])] = true; });
+        speichere(); zeichne();
+        sage(alleAuf ? "alle Listen zugeklappt" : "alle Listen eingeblendet");
+      } }),
+    el("button", { class: "tat", type: "button", text: "Drucken / PDF",
+                   onclick: function () { window.print(); } }),
+    el("span", { class: "steuer__hinweis",
+      text: D.baeume.length + " Bäume · " + alle.length + " Sachverhalte · "
+            + alle.reduce(function (n, t) { return n + t[2].zahl.gesamt; }, 0)
+            + " Anforderungszeilen" })
   ]);
 }
 
@@ -474,11 +548,12 @@ function fuss() {
       D.nicht_abgedeckt.text
     ]));
   }
+  f.appendChild(el("span", { text: "Die Fragen stehen wortgetreu im Fragenkatalog. "
+    + "Welche Anforderungen ein Sachverhalt auslöst, entscheidet seine Fundstelle "
+    + "im Verordnungstext — nicht der Fragebogenpfad." }));
   f.appendChild(el("span", { class: "fuss__stand", text: RECHTSSTAND }));
   f.appendChild(el("span", { text: "Läuft vollständig lokal: kein Netzwerkaufruf, "
                                  + "kein Tracking." }));
-  f.appendChild(el("button", { class: "tat", type: "button", text: "Drucken / PDF",
-                               onclick: function () { window.print(); } }));
   return f;
 }
 
@@ -487,9 +562,8 @@ function zeichne() {
   var scroll = window.scrollY;
   leere(seite);
   seite.appendChild(kopf());
-  seite.appendChild(zeichneFormel());
-  seite.appendChild(zeichneSpalten());
-  seite.appendChild(zeichneErgebnis());
+  seite.appendChild(steuer());
+  D.baeume.forEach(function (b, i) { seite.appendChild(zeichneBaum(b, i + 1)); });
   seite.appendChild(fuss());
   window.scrollTo(0, scroll);
 }
@@ -498,27 +572,14 @@ function zeichne() {
   lade();
   var vorDruck = null;
   window.addEventListener("beforeprint", function () {
-    /* Im Druck alle Blätter aller drei Bäume nacheinander. */
-    vorDruck = { baum: S.baum, punkt: S.punkt, sv: S.sv };
-    var seite = document.getElementById("seite");
-    leere(seite);
-    seite.appendChild(kopf());
-    D.baeume.forEach(function (b) {
-      S.baum = b.id;
-      b.anknuepfungspunkte.forEach(function (p) {
-        S.punkt = p.id;
-        p.sachverhalte.forEach(function (sv) {
-          S.sv = sv.id;
-          seite.appendChild(zeichneFormel());
-          seite.appendChild(zeichneErgebnis());
-        });
-      });
-    });
-    seite.appendChild(fuss());
+    /* Auf Papier gibt es kein Aufklappen - dort steht alles. */
+    vorDruck = OFFEN;
+    OFFEN = {};
+    alleBlaetter().forEach(function (t) { OFFEN[pfad(t[0], t[1], t[2])] = true; });
+    zeichne();
   });
   window.addEventListener("afterprint", function () {
-    if (vorDruck) { S.baum = vorDruck.baum; S.punkt = vorDruck.punkt; S.sv = vorDruck.sv; }
-    zeichne();
+    if (vorDruck) { OFFEN = vorDruck; vorDruck = null; zeichne(); }
   });
   zeichne();
 })();

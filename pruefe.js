@@ -105,6 +105,30 @@ if (istDreiklang) {
   pruefe("keine Anforderung erscheint zweimal im selben Sachverhalt",
          doppelt.length === 0, doppelt.map(x => x.sv.id).join(", "));
 
+  /* Jeder Baum verzweigt über genau eine Frage, und jeder Ast trägt eine
+     eigene Antwortoption davon - zwei Äste unter derselben Antwort wären
+     keine Verzweigung, sondern eine Dopplung. */
+  const ohneGabel = B.filter(b => !b.gabel || !b.gabel.id || !b.gabel.text);
+  pruefe("jeder Baum verzweigt über eine Frage", ohneGabel.length === 0,
+         ohneGabel.map(b => b.id).join(", "));
+  const gabelFehler = [];
+  B.forEach(b => {
+    const gesehen = new Set();
+    (b.anknuepfungspunkte || []).forEach(p => {
+      if (!p.antwort || !p.antwort.schluessel) gabelFehler.push(b.id + "/" + p.id + ": ohne Antwort");
+      else if (gesehen.has(p.antwort.schluessel))
+        gabelFehler.push(b.id + "/" + p.id + ": Antwort " + p.antwort.schluessel + " doppelt");
+      else gesehen.add(p.antwort.schluessel);
+    });
+  });
+  pruefe("jeder Ast trägt eine eigene Antwortoption seiner Gabelfrage",
+         gabelFehler.length === 0, gabelFehler.join(" | "));
+
+  const ohneFrage = blaetter.filter(x => !x.sv.frage || !x.sv.frage.id
+                                      || !x.sv.frage.antwort);
+  pruefe("jeder Sachverhalt nennt die Frage, die zu ihm führt",
+         ohneFrage.length === 0, ohneFrage.map(x => x.sv.id).join(", "));
+
   /* Deckungsprobe: jede Req-ID muss im vollständigen Katalog so stehen. */
   const vollDatei = "data-act-check.html";
   if (!fs.existsSync(vollDatei)) {
@@ -124,6 +148,35 @@ if (istDreiklang) {
            fremd.length === 0 && abweichung.length === 0,
            (fremd.length ? "unbekannt: " + fremd.slice(0, 5).join(", ") + " " : "")
            + (abweichung.length ? "abweichend: " + abweichung.slice(0, 5).join(", ") : ""));
+
+    /* Die schärfste Probe auf die Fragen: Wortlaut und Antworttext müssen
+       Zeichen für Zeichen so im Fragenkatalog stehen. Eine ausgedachte oder
+       umformulierte Frage fällt hier auf. */
+    const fragenkatalog = new Map((VOLL.fragen || []).map(f => [f.id, f]));
+    const erfunden = [];
+    const probe = (frage, wo) => {
+      if (!frage || !frage.id) return;
+      const f = fragenkatalog.get(frage.id);
+      if (!f) { erfunden.push(wo + ": Frage " + frage.id + " unbekannt"); return; }
+      if (f.frage !== frage.text) erfunden.push(wo + ": Wortlaut von " + frage.id + " weicht ab");
+      if (!frage.antwort) return;
+      const o = (f.antwortoptionen || []).filter(
+        x => x.schluessel === frage.antwort.schluessel)[0];
+      if (!o) erfunden.push(wo + ": " + frage.id + " hat keine Antwort "
+                            + frage.antwort.schluessel);
+      else if (o.text !== frage.antwort.text)
+        erfunden.push(wo + ": Antworttext zu " + frage.id + "/"
+                      + frage.antwort.schluessel + " weicht ab");
+    };
+    B.forEach(b => {
+      probe(b.voraussetzung, b.id + "/Voraussetzung");
+      (b.anknuepfungspunkte || []).forEach(p => probe(
+        { id: (b.gabel || {}).id, text: (b.gabel || {}).text, antwort: p.antwort },
+        b.id + "/" + p.id));
+    });
+    blaetter.forEach(x => probe(x.sv.frage, x.baum.id + "/" + x.sv.id));
+    pruefe("jede Frage und jede Antwort steht wortgetreu im Fragenkatalog",
+           erfunden.length === 0, erfunden.slice(0, 5).join(" | "));
   }
 
   console.log("\n" + (fehler ? fehler + " von " + geprueft + " Prüfungen fehlgeschlagen"

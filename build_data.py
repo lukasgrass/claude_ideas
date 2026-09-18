@@ -2286,7 +2286,34 @@ def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
     """
     anf = daten["anforderungen"]
     erg = {e["req_id"]: e for e in daten["ergebnisse"]}
+    fragen = {f["id"]: f for f in daten["fragen"]}
     fehler, hinweise = [], []
+
+    # Frage und Antwort stehen in dreiklang.json nur als ID und Schluessel. Den
+    # Wortlaut setzt erst der Build ein - so kann keine Frage erfunden werden,
+    # und eine ID, die es im Blatt "Fragen" nicht gibt, bricht den Build ab.
+    def frage_auf(fid, schluessel, wo):
+        f = fragen.get(fid)
+        if not f:
+            fehler.append(f"{wo}: Frage {fid} steht nicht im Blatt 'Fragen'")
+            return None
+        treffer = [o for o in f["antwortoptionen"] if o["schluessel"] == schluessel]
+        if not treffer:
+            fehler.append(f"{wo}: Frage {fid} hat keine Antwort '{schluessel}' "
+                          f"({', '.join(o['schluessel'] for o in f['antwortoptionen'])})")
+            return None
+        return {"id": fid, "text": f["frage"], "modul": f["modul"],
+                "antwort": {"schluessel": schluessel, "text": treffer[0]["text"]}}
+
+    # Wieviele Anforderungen eines Sachverhalts diese Antwort im Mapping
+    # tatsaechlich ausloest. Ausgewaehlt wird darueber nichts - die Zahl sagt
+    # nur, wie eng Frage und Rechtsfolge in der Excel zusammenhaengen.
+    ausgeloest = collections.defaultdict(set)
+    for m in daten["mapping"]:
+        if m.get("wirkung") == "löst aus":
+            for a in m.get("antworten") or []:
+                ausgeloest[(m["frage_id"], a)].add(m["req_id"])
+    deckung = []
 
     def treffer(praefixe):
         aus = []
@@ -2301,6 +2328,9 @@ def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
     baeume = []
     for baum in modell.get("baeume") or []:
         punkte = []
+        # Die Gabelfrage steht einmal ueber der Verzweigung; ihre
+        # Antwortoptionen sind die Anknuepfungspunkte.
+        gabel = None
         for punkt in baum.get("anknuepfungspunkte") or []:
             rolle = punkt.get("rolle")
             # Drei Fälle, nicht zwei: eigene Rolle (Pflichten), fremde Rolle
@@ -2351,8 +2381,18 @@ def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
                                             a["anforderung"], a["fundstelle"], a["typ"]),
                     })
 
+                sv_frage = frage_auf(sv.get("frage"), sv.get("antwort"),
+                                     f"{baum['id']}/{punkt['id']}/{sv['id']}")
+                if sv_frage:
+                    ids = set(a["req_id"] for a in getroffen)
+                    t = ids & ausgeloest.get((sv["frage"], sv["antwort"]), set())
+                    deckung.append((f"{sv['frage']}/{sv['antwort']}",
+                                    f"{baum['id']}/{punkt['id']}/{sv['id']}",
+                                    len(t), len(ids)))
+
                 pflichtig = [e for e in eintraege if e["typ"] in PFLICHTTYPEN]
                 sachverhalte.append(dict(sv, **{
+                    "frage": sv_frage,
                     "kapitel": rechtsfolge,
                     "anforderungen": eintraege,
                     "zahl": {
@@ -2371,9 +2411,18 @@ def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
                     },
                 }))
             if sachverhalte:
-                punkte.append(dict(punkt, sachverhalte=sachverhalte))
+                auf = frage_auf(baum.get("gabelfrage"), punkt.get("antwort"),
+                                f"{baum['id']}/{punkt['id']}")
+                if auf and gabel is None:
+                    gabel = {"id": auf["id"], "text": auf["text"], "modul": auf["modul"]}
+                punkte.append(dict(punkt, sachverhalte=sachverhalte,
+                                   antwort=(auf or {}).get("antwort")))
         if punkte:
-            baeume.append(dict(baum, anknuepfungspunkte=punkte))
+            vor = baum.get("voraussetzung")
+            baeume.append(dict(baum, anknuepfungspunkte=punkte, gabel=gabel,
+                               voraussetzung=(frage_auf(vor["frage"], vor["antwort"],
+                                                        baum["id"] + "/Voraussetzung")
+                                              if vor else None)))
 
     if fehler:
         sys.exit("dreiklang.json passt nicht zur Excel:\n  " + "\n  ".join(fehler))
@@ -2385,6 +2434,10 @@ def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
     print(f"  Dreiklang aufgelöst: {len(baeume)} Bäume, "
           f"{sum(len(b['anknuepfungspunkte']) for b in baeume)} Anknüpfungspunkte, "
           f"{blaetter} Sachverhalte")
+    print("  Frage und Rechtsfolge (die Frage öffnet das Thema, ausgewählt wird "
+          "über die Fundstelle):")
+    for f, wo, t, n in deckung:
+        print(f"    {f:12} {wo:38} löst {t:2} der {n:2} Anforderungen aus")
 
     return {
         "meta": dict(daten["meta"], fassung="dreiklang"),

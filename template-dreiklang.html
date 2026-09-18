@@ -11,6 +11,7 @@
   --tinte:   #14181C;
   --grau:    #5B6369;
   --linie:   #D8DBDE;
+  --ast:     #A7AEB5;   /* die gezeichneten Äste - dunkler als eine Trennlinie */
   --flaeche: #F5F6F7;
   --papier:  #FFFFFF;
   --akzent:  #0F6152;
@@ -55,155 +56,239 @@ button { font: inherit; color: inherit; }
 .kopf__zeile { font-size: var(--t-klein); color: var(--grau); margin-top: var(--a1); }
 .kopf__hinweis { font-size: var(--t-mini); color: var(--grau); margin-top: var(--a2); }
 
-/* ------------------------------------------------------------- Formel */
-/* Der Kern der Folie: die Gleichung füllt sich beim Klicken. */
-.formel {
-  display: grid; align-items: stretch; gap: var(--a2);
-  grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
-  margin-bottom: var(--a5);
-}
-.formel__feld {
-  border: 1px solid var(--linie); border-radius: 2px;
-  background: var(--flaeche); padding: var(--a2) var(--a3); min-width: 0;
-  text-align: left; font: inherit; color: inherit;
-}
-button.formel__feld { cursor: pointer; }
-button.formel__feld:hover { border-color: var(--grau); }
-.formel__feld--voll { background: var(--papier); border-color: var(--tinte); }
-.formel__feld--ziel { background: var(--akzent); border-color: var(--akzent);
-                      color: var(--papier); }
-.formel__marke {
-  font-family: var(--tabellar); font-size: var(--t-mini);
-  text-transform: uppercase; letter-spacing: .05em; opacity: .75;
-}
-.formel__wert { font-size: var(--t-klein); font-weight: 600; margin-top: var(--a1);
-                min-height: 1.3em; }
-.formel__wert--leer { font-weight: 400; opacity: .45; }
-.formel__op { align-self: center; font-size: var(--t-gross); color: var(--grau); }
-
-/* ------------------------------------------------------------- Spalten */
-/* Jede Ebene neben der vorigen: der ganze Weg bleibt sichtbar. */
-.spalten {
-  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--a3); align-items: start; margin-bottom: var(--a5);
-}
-.spalte { border: 1px solid var(--linie); border-radius: 2px; min-width: 0; }
-.spalte--leer { border-style: dashed; background: var(--flaeche); }
-.spalte__kopf {
-  display: flex; gap: var(--a2); align-items: center;
-  background: var(--tinte); color: var(--papier);
-  padding: var(--a2) var(--a3); font-size: var(--t-mini);
-  text-transform: uppercase; letter-spacing: .05em;
-}
-.spalte--leer .spalte__kopf { background: var(--grau); }
-.spalte__nr {
-  display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem;
-  border-radius: 2px; background: rgba(255,255,255,.2);
-  font-family: var(--tabellar); font-weight: 600;
-}
-.spalte__leer { padding: var(--a3); font-size: var(--t-meta); color: var(--grau); }
-
-.knoten {
-  display: grid; gap: var(--a1); width: 100%; text-align: left;
-  background: none; border: 0; border-left: 3px solid transparent;
-  padding: var(--a3); cursor: pointer;
-  transition: background-color .12s ease-out, border-color .12s ease-out;
-}
-.knoten + .knoten { border-top: 1px solid var(--linie); }
-.knoten:hover { background: var(--flaeche); border-left-color: var(--grau); }
-.knoten--an { background: var(--flaeche); border-left-color: var(--akzent); }
-.knoten__name { font-size: var(--t-klein); }
-.knoten--an .knoten__name { font-weight: 600; }
-.knoten__erg { color: var(--akzent); font-weight: 600; }
-.knoten__kurz { font-size: var(--t-mini); color: var(--grau); }
-.knoten__kap {
-  justify-self: start; font-family: var(--tabellar); font-size: var(--t-mini);
-  background: var(--tinte); color: var(--papier);
-  padding: .1rem var(--a2); border-radius: 2px;
-}
-.knoten--an .knoten__kap { background: var(--akzent); }
-.knoten__marke { font-size: var(--t-mini); color: var(--grau); }
-.knoten__marke--offen { color: var(--warn); }
-
-/* ------------------------------------------------------------ Ergebnis */
-.ergebnis { margin-top: var(--a5); border-top: 2px solid var(--tinte);
-            padding-top: var(--a4); }
-.ergebnis__leer { color: var(--grau); font-size: var(--t-klein); }
-.ergebnis__kopf {
-  display: flex; flex-wrap: wrap; gap: var(--a2) var(--a4); align-items: baseline;
-  margin-bottom: var(--a3);
-}
-.ergebnis__kopf h2 { font-size: var(--t-text); }
-.ergebnis__zahl {
-  font-family: var(--tabellar); font-size: var(--t-klein); color: var(--grau);
-}
-.ergebnis__artikel {
-  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
-  margin-left: auto;
-}
-.ergebnis__hinweis {
-  font-size: var(--t-meta); color: var(--grau); margin-bottom: var(--a3);
-  max-width: 62rem;
-}
-.ergebnis__hinweis--warn {
-  border-left: 3px solid var(--warn); padding-left: var(--a3); color: var(--tinte);
-}
-
-.liste { display: grid; gap: 1px; background: var(--linie);
-         border: 1px solid var(--linie); }
-.req {
-  display: grid; grid-template-columns: 6.5rem 10.5rem minmax(0, 1fr) 11rem 5.5rem;
-  gap: var(--a3); align-items: baseline; background: var(--papier);
-  padding: var(--a2) var(--a3); font-size: var(--t-klein);
-}
-/* Richtet sich die Anforderung an jemand anderen, ist sie für die gewählte
-   Rolle keine eigene Pflicht - entweder ein durchsetzbarer Anspruch oder eine
-   Pflicht der Gegenseite. Beides gehört sichtbar unterschieden. */
-.req--fremd { background: var(--flaeche); }
-.req--fremd .req__titel { color: var(--grau); }
-.req--anspruch { border-left: 3px solid var(--akzent); }
-.req__id, .req__stelle {
-  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
-}
-.req__adressat { font-size: var(--t-mini); color: var(--grau); font-style: italic; }
-.req__typ { font-size: var(--t-mini); color: var(--grau); white-space: nowrap; }
-
-/* --------------------------------------------------------------- Fuß */
-.fuss {
-  margin-top: var(--a6); padding-top: var(--a3); border-top: 1px solid var(--linie);
-  display: flex; flex-wrap: wrap; gap: var(--a2) var(--a4);
-  font-size: var(--t-mini); color: var(--grau);
-}
-.fuss__stand { flex-basis: 100%; max-width: 62rem; }
-.fuss__luecke {
-  flex-basis: 100%; border-left: 3px solid var(--linie); padding-left: var(--a3);
-  margin-bottom: var(--a2); max-width: 62rem; color: var(--tinte);
-  font-size: var(--t-meta);
-}
+/* ======================================================= Steuerung */
+.steuer { display: flex; flex-wrap: wrap; gap: var(--a2); align-items: center;
+          margin-bottom: var(--a5); }
+.steuer__hinweis { font-size: var(--t-meta); color: var(--grau); margin-left: auto; }
 .tat {
-  background: none; border: 0; padding: 0; color: var(--akzent);
-  font-size: var(--t-mini); font-weight: 500; cursor: pointer;
-  border-bottom: 1px solid transparent;
+  border: 1px solid var(--linie); background: var(--papier); color: var(--tinte);
+  border-radius: 4px; padding: var(--a2) var(--a3); font-size: var(--t-klein);
+  cursor: pointer;
 }
-.tat:hover { border-bottom-color: var(--akzent); }
+.tat:hover { background: var(--flaeche); border-color: var(--grau); }
 
-@media (max-width: 52rem) {
-  .formel { grid-template-columns: 1fr; }
-  .formel__op { display: none; }
-  .req { grid-template-columns: 1fr; gap: var(--a1); }
-  .req__titel { font-weight: 500; }
-  .spalten { grid-template-columns: 1fr; }
+/* ============================================================ Ein Baum */
+/* Senkrecht von oben nach unten: Wurzel, Gabelfrage, zwei Aeste, je Ast
+   seine Sachverhalte an einem Strang. Gezeichnet wird mit Rahmenkanten auf
+   Pseudo-Elementen - kein SVG, kein Skript fuer das Bild. */
+.baum { margin: 0 0 var(--a6); padding-bottom: var(--a5);
+        border-bottom: 1px solid var(--linie); }
+.baum:last-of-type { border-bottom: 0; }
+
+/* -------------------------------------------------------------- Wurzel */
+.wurzel {
+  max-width: 32rem; margin: 0 auto; text-align: center;
+  border: 2px solid var(--tinte); border-radius: 6px;
+  padding: var(--a3) var(--a4); background: var(--papier);
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition: none !important; }
+.wurzel__marke {
+  display: block; font-size: var(--t-mini); letter-spacing: .09em;
+  text-transform: uppercase; color: var(--grau);
 }
+.wurzel h2 { font-size: 1.125rem; margin-top: var(--a1); }
+.wurzel__kurz { margin: var(--a1) 0 0; font-size: var(--t-klein); color: var(--grau); }
+.wurzel__vor {
+  margin: var(--a2) 0 0; font-size: var(--t-meta); color: var(--grau);
+  border-top: 1px dashed var(--linie); padding-top: var(--a2);
+}
+.wurzel__marke--firma {
+  display: inline-block; margin-top: var(--a2); border-radius: 999px;
+  padding: 1px var(--a2); font-size: var(--t-mini);
+  background: var(--flaeche); color: var(--grau); text-transform: none;
+  letter-spacing: 0;
+}
+.wurzel__marke--ja   { background: #E6F0ED; color: var(--akzent); }
+.wurzel__marke--offen{ background: #F6EEDF; color: var(--warn); }
+
+/* --------------------------------------------------- Gabelfrage (Ast 1) */
+.gabel {
+  position: relative; max-width: 44rem; margin: 0 auto; text-align: center;
+  margin-top: var(--a5); padding: var(--a3) var(--a4);
+  border: 1px solid var(--ast); border-radius: 6px; background: var(--flaeche);
+}
+.gabel::before {                       /* Linie von der Wurzel herunter */
+  content: ""; position: absolute; left: 50%; top: calc(-1 * var(--a5));
+  height: var(--a5); border-left: 2px solid var(--ast);
+}
+.gabel__id {
+  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
+  letter-spacing: .04em;
+}
+.gabel__text { display: block; margin-top: var(--a1); font-size: var(--t-klein); }
+
+/* ------------------------------------------------------- Die Verzweigung */
+/* Kein Abstand zwischen den Aesten: der waagerechte Balken laeuft ueber beide
+   hinweg, eine Flex-Luecke risse ihn genau in der Mitte auf. Getrennt werden
+   die Aeste durch ihr eigenes seitliches Polster. */
+.aeste {
+  position: relative; display: flex; justify-content: center;
+  align-items: stretch; gap: 0; padding-top: var(--a5);
+}
+.aeste::before {                       /* Linie von der Gabelfrage herunter */
+  content: ""; position: absolute; left: 50%; top: 0;
+  height: var(--a5); border-left: 2px solid var(--ast);
+}
+.ast { position: relative; flex: 1 1 0; min-width: 0;
+       padding: var(--a5) var(--a2) 0; }
+/* Waagerechter Balken und der Abgang in den Knoten: die linke Haelfte traegt
+   ::before, die rechte ::after. Am ersten Ast faellt die linke Haelfte weg, am
+   letzten die rechte - der Abgang kommt dort vom jeweils anderen Rand. */
+.ast::before, .ast::after {
+  content: ""; position: absolute; top: 0; right: 50%; width: 50%;
+  height: var(--a5); border-top: 2px solid var(--ast);
+}
+.ast::after { right: auto; left: 50%; border-left: 2px solid var(--ast); }
+.ast:first-child::before { border: 0; }
+.ast:last-child::after   { border: 0; }
+.ast:first-child::after  { border-top-left-radius: 6px; }
+.ast:last-child::before  { border-right: 2px solid var(--ast);
+                           border-top-right-radius: 6px; }
+.ast:only-child::before { display: none; }
+.ast:only-child::after  { border-top: 0; border-left: 2px solid var(--ast); }
+
+/* ------------------------------------------------- Anknuepfungspunkt */
+.anker {
+  border: 2px solid var(--tinte); border-radius: 6px; background: var(--papier);
+  padding: var(--a3);
+}
+.anker__zeile { display: flex; align-items: baseline; gap: var(--a2); }
+.anker__taste {
+  flex: 0 0 auto; font-family: var(--tabellar); font-size: var(--t-meta);
+  background: var(--tinte); color: var(--papier); border-radius: 3px;
+  padding: 1px 6px;
+}
+.anker__name { font-weight: 600; }
+.anker__opt {
+  display: block; margin-top: var(--a2); font-size: var(--t-meta);
+  color: var(--grau); font-style: italic;
+}
+.anker__hinweis {
+  display: block; margin-top: var(--a2); padding-top: var(--a2);
+  border-top: 1px solid var(--ast); font-size: var(--t-meta);
+  color: var(--grau);
+}
+.anker--anspruch { border-color: var(--warn); }
+.anker--anspruch .anker__taste { background: var(--warn); }
+
+/* -------------------------------------------- Sachverhalte am Strang */
+.blaetter { position: relative; padding-top: var(--a4); }
+.blaetter::before {                    /* aus dem Knoten heraus nach unten */
+  content: ""; position: absolute; left: 15px; top: 0; height: var(--a4);
+  border-left: 2px solid var(--ast);
+}
+.blatt { position: relative; padding-left: 32px; margin-top: var(--a3); }
+.blatt:first-child { margin-top: 0; }
+.blatt::before {                       /* der Ellenbogen in den Sachverhalt */
+  content: ""; position: absolute; left: 15px; top: 0; width: 15px; height: 20px;
+  border-left: 2px solid var(--ast); border-bottom: 2px solid var(--ast);
+  border-bottom-left-radius: 6px;
+}
+.blatt:not(:last-child)::after {       /* der Strang laeuft weiter */
+  content: ""; position: absolute; left: 15px; top: 0;
+  bottom: calc(-1 * var(--a3)); border-left: 2px solid var(--ast);
+}
+
+/* --------------------------------------------------- Frage am Sachverhalt */
+.blatt__frage {
+  font-size: var(--t-meta); color: var(--grau); margin-bottom: var(--a1);
+  padding-left: var(--a1);
+}
+.blatt__fid { font-family: var(--tabellar); letter-spacing: .04em; }
+.blatt__antwort {
+  display: inline-block; border: 1px solid var(--akzent); color: var(--akzent);
+  border-radius: 999px; padding: 0 6px; font-size: var(--t-mini);
+  white-space: nowrap;
+}
+.blatt__warn { display: block; color: var(--warn); margin-top: 2px; }
+
+/* ------------------------------------------------- Sachverhalt + Folge */
+.knoten {
+  display: block; width: 100%; text-align: left; cursor: pointer;
+  border: 1px solid var(--linie); border-left: 4px solid var(--akzent);
+  border-radius: 4px; background: var(--papier); padding: var(--a2) var(--a3);
+}
+.knoten:hover { background: var(--flaeche); }
+.knoten--auf { background: var(--flaeche); }
+.knoten--anspruch { border-left-color: var(--warn); }
+.knoten__zeile { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--a2); }
+.knoten__name { font-weight: 600; font-size: var(--t-klein); }
+.knoten__erg { color: var(--grau); font-weight: 400; }
+.knoten__kap {
+  font-weight: 600; font-size: var(--t-meta); color: var(--akzent);
+  white-space: nowrap;
+}
+.knoten--anspruch .knoten__kap { color: var(--warn); }
+.knoten__pfeil { margin-left: auto; color: var(--grau); font-size: var(--t-meta); }
+.knoten__zahl { display: block; margin-top: 2px; font-size: var(--t-meta); color: var(--grau); }
+.knoten__art {
+  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
+}
+
+/* ------------------------------------------------- Anforderungsliste */
+.liste { margin-top: var(--a2); border: 1px solid var(--linie); border-radius: 4px; }
+.req {
+  display: grid; grid-template-columns: 6rem 8.5rem minmax(0, 1fr) 9rem 5rem;
+  gap: var(--a2); padding: var(--a2) var(--a3);
+  border-top: 1px solid var(--linie); font-size: var(--t-meta);
+}
+.req:first-child { border-top: 0; }
+.req--fremd { background: var(--flaeche); }
+.req--anspruch { background: #FBF6EC; }
+.req__id, .req__stelle { font-family: var(--tabellar); font-size: var(--t-mini);
+                         color: var(--grau); }
+.req__titel { color: var(--tinte); }
+.req__adressat { color: var(--grau); font-style: italic; }
+.req__typ { color: var(--grau); text-align: right; }
+
+/* ---------------------------------------------------------------- Fuss */
+.fuss { margin-top: var(--a6); padding-top: var(--a4);
+        border-top: 2px solid var(--tinte); font-size: var(--t-meta);
+        color: var(--grau); display: grid; gap: var(--a2); }
+.fuss__luecke { border-left: 3px solid var(--warn); padding-left: var(--a3);
+                color: var(--tinte); }
+.fuss__stand { }
+
+/* --------------------------- Senkrechte Verzweigung: schmal und im Druck */
+/* Statt Balken und Abgang traegt jeder Ast denselben Ellenbogen wie ein
+   Sachverhalt. Schmal, weil zwei Spalten nicht nebeneinanderpassen; im Druck,
+   weil die Anforderungszeile auf halber Seitenbreite ineinanderlaeuft. */
+@media (max-width: 62rem), print {
+  .aeste { display: block; padding-top: var(--a4); padding-left: 32px; }
+  .aeste::before { left: 15px; height: var(--a4); }
+  .ast { padding: 0 0 0 0; margin-top: var(--a4); }
+  .ast:first-child { margin-top: 0; }
+  .ast::before {
+    top: 0; left: -17px; right: auto; width: 15px; height: 20px;
+    border-top: 0; border-left: 2px solid var(--ast);
+    border-bottom: 2px solid var(--ast); border-right: 0;
+    border-radius: 0 0 0 6px;
+  }
+  .ast::after { display: none; }
+}
+
+/* ------------------------------------------------------- Schmale Sicht */
+@media (max-width: 62rem) {
+  .seite { padding: var(--a4) var(--a3) var(--a6); }
+  /* Schmal wird aus der Zeile ein kleiner Absatz: Kennung und Fundstelle
+     nebeneinander, darunter Titel, Adressat und Typ je auf voller Breite.
+     Sonst quetscht sich der Titel in die 5,5rem der ersten Spalte. */
+  .req { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 2px var(--a2); }
+  .req__id       { grid-column: 1; grid-row: 1; }
+  .req__stelle   { grid-column: 2; grid-row: 1; }
+  .req__titel    { grid-column: 1 / -1; grid-row: 2; }
+  .req__adressat { grid-column: 1 / -1; grid-row: 3; }
+  .req__typ      { grid-column: 1 / -1; grid-row: 4; text-align: left; }
+}
+
+/* --------------------------------------------------------------- Druck */
 @media print {
-  .tat { display: none !important; }
+  .tat, .steuer { display: none !important; }
   body { font-size: 9pt; color: #000; }
   .seite { max-width: none; padding: 0; }
-  .ergebnis, .req { break-inside: avoid; }
-  /* Der Formelstreifen bleibt ganz und bleibt bei seinem Ergebnis. */
-  .formel { break-inside: avoid; break-after: avoid; }
+  .baum { break-before: page; }
+  .baum:first-of-type { break-before: auto; }
+  .blatt, .wurzel, .gabel, .anker, .req { break-inside: avoid; }
+  .knoten__pfeil { display: none; }
   @page { margin: 12mm; size: A4 portrait; }
 }
 

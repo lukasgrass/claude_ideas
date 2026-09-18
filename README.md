@@ -75,58 +75,71 @@ Mit `--annahmen annahmen.json` werden zusätzlich die dort bestätigten
 Antwort-Wert-Zuordnungen eingesetzt (siehe NOTES.md, Punkt 1). Ohne diesen
 Schalter wird ausschließlich die Excel ausgewertet.
 
-### Dreiklang-Fassung — drei Bäume nach der Vorgehensfolie
+### Dreiklang-Fassung — drei gezeichnete Entscheidungsbäume
 
-`data-act-dreiklang.html` (rund 58 KiB) bildet die Folie „Ableitung von
+`data-act-dreiklang.html` (rund 82 KiB) bildet die Folie „Ableitung von
 Rechtsfolgen" ab:
 
 > **Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge**
 
-Drei Bäume, einer je Bewertungsgegenstand, in Spalten nebeneinander: erst der
-Gegenstand, daraus ein oder mehrere Anknüpfungspunkte, daraus die Sachverhalte,
-daraus die Rechtsfolge mit ihren Anforderungen — je eine Zeile mit Req-ID,
-Fundstelle, Kurztext, Adressat und Typ. Der ganze Weg bleibt sichtbar; ein Klick
-auf eine höhere Ebene setzt die tieferen zurück. Ein Weg dauert ein bis zwei
-Minuten.
+Drei senkrechte Bäume, einer je Bewertungsgegenstand, **vollständig sichtbar**:
+Wurzel, Gabelfrage, beide Äste, jeder Sachverhalt an seinem Strang. Nichts
+klappt zu — man soll die Verzweigung sehen, nicht sich durch sie
+hindurchklicken. Beweglich ist nur die Anforderungsliste am einzelnen
+Sachverhalt.
 
 ```
-DV-Dienst ─┬─ Anbieter ────┬─ Anbieterwechsel ......... Art. 23–31 → Kap. VI
-           │               ├─ Wechselentgelte ......... Art. 29 ... → Kap. VI
-           │               ├─ Parallelnutzung ......... Art. 34 ... → Kap. VIII
-           │               └─ Drittstaatenzugriff ..... Art. 32 ... → Kap. VII
-           └─ Kunde ───────┬─ Anbieterwechsel ......... Art. 23–31 → Kap. VI
-                           └─ Parallelnutzung ......... Art. 34 ... → Kap. VIII
-Datenbestand ─ Dateninhaber ┬ Datenbereitstellung ..... Art. 8–12 . → Kap. III
-                            └ Behördenverlangen ....... Art. 14–22  → Kap. V
-Vertrag ─ Rollenunabhängig ─┬ Einseitige Klauseln ..... Art. 13 ... → Kap. IV
-                            └ Vertragl. Wechselbed. ... Art. 25 ... → Kap. VI
+                 Datenverarbeitungsdienst
+                            │
+              Frage EIN-01 — Welche Tätigkeiten …?
+              ┌─────────────┴─────────────┐
+        D  Anbieter                  E  Kunde
+              │                            │
+              ├─ VI-01/Ja  Anbieterwechsel ├─ VI-09/Ja  Anbieterwechsel
+              ├─ VI-03/Nein Wechselbed. ⊕  ├─ VI-10/A   Wechselbed. ⊕
+              ├─ VI-05/Ja  Wechselentg. ⊕  └─ VI-10/B   Parallelnutzung ⊕
+              ├─ VI-10/B   Parallelnutzung
+              └─ VI-07/Ja  Drittstaatenzugriff
+
+Datenbestand  ─ Frage III-01 ─┬ A Dateninhaber ─┬ Datenbereitstellung → Kap. III
+                              │                 └ Behördenverlangen   → Kap. V
+                              └ B Datenempfänger ⊕ Datenbereitstellung → Kap. III
+Vertrag ─ Frage IV-02 ─┬ A Verwender ─── Einseitige Klauseln → Kap. IV
+                       └ B Betroffener ⊕ Einseitige Klauseln → Kap. IV
 ```
 
 ```
 python3 build_data.py --inline --inverso --dreiklang --annahmen annahmen.json
-node pruefe.js data-act-dreiklang.html     # 11 Prüfungen
+node pruefe.js data-act-dreiklang.html     # 15 Prüfungen
 ```
 
-- **Die Rechtsfolge wird berechnet, nicht behauptet.** `dreiklang.json` nennt
-  nur die Baumstruktur, je Sachverhalt seine **Fundstellen** und was die Folie
-  angibt; welche Anforderungen herauskommen, entscheidet der Katalog der Excel.
-  Trifft ein Fundstellenpräfix keine Anforderung oder widerspricht das Ergebnis
-  der Folie, bricht der Build ab.
+- **Die Fragen stehen wortgetreu in der Excel — und das wird nachgewiesen.**
+  `dreiklang.json` enthält keinen Fragetext und keinen Antworttext, nur
+  Frage-IDs und Antwortschlüssel; den Wortlaut setzt der Build aus dem Blatt
+  „Fragen" ein. `pruefe.js` vergleicht anschließend jeden Fragetext und jeden
+  Antworttext in der fertigen Datei Zeichen für Zeichen gegen den Fragenkatalog
+  des vollständigen Werkzeugs.
+- **Die Rechtsfolge wird berechnet, nicht behauptet.** Welche Anforderungen
+  herauskommen, entscheidet der Katalog. Trifft ein Fundstellenpräfix keine
+  Anforderung oder widerspricht das Ergebnis der Folie, bricht der Build ab.
 - **Auswahl über Artikel, nicht über Fragen.** Ein Sachverhalt ist juristisch
   durch seine Artikel definiert. Über den Fragebogenpfad ausgewählt zog
   „Parallelnutzung" 13 fremde Wechselpflichten mit; über `Art. 34` sind es genau
-  die zwei Anforderungen des Kapitels VIII. Jeder der zehn Äste deckt sich so
-  mit genau einem Kapitel.
+  die zwei Anforderungen des Kapitels VIII. Die Frage öffnet also das Thema, sie
+  wählt nicht aus — der Build druckt je Ast aus, wie weit beides zusammenfällt.
 - **Pflicht oder Anspruch.** Jeder Anknüpfungspunkt trägt eine Rolle; der Build
   gleicht sie gegen den Adressaten jeder Anforderung ab. Kapitel VI richtet sich
   in 34 von 35 Fällen an den Anbieter — beim Anknüpfungspunkt „Kunde" steht
-  deshalb „13 **Ansprüche gegen den Anbieter**", nicht „13 Pflichten".
-- **Aufgelöst beim Bauen:** die Datei trägt keine Fragen, kein Mapping, keine
-  Begriffe. Deshalb 58 KiB statt 871 KiB — der Unterschied zwischen einem
-  E-Mail-Anhang und einem, der hängenbleibt.
+  deshalb „13 **Ansprüche gegen den Anbieter**", nicht „13 Pflichten". Bäume 2
+  und 3 zeigen beide Seiten nebeneinander: dieselben Artikel, gespiegelte Folge.
+- **Aufgelöst beim Bauen:** die Datei trägt kein Mapping und keine Begriffe.
+  Deshalb 82 KiB statt 871 KiB — der Unterschied zwischen einem E-Mail-Anhang
+  und einem, der hängenbleibt.
 - **Kapitel II bleibt draußen** (IoT-Datenzugang, 46 Anforderungen), weil der
   Auftraggeber festgestellt hat, dass es für die Inverso GmbH nicht einschlägig
   ist. Der Fuß der Datei sagt das und verweist auf `data-act-check.html`.
+- **Schmal und im Druck** kippt die Verzweigung in die Senkrechte. Auf Papier
+  steht alles offen: 13 Äste, 183 Zeilen, rund zwölf Seiten A4.
 
 ### Zugeschnittene Fassung für ein einzelnes Unternehmen
 

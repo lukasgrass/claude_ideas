@@ -1,5 +1,5 @@
 {
-  "_hinweis": "Drei Bäume nach dem Ordnungsrahmen der Vorgehensfolie: Bewertungsgegenstand -> Anknüpfungspunkt -> Sachverhalt -> Rechtsfolge. Der Dreiklang steht nicht in der Excel; er ist der Rahmen der Folie. Was hier steht, ist deshalb nur: welche Artikel einen Sachverhalt ausmachen und was die Folie als Rechtsfolge angibt. WELCHE Anforderungen das sind, in welchem Kapitel sie liegen und an wen sie sich richten, entscheidet allein die Excel - der Build rechnet es aus und bricht ab, wenn es der Folie widerspricht.",
+  "_hinweis": "Drei Bäume nach dem Ordnungsrahmen der Vorgehensfolie: Bewertungsgegenstand -> Anknüpfungspunkt -> Sachverhalt -> Rechtsfolge. Der Dreiklang steht nicht in der Excel; er ist der Rahmen der Folie. Diese Datei enthält deshalb KEINEN Fragetext und KEINEN Antworttext - nur Frage-IDs und Antwortschlüssel. Den Wortlaut setzt der Build aus dem Blatt 'Fragen' ein und bricht ab, wenn eine ID oder ein Schlüssel dort nicht steht. Welche Anforderungen ein Sachverhalt auslöst, entscheidet allein die Fundstelle im Anforderungskatalog.",
   "titel": "EU Data Act — Ableitung von Rechtsfolgen",
   "formel": [
     "Bewertungsgegenstand",
@@ -23,20 +23,24 @@
   "baeume": [
     {
       "id": "dv-dienst",
-      "gegenstand": "DV-Dienst",
+      "gegenstand": "Datenverarbeitungsdienst",
       "kurz": "Cloud-, Hosting- und Softwaredienste (IaaS, PaaS, SaaS)",
       "marke": "ja",
       "grund": "Inverso bietet solche Dienste an und nutzt selbst fremde.",
+      "gabelfrage": "EIN-01",
       "anknuepfungspunkte": [
         {
           "id": "anbieter",
           "name": "Anbieter",
+          "antwort": "D",
           "rolle": "Anbieter von Datenverarbeitungsdienst",
           "hinweis": "Kapitel VI richtet sich fast vollständig an den Anbieter — hier stehen die eigenen Pflichten.",
           "sachverhalte": [
             {
               "id": "a-wechsel",
               "name": "Anbieterwechsel",
+              "frage": "VI-01",
+              "antwort": "Ja",
               "fundstellen": [
                 "Art. 23",
                 "Art. 24",
@@ -51,29 +55,49 @@
               ]
             },
             {
+              "id": "a-wechselbed",
+              "name": "Vertragliche Wechselbedingungen",
+              "frage": "VI-03",
+              "antwort": "Nein",
+              "fundstellen": [
+                "Art. 25"
+              ],
+              "folie_kapitel": [
+                "VI"
+              ],
+              "ergaenzt": true
+            },
+            {
               "id": "a-entgelte",
               "name": "Wechselentgelte",
-              "ergaenzt": true,
+              "frage": "VI-05",
+              "antwort": "Ja",
               "fundstellen": [
                 "Art. 29"
               ],
               "folie_kapitel": [
                 "VI"
-              ]
+              ],
+              "ergaenzt": true
             },
             {
               "id": "a-parallel",
               "name": "Parallelnutzung",
+              "frage": "VI-10",
+              "antwort": "B",
               "fundstellen": [
                 "Art. 34"
               ],
               "folie_kapitel": [
                 "VIII"
-              ]
+              ],
+              "frage_hinweis": "Die Excel stellt diese Frage aus Kundensicht; Art. 34 richtet sich an den Anbieter."
             },
             {
               "id": "a-drittstaat",
               "name": "Drittstaatenzugriff",
+              "frage": "VI-07",
+              "antwort": "Ja",
               "fundstellen": [
                 "Art. 32"
               ],
@@ -86,12 +110,16 @@
         {
           "id": "kunde",
           "name": "Kunde",
+          "antwort": "E",
           "rolle": null,
+          "anspruch_gegen": "Anbieter von Datenverarbeitungsdienst",
           "hinweis": "Als Kunde treffen Sie hier keine eigenen Pflichten — Kapitel VI gibt Ihnen Ansprüche gegen Ihren Anbieter.",
           "sachverhalte": [
             {
               "id": "k-wechsel",
               "name": "Anbieterwechsel",
+              "frage": "VI-09",
+              "antwort": "Ja",
               "fundstellen": [
                 "Art. 23",
                 "Art. 24",
@@ -106,37 +134,56 @@
               ]
             },
             {
+              "id": "k-wechselbed",
+              "name": "Vertragliche Wechselbedingungen",
+              "frage": "VI-10",
+              "antwort": "A",
+              "fundstellen": [
+                "Art. 25"
+              ],
+              "folie_kapitel": [
+                "VI"
+              ],
+              "ergaenzt": true
+            },
+            {
               "id": "k-parallel",
               "name": "Parallelnutzung",
-              "ergaenzt": true,
+              "frage": "VI-10",
+              "antwort": "B",
               "fundstellen": [
                 "Art. 34"
               ],
               "folie_kapitel": [
                 "VIII"
-              ]
+              ],
+              "ergaenzt": true
             }
-          ],
-          "anspruch_gegen": "Anbieter von Datenverarbeitungsdienst"
+          ]
         }
       ]
     },
     {
       "id": "datenbestand",
       "gegenstand": "Datenbestand",
-      "kurz": "Daten, die Sie halten und bereitstellen müssen",
+      "kurz": "Daten, die Sie halten, bereitstellen oder erhalten",
       "marke": "offen",
       "grund": "Ob Inverso Dateninhaber i. S. v. Art. 2 Nr. 13 ist, ist die offene Kernfrage: Der Data Act knüpft an vernetzte Produkte und verbundene Dienste an, und nach EG 22 sind Auftragsverarbeiter keine Dateninhaber.",
+      "gabelfrage": "III-01",
       "anknuepfungspunkte": [
         {
           "id": "dateninhaber",
           "name": "Dateninhaber",
+          "antwort": "A",
           "rolle": "Dateninhaber",
+          "anspruch_gegen": "Datenempfänger",
           "hinweis": "Kapitel III und V richten sich teils an Sie, teils an die Gegenseite — die Liste weist das je Zeile aus.",
           "sachverhalte": [
             {
               "id": "d-bereitstellung",
               "name": "Datenbereitstellung",
+              "frage": "III-02",
+              "antwort": "Ja",
               "fundstellen": [
                 "Art. 8",
                 "Art. 9",
@@ -151,6 +198,8 @@
             {
               "id": "d-behoerden",
               "name": "Behördenverlangen",
+              "frage": "V-02",
+              "antwort": "Ja",
               "fundstellen": [
                 "Art. 14",
                 "Art. 15",
@@ -167,6 +216,33 @@
               ]
             }
           ]
+        },
+        {
+          "id": "datenempfaenger",
+          "name": "Datenempfänger",
+          "antwort": "B",
+          "rolle": "Datenempfänger",
+          "anspruch_gegen": "Dateninhaber",
+          "hinweis": "Dieselben Vorschriften, andere Seite: Was den Dateninhaber verpflichtet, ist für Sie ein Anspruch.",
+          "sachverhalte": [
+            {
+              "id": "e-bereitstellung",
+              "name": "Datenbereitstellung",
+              "frage": "III-02",
+              "antwort": "Ja",
+              "fundstellen": [
+                "Art. 8",
+                "Art. 9",
+                "Art. 10",
+                "Art. 11",
+                "Art. 12"
+              ],
+              "folie_kapitel": [
+                "III"
+              ],
+              "ergaenzt": true
+            }
+          ]
         }
       ]
     },
@@ -176,33 +252,53 @@
       "kurz": "B2B-Verträge mit datenbezogenen Klauseln",
       "marke": "ja",
       "grund": "Gilt rollenunabhängig für jedes Unternehmen mit solchen Verträgen.",
+      "voraussetzung": {
+        "frage": "IV-01",
+        "antwort": "Ja"
+      },
+      "gabelfrage": "IV-02",
       "anknuepfungspunkte": [
         {
-          "id": "rollenunabhaengig",
-          "name": "Rollenunabhängig",
-          "rolle": null,
-          "hinweis": "Gilt unabhängig davon, welche Rolle Sie sonst einnehmen.",
+          "id": "verwender",
+          "name": "Verwender",
+          "antwort": "A",
+          "rolle": "Verwender von Vertragsklauseln",
+          "hinweis": "Kapitel IV bindet den, der die Klausel stellt — hier stehen die eigenen Grenzen.",
           "sachverhalte": [
             {
               "id": "v-klauseln",
               "name": "Einseitig auferlegte datenbezogene Klauseln",
+              "frage": "IV-03",
+              "antwort": "A",
               "fundstellen": [
                 "Art. 13"
               ],
               "folie_kapitel": [
                 "IV"
               ]
-            },
+            }
+          ]
+        },
+        {
+          "id": "betroffener",
+          "name": "Betroffener",
+          "antwort": "B",
+          "rolle": null,
+          "anspruch_gegen": "Verwender von Vertragsklauseln",
+          "hinweis": "Wird die Klausel Ihnen gestellt, ist die Missbräuchlichkeit Ihre Einwendung, nicht Ihre Pflicht.",
+          "sachverhalte": [
             {
-              "id": "v-wechselbedingungen",
-              "name": "Vertragliche Wechselbedingungen",
-              "ergaenzt": true,
+              "id": "b-klauseln",
+              "name": "Einseitig auferlegte datenbezogene Klauseln",
+              "frage": "IV-03",
+              "antwort": "A",
               "fundstellen": [
-                "Art. 25"
+                "Art. 13"
               ],
               "folie_kapitel": [
-                "VI"
-              ]
+                "IV"
+              ],
+              "ergaenzt": true
             }
           ]
         }

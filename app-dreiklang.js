@@ -1,17 +1,20 @@
-/* Drei Bäume nach dem Ordnungsrahmen der Vorgehensfolie.
+/* Drei senkrechte Entscheidungsbäume nach dem Ordnungsrahmen der Folie.
 
    Bewertungsgegenstand -> Anknüpfungspunkt -> Sachverhalt -> Rechtsfolge.
-   Spaltennavigation: jede Ebene erscheint neben der vorigen, der ganze Weg
-   bleibt sichtbar. Kein Assistent, der Vorheriges versteckt, und kein Raster,
-   das alles auf einmal zeigt - man soll sehen, wo man abgebogen ist.
 
-   Gerechnet wird hier nichts: build_data.py hat die Bäume aus den Fundstellen
-   der Excel aufgelöst und den Adressaten je Anforderung mit der Rolle des
-   Anknüpfungspunkts abgeglichen. */
+   Alle drei Bäume stehen vollständig auf der Seite: Wurzel, Gabelfrage, beide
+   Äste, jeder Sachverhalt an seinem Strang. Nichts klappt zu - man soll die
+   Verzweigung sehen, nicht sich durch sie hindurchklicken. Beweglich ist nur
+   die Anforderungsliste am einzelnen Sachverhalt, und die auch nur, weil 128
+   Zeilen auf einmal die Bäume unlesbar machen würden.
+
+   Gerechnet wird hier nichts: build_data.py hat die Bäume über die Fundstellen
+   aufgelöst, den Adressaten je Anforderung mit der Rolle des Anknüpfungspunkts
+   abgeglichen und die Fragetexte wortgetreu aus dem Blatt "Fragen" eingesetzt. */
 
 var D = JSON.parse(document.getElementById("daten").textContent);
-var SCHLUESSEL = "data-act-dreiklang/pfad/2";
-var S = { baum: null, punkt: null, sv: null };
+var SCHLUESSEL = "data-act-dreiklang/offen/3";
+var OFFEN = {};          /* baumId/punktId/svId -> true */
 
 var RECHTSSTAND = "Rechtsstand: 18. September 2026. Geprüft wird ausschließlich "
   + "die Verordnung (EU) 2023/2854. Die deutsche Umsetzung "
@@ -44,183 +47,102 @@ function el(tag, attrs, kinder) {
 function leere(n) { while (n.firstChild) n.removeChild(n.firstChild); }
 function sage(t) { document.getElementById("live").textContent = t; }
 function kapText(l) { return "Kap. " + (l || []).join(" + "); }
+function pfad(b, p, s) { return b.id + "/" + p.id + "/" + s.id; }
 
-/* ------------------------------------------------------------ Der Pfad */
-function baum()  { return D.baeume.filter(function (b) { return b.id === S.baum; })[0] || null; }
-function punkt() {
-  var b = baum();
-  return b ? b.anknuepfungspunkte.filter(function (p) { return p.id === S.punkt; })[0] || null : null;
-}
-function sachverhalt() {
-  var p = punkt();
-  return p ? p.sachverhalte.filter(function (x) { return x.id === S.sv; })[0] || null : null;
-}
-
-/* Eine Ebene wählen setzt die tieferen zurück - sonst zeigte der Pfad einen
-   Weg, den es nicht gibt. */
-function waehle(ebene, id) {
-  if (ebene === "baum")  { S.baum = S.baum === id ? null : id; S.punkt = null; S.sv = null; }
-  if (ebene === "punkt") {
-    /* Hat der Baum nur einen Anknüpfungspunkt, ist er automatisch aufgeklappt.
-       Ihn dann wegklicken zu können, führt ins Leere. */
-    var nurEiner = baum() && baum().anknuepfungspunkte.length === 1;
-    S.punkt = (S.punkt === id && !nurEiner) ? null : id;
-    S.sv = null;
-  }
-  if (ebene === "sv")    { S.sv = S.sv === id ? null : id; }
-
-  /* Hat ein Gegenstand nur einen Anknüpfungspunkt, ist die Frage danach keine
-     Frage - dann gleich mit aufklappen. */
-  var b = baum();
-  if (ebene === "baum" && b && b.anknuepfungspunkte.length === 1) {
-    S.punkt = b.anknuepfungspunkte[0].id;
-  }
-  speichere();
-  zeichne();
-  var s = sachverhalt();
-  if (s) {
-    sage(baum().gegenstand + ", " + punkt().name + ", " + s.name
-         + " ergibt " + kapText(s.kapitel) + " mit "
-         + s.zahl.gesamt + " Anforderungen");
-  }
-}
-
-function speichere() {
-  try { localStorage.setItem(SCHLUESSEL, JSON.stringify(S)); } catch (e) {}
-}
-function lade() {
-  try {
-    var w = JSON.parse(localStorage.getItem(SCHLUESSEL) || "null");
-    if (!w) return;
-    S.baum = w.baum; S.punkt = w.punkt; S.sv = w.sv;
-    if (!baum()) { S.baum = S.punkt = S.sv = null; return; }
-    if (!punkt()) { S.punkt = S.sv = null; return; }
-    if (!sachverhalt()) S.sv = null;
-  } catch (e) {}
-}
-
-/* -------------------------------------------------------------- Formel */
-function zeichneFormel() {
-  var b = baum(), p = punkt(), s = sachverhalt();
-  var werte = [b && b.gegenstand, p && p.name, s && s.name, s && kapText(s.kapitel)];
-  var zurueck = [
-    function () { waehle("baum", S.baum); },
-    function () { waehle("punkt", S.punkt); },
-    function () { waehle("sv", S.sv); },
-    null
-  ];
-  var formel = el("div", { class: "formel" });
-  D.formel.forEach(function (name, i) {
-    if (i > 0) {
-      formel.appendChild(el("div", { class: "formel__op", "aria-hidden": "true",
-                                     text: i === 3 ? "=" : "+" }));
-    }
-    var gefuellt = !!werte[i];
-    var feld = el(gefuellt && zurueck[i] ? "button" : "div", {
-      class: "formel__feld" + (i === 3 ? " formel__feld--ziel" : "")
-             + (gefuellt ? " formel__feld--voll" : ""),
-      type: gefuellt && zurueck[i] ? "button" : null,
-      title: gefuellt && zurueck[i] ? "Diese Ebene zurücksetzen" : null,
-      onclick: gefuellt && zurueck[i] ? zurueck[i] : null
-    }, [
-      el("div", { class: "formel__marke", text: name }),
-      el("div", { class: "formel__wert" + (gefuellt ? "" : " formel__wert--leer"),
-                  text: werte[i] || "—" })
-    ]);
-    formel.appendChild(feld);
+function alleBlaetter() {
+  var aus = [];
+  D.baeume.forEach(function (b) {
+    b.anknuepfungspunkte.forEach(function (p) {
+      p.sachverhalte.forEach(function (s) { aus.push([b, p, s]); });
+    });
   });
-  return formel;
+  return aus;
 }
 
-/* ------------------------------------------------------------- Spalten */
-function spalte(nr, titel, eintraege, aktiv, beiKlick, leerText) {
-  var s = el("div", { class: "spalte" + (eintraege.length ? "" : " spalte--leer") }, [
-    el("div", { class: "spalte__kopf" }, [
-      el("span", { class: "spalte__nr", text: String(nr) }),
-      el("span", { text: titel })
-    ])
-  ]);
-  if (!eintraege.length) {
-    s.appendChild(el("div", { class: "spalte__leer", text: leerText }));
-    return s;
-  }
-  eintraege.forEach(function (e) {
-    var an = aktiv === e.id;
-    s.appendChild(el("button", {
-      class: "knoten" + (an ? " knoten--an" : ""), type: "button",
-      "aria-pressed": an ? "true" : "false",
-      onclick: function () { beiKlick(e.id); }
-    }, [
-      el("span", { class: "knoten__name" }, [
-        e.name || e.gegenstand,
-        e.ergaenzt ? el("span", { class: "knoten__erg", text: " ⊕",
-                                  title: "über die Fundstelle ergänzt, nicht auf der Folie" }) : null
-      ]),
-      e.kapitel ? el("span", { class: "knoten__kap", text: kapText(e.kapitel) }) : null,
-      e.kurz ? el("span", { class: "knoten__kurz", text: e.kurz }) : null,
-      e.marke ? el("span", {
-        class: "knoten__marke" + (e.marke === "offen" ? " knoten__marke--offen" : ""),
-        text: D.unternehmen.name + ": " + (D.marken[e.marke] || e.marke)
-      }) : null
-    ]));
-  });
-  return s;
-}
-
-function zeichneSpalten() {
-  var w = el("div", { class: "spalten" });
-  var b = baum(), p = punkt();
-
-  w.appendChild(spalte(1, "Bewertungsgegenstand", D.baeume, S.baum,
-    function (id) { waehle("baum", id); }, ""));
-
-  w.appendChild(spalte(2, "Anknüpfungspunkt",
-    b ? b.anknuepfungspunkte : [], S.punkt,
-    function (id) { waehle("punkt", id); },
-    "Wählen Sie links einen Bewertungsgegenstand."));
-
-  w.appendChild(spalte(3, "Sachverhalt",
-    p ? p.sachverhalte : [], S.sv,
-    function (id) { waehle("sv", id); },
-    b ? "Wählen Sie einen Anknüpfungspunkt." : ""));
-
-  return w;
-}
-
-/* ------------------------------------------------------------ Ergebnis */
-function zeichneErgebnis() {
-  var w = el("div", { class: "ergebnis" });
-  var s = sachverhalt(), p = punkt();
-  if (!s) {
-    w.appendChild(el("p", { class: "ergebnis__leer", text:
-      "Gehen Sie die drei Ebenen von links nach rechts durch. Am Ende steht die "
-      + "Rechtsfolge mit ihren Anforderungen." }));
-    return w;
-  }
-
-  var n = s.zahl;
-  var teile = [];
+/* Die Rechtsfolge in Worten - je nachdem, ob der Anknüpfungspunkt die
+   Anforderung selbst trifft, sie gegen die Gegenseite gibt oder keines. */
+function folgeText(p, s) {
+  var n = s.zahl, teile = [];
   if (n.pflicht) teile.push(n.pflicht + (n.pflicht === 1 ? " Pflicht" : " Pflichten"));
-  if (n.anspruch) teile.push(n.anspruch
-    + (n.anspruch === 1 ? " Anspruch" : " Ansprüche") + " gegen den Anbieter");
+  if (n.anspruch) teile.push(n.anspruch + (n.anspruch === 1 ? " Anspruch" : " Ansprüche")
+    + " gegen " + (p.anspruch_gegen ? "den " + kurzRolle(p.anspruch_gegen) : "die Gegenseite"));
   if (n.recht) teile.push(n.recht + (n.recht === 1 ? " Recht" : " Rechte"));
   if (n.ausnahme) teile.push(n.ausnahme + (n.ausnahme === 1 ? " Ausnahme" : " Ausnahmen"));
   if (n.gegenseite) teile.push(n.gegenseite
     + (n.gegenseite === 1 ? " Pflicht der Gegenseite" : " Pflichten der Gegenseite"));
+  return teile.join(" · ");
+}
+function kurzRolle(r) {
+  return r.replace(/^Anbieter von Datenverarbeitungsdienst.*$/, "Anbieter");
+}
 
-  w.appendChild(el("div", { class: "ergebnis__kopf" }, [
-    el("h2", { text: kapText(s.kapitel) + " · " + s.name,
-               "data-fokus": true, tabindex: "-1" }),
-    el("span", { class: "ergebnis__zahl", text: teile.join(" · ") }),
-    el("span", { class: "ergebnis__artikel",
-                 text: (s.fundstellen || []).join(", ") })
-  ]));
+/* --------------------------------------------------------------- Speicher */
+function speichere() {
+  try { localStorage.setItem(SCHLUESSEL, JSON.stringify(OFFEN)); } catch (e) {}
+}
+function lade() {
+  try {
+    var w = JSON.parse(localStorage.getItem(SCHLUESSEL) || "null");
+    if (!w || typeof w !== "object") return;
+    /* Nur Pfade übernehmen, die es noch gibt - sonst hinge ein alter Stand. */
+    var gueltig = {};
+    alleBlaetter().forEach(function (t) {
+      var k = pfad(t[0], t[1], t[2]);
+      if (w[k]) gueltig[k] = true;
+    });
+    OFFEN = gueltig;
+  } catch (e) {}
+}
 
-  if (p && p.hinweis) {
-    w.appendChild(el("p", { class: "ergebnis__hinweis" + (p.rolle ? "" : " ergebnis__hinweis--warn"),
-                            text: p.hinweis }));
-  }
+function schalte(b, p, s) {
+  var k = pfad(b, p, s);
+  if (OFFEN[k]) delete OFFEN[k]; else OFFEN[k] = true;
+  speichere();
+  zeichne();
+  sage(s.name + (OFFEN[k] ? ": " + s.zahl.gesamt + " Anforderungen eingeblendet"
+                          : ": Liste zugeklappt"));
+}
 
+/* ------------------------------------------------------------- Ein Blatt */
+function zeichneBlatt(b, p, s) {
+  var auf = !!OFFEN[pfad(b, p, s)];
+  var anspruch = !!s.zahl.anspruch && !s.zahl.pflicht;
+
+  var frage = el("div", { class: "blatt__frage" }, [
+    el("span", { class: "blatt__fid", text: "Frage " + s.frage.id + " · " }),
+    s.frage.text + " ",
+    el("span", { class: "blatt__antwort", text: s.frage.antwort.schluessel === s.frage.antwort.text
+        ? s.frage.antwort.text
+        : s.frage.antwort.schluessel + " — " + s.frage.antwort.text }),
+    s.frage_hinweis ? el("span", { class: "blatt__warn", text: s.frage_hinweis }) : null
+  ]);
+
+  var knopf = el("button", {
+    class: "knoten" + (auf ? " knoten--auf" : "") + (anspruch ? " knoten--anspruch" : ""),
+    type: "button", "aria-expanded": auf ? "true" : "false",
+    onclick: function () { schalte(b, p, s); }
+  }, [
+    el("span", { class: "knoten__zeile" }, [
+      el("span", { class: "knoten__name" }, [
+        s.name,
+        s.ergaenzt ? el("span", { class: "knoten__erg", text: " ⊕",
+          title: "über die Fundstelle ergänzt, nicht auf der Folie" }) : null
+      ]),
+      el("span", { class: "knoten__kap", text: "→ " + kapText(s.kapitel) }),
+      el("span", { class: "knoten__pfeil", text: auf ? "▾ zuklappen" : "▸ Anforderungen" })
+    ]),
+    el("span", { class: "knoten__zahl" }, [
+      folgeText(p, s) + " · ",
+      el("span", { class: "knoten__art", text: (s.fundstellen || []).join(", ") })
+    ])
+  ]);
+
+  var blatt = el("div", { class: "blatt" }, [frage, knopf]);
+  if (auf) blatt.appendChild(zeichneListe(s));
+  return blatt;
+}
+
+function zeichneListe(s) {
   var liste = el("div", { class: "liste" });
   s.anforderungen.forEach(function (e) {
     liste.appendChild(el("div", { class: "req"
@@ -232,8 +154,52 @@ function zeichneErgebnis() {
       el("span", { class: "req__typ", text: TYP_KURZ[e.typ] || e.typ })
     ]));
   });
-  w.appendChild(liste);
-  return w;
+  return liste;
+}
+
+/* --------------------------------------------------------------- Ein Ast */
+function zeichneAst(b, p) {
+  var anspruch = !p.rolle && !!p.anspruch_gegen;
+  var anker = el("div", { class: "anker" + (anspruch ? " anker--anspruch" : "") }, [
+    el("span", { class: "anker__zeile" }, [
+      p.antwort ? el("span", { class: "anker__taste", text: p.antwort.schluessel }) : null,
+      el("span", { class: "anker__name", text: p.name })
+    ]),
+    p.antwort ? el("span", { class: "anker__opt", text: "„" + p.antwort.text + "“" }) : null,
+    p.hinweis ? el("span", { class: "anker__hinweis", text: p.hinweis }) : null
+  ]);
+
+  var blaetter = el("div", { class: "blaetter" });
+  p.sachverhalte.forEach(function (s) { blaetter.appendChild(zeichneBlatt(b, p, s)); });
+
+  return el("div", { class: "ast" }, [anker, blaetter]);
+}
+
+/* -------------------------------------------------------------- Ein Baum */
+function zeichneBaum(b, nr) {
+  var wurzel = el("div", { class: "wurzel" }, [
+    el("span", { class: "wurzel__marke",
+                 text: D.formel[0] + " " + nr + " von " + D.baeume.length }),
+    el("h2", { text: b.gegenstand }),
+    b.kurz ? el("p", { class: "wurzel__kurz", text: b.kurz }) : null,
+    b.marke ? el("span", { class: "wurzel__marke--firma wurzel__marke--" + b.marke,
+                           title: b.grund || null,
+                           text: D.unternehmen.name + ": " + (D.marken[b.marke] || b.marke) }) : null,
+    b.voraussetzung ? el("p", { class: "wurzel__vor",
+      text: "Voraussetzung — Frage " + b.voraussetzung.id + ": "
+            + b.voraussetzung.text + " → " + b.voraussetzung.antwort.text }) : null
+  ]);
+
+  var gabel = b.gabel ? el("div", { class: "gabel" }, [
+    el("span", { class: "gabel__id", text: "Frage " + b.gabel.id }),
+    el("span", { class: "gabel__text", text: b.gabel.text })
+  ]) : null;
+
+  var aeste = el("div", { class: "aeste" });
+  b.anknuepfungspunkte.forEach(function (p) { aeste.appendChild(zeichneAst(b, p)); });
+
+  return el("section", { class: "baum", "aria-label": D.formel[0] + ": " + b.gegenstand },
+            [wurzel, gabel, aeste]);
 }
 
 /* ---------------------------------------------------------------- Seite */
@@ -243,8 +209,31 @@ function kopf() {
     el("div", { class: "kopf__zeile",
                 text: D.unternehmen.name + " · " + D.unternehmen.kurz }),
     el("div", { class: "kopf__hinweis",
-                text: "Strukturierte Orientierung nach VO (EU) 2023/2854 · "
+                text: D.formel.join(" + ").replace(/ \+ ([^+]*)$/, " = $1")
+                      + " · Strukturierte Orientierung nach VO (EU) 2023/2854 · "
                       + "keine Rechtsberatung · Rechtsstand 18.09.2026" })
+  ]);
+}
+
+function steuer() {
+  var alle = alleBlaetter();
+  var offenZahl = alle.filter(function (t) { return OFFEN[pfad(t[0], t[1], t[2])]; }).length;
+  var alleAuf = offenZahl === alle.length;
+  return el("div", { class: "steuer" }, [
+    el("button", { class: "tat", type: "button",
+      text: alleAuf ? "Alle Anforderungen verbergen" : "Alle Anforderungen zeigen",
+      onclick: function () {
+        OFFEN = {};
+        if (!alleAuf) alle.forEach(function (t) { OFFEN[pfad(t[0], t[1], t[2])] = true; });
+        speichere(); zeichne();
+        sage(alleAuf ? "alle Listen zugeklappt" : "alle Listen eingeblendet");
+      } }),
+    el("button", { class: "tat", type: "button", text: "Drucken / PDF",
+                   onclick: function () { window.print(); } }),
+    el("span", { class: "steuer__hinweis",
+      text: D.baeume.length + " Bäume · " + alle.length + " Sachverhalte · "
+            + alle.reduce(function (n, t) { return n + t[2].zahl.gesamt; }, 0)
+            + " Anforderungszeilen" })
   ]);
 }
 
@@ -256,11 +245,12 @@ function fuss() {
       D.nicht_abgedeckt.text
     ]));
   }
+  f.appendChild(el("span", { text: "Die Fragen stehen wortgetreu im Fragenkatalog. "
+    + "Welche Anforderungen ein Sachverhalt auslöst, entscheidet seine Fundstelle "
+    + "im Verordnungstext — nicht der Fragebogenpfad." }));
   f.appendChild(el("span", { class: "fuss__stand", text: RECHTSSTAND }));
   f.appendChild(el("span", { text: "Läuft vollständig lokal: kein Netzwerkaufruf, "
                                  + "kein Tracking." }));
-  f.appendChild(el("button", { class: "tat", type: "button", text: "Drucken / PDF",
-                               onclick: function () { window.print(); } }));
   return f;
 }
 
@@ -269,9 +259,8 @@ function zeichne() {
   var scroll = window.scrollY;
   leere(seite);
   seite.appendChild(kopf());
-  seite.appendChild(zeichneFormel());
-  seite.appendChild(zeichneSpalten());
-  seite.appendChild(zeichneErgebnis());
+  seite.appendChild(steuer());
+  D.baeume.forEach(function (b, i) { seite.appendChild(zeichneBaum(b, i + 1)); });
   seite.appendChild(fuss());
   window.scrollTo(0, scroll);
 }
@@ -280,27 +269,14 @@ function zeichne() {
   lade();
   var vorDruck = null;
   window.addEventListener("beforeprint", function () {
-    /* Im Druck alle Blätter aller drei Bäume nacheinander. */
-    vorDruck = { baum: S.baum, punkt: S.punkt, sv: S.sv };
-    var seite = document.getElementById("seite");
-    leere(seite);
-    seite.appendChild(kopf());
-    D.baeume.forEach(function (b) {
-      S.baum = b.id;
-      b.anknuepfungspunkte.forEach(function (p) {
-        S.punkt = p.id;
-        p.sachverhalte.forEach(function (sv) {
-          S.sv = sv.id;
-          seite.appendChild(zeichneFormel());
-          seite.appendChild(zeichneErgebnis());
-        });
-      });
-    });
-    seite.appendChild(fuss());
+    /* Auf Papier gibt es kein Aufklappen - dort steht alles. */
+    vorDruck = OFFEN;
+    OFFEN = {};
+    alleBlaetter().forEach(function (t) { OFFEN[pfad(t[0], t[1], t[2])] = true; });
+    zeichne();
   });
   window.addEventListener("afterprint", function () {
-    if (vorDruck) { S.baum = vorDruck.baum; S.punkt = vorDruck.punkt; S.sv = vorDruck.sv; }
-    zeichne();
+    if (vorDruck) { OFFEN = vorDruck; vorDruck = null; zeichne(); }
   });
   zeichne();
 })();
