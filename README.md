@@ -75,33 +75,58 @@ Mit `--annahmen annahmen.json` werden zusätzlich die dort bestätigten
 Antwort-Wert-Zuordnungen eingesetzt (siehe NOTES.md, Punkt 1). Ohne diesen
 Schalter wird ausschließlich die Excel ausgewertet.
 
-### Dreiklang-Fassung — die Vorgehensfolie als Werkzeug
+### Dreiklang-Fassung — drei Bäume nach der Vorgehensfolie
 
-`data-act-dreiklang.html` (rund 47 KiB) bildet die Folie „Ableitung von
+`data-act-dreiklang.html` (rund 58 KiB) bildet die Folie „Ableitung von
 Rechtsfolgen" ab:
 
 > **Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge**
 
-Sieben Zeilen, alle gleichzeitig sichtbar, anklickbar. Ein Klick füllt die
-Gleichung und zeigt die Anforderungen der Rechtsfolge — je eine Zeile mit
-Req-ID, Fundstelle und Kurztext. In fünf bis zehn Minuten durchzugehen.
+Drei Bäume, einer je Bewertungsgegenstand, in Spalten nebeneinander: erst der
+Gegenstand, daraus ein oder mehrere Anknüpfungspunkte, daraus die Sachverhalte,
+daraus die Rechtsfolge mit ihren Anforderungen — je eine Zeile mit Req-ID,
+Fundstelle, Kurztext, Adressat und Typ. Der ganze Weg bleibt sichtbar; ein Klick
+auf eine höhere Ebene setzt die tieferen zurück. Ein Weg dauert ein bis zwei
+Minuten.
+
+```
+DV-Dienst ─┬─ Anbieter ────┬─ Anbieterwechsel ......... Art. 23–31 → Kap. VI
+           │               ├─ Wechselentgelte ......... Art. 29 ... → Kap. VI
+           │               ├─ Parallelnutzung ......... Art. 34 ... → Kap. VIII
+           │               └─ Drittstaatenzugriff ..... Art. 32 ... → Kap. VII
+           └─ Kunde ───────┬─ Anbieterwechsel ......... Art. 23–31 → Kap. VI
+                           └─ Parallelnutzung ......... Art. 34 ... → Kap. VIII
+Datenbestand ─ Dateninhaber ┬ Datenbereitstellung ..... Art. 8–12 . → Kap. III
+                            └ Behördenverlangen ....... Art. 14–22  → Kap. V
+Vertrag ─ Rollenunabhängig ─┬ Einseitige Klauseln ..... Art. 13 ... → Kap. IV
+                            └ Vertragl. Wechselbed. ... Art. 25 ... → Kap. VI
+```
 
 ```
 python3 build_data.py --inline --inverso --dreiklang --annahmen annahmen.json
-node pruefe.js data-act-dreiklang.html     # 9 Prüfungen
+node pruefe.js data-act-dreiklang.html     # 11 Prüfungen
 ```
 
 - **Die Rechtsfolge wird berechnet, nicht behauptet.** `dreiklang.json` nennt
-  nur, welche Fragen zu welcher Zeile gehören und was die Folie angibt; welche
-  Anforderungen herauskommen, entscheidet das Mapping der Excel. Widerspricht
-  das Ergebnis der Folie, bricht der Build ab — außer die Abweichung ist als
-  `abweichung_bekannt` vermerkt. So ist die Parallelnutzungszeile aufgefallen.
+  nur die Baumstruktur, je Sachverhalt seine **Fundstellen** und was die Folie
+  angibt; welche Anforderungen herauskommen, entscheidet der Katalog der Excel.
+  Trifft ein Fundstellenpräfix keine Anforderung oder widerspricht das Ergebnis
+  der Folie, bricht der Build ab.
+- **Auswahl über Artikel, nicht über Fragen.** Ein Sachverhalt ist juristisch
+  durch seine Artikel definiert. Über den Fragebogenpfad ausgewählt zog
+  „Parallelnutzung" 13 fremde Wechselpflichten mit; über `Art. 34` sind es genau
+  die zwei Anforderungen des Kapitels VIII. Jeder der zehn Äste deckt sich so
+  mit genau einem Kapitel.
+- **Pflicht oder Anspruch.** Jeder Anknüpfungspunkt trägt eine Rolle; der Build
+  gleicht sie gegen den Adressaten jeder Anforderung ab. Kapitel VI richtet sich
+  in 34 von 35 Fällen an den Anbieter — beim Anknüpfungspunkt „Kunde" steht
+  deshalb „13 **Ansprüche gegen den Anbieter**", nicht „13 Pflichten".
 - **Aufgelöst beim Bauen:** die Datei trägt keine Fragen, kein Mapping, keine
-  Begriffe. Deshalb 47 KiB statt 871 KiB — der Unterschied zwischen einem
+  Begriffe. Deshalb 58 KiB statt 871 KiB — der Unterschied zwischen einem
   E-Mail-Anhang und einem, der hängenbleibt.
-- **Haupt- und Nebenkapitel getrennt:** Als Rechtsfolge zählt, was die Folie
-  nennt oder mindestens ein Fünftel der Anforderungen trägt. Randtreffer stehen
-  als „Zusätzlich berührt" darunter.
+- **Kapitel II bleibt draußen** (IoT-Datenzugang, 46 Anforderungen), weil der
+  Auftraggeber festgestellt hat, dass es für die Inverso GmbH nicht einschlägig
+  ist. Der Fuß der Datei sagt das und verweist auf `data-act-check.html`.
 
 ### Zugeschnittene Fassung für ein einzelnes Unternehmen
 
@@ -113,7 +138,7 @@ aufklappbaren Anforderungen am Fuß jeder Säule.
 python3 build_data.py --inline --inverso --annahmen annahmen.json
                                            # beide Auslieferungsdateien
 node pruefe.js                             # allgemeine Fassung, 17 Prüfungen
-node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 23 Prüfungen
+node pruefe.js data-act-inverso.html       # zugeschnittene Fassung, 25 Prüfungen
 ```
 
 Aufbau des Bildes — es folgt der Entscheidungslogik, nicht einer Gliederung:

@@ -2277,80 +2277,114 @@ def _kurzzeile(kurztitel: str, anforderung: str, fundstelle: str, typ: str) -> s
 
 
 def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
-    """Je Zeile die ausgelösten Anforderungen sammeln und die Rechtsfolge
-    ausrechnen. Bricht ab, wenn die Excel der Folie widerspricht."""
-    fragen = {f["id"] for f in daten["fragen"]}
-    anf = {a["req_id"]: a for a in daten["anforderungen"]}
+    """Die drei Bäume auflösen: je Sachverhalt die Anforderungen seiner Artikel.
+
+    Ausgewählt wird über die Fundstelle, nicht über den Fragebogenpfad. Ein
+    Sachverhalt ist juristisch durch Artikel bestimmt; über Fragen ausgewählt
+    zöge er mit, was dieselbe Frage nebenbei auslöst. Das war der Grund, warum
+    "Parallelnutzung" zuvor halb in Kapitel VI landete.
+    """
+    anf = daten["anforderungen"]
     erg = {e["req_id"]: e for e in daten["ergebnisse"]}
     fehler, hinweise = [], []
-    zeilen = []
 
-    for z in modell.get("zeilen") or []:
-        fehlend = [q for q in z.get("fragen", []) if q not in fragen]
-        if fehlend:
-            fehler.append(f"Zeile {z['id']}: Frage(n) {', '.join(fehlend)} gibt es nicht")
-            continue
+    def treffer(praefixe):
+        aus = []
+        for a in anf:
+            for prae in praefixe:
+                # "Art. 3" darf nicht "Art. 30" fangen
+                if re.match(re.escape(prae) + r"(\D|$)", a["fundstelle"]):
+                    aus.append(a)
+                    break
+        return aus
 
-        req_ids = sorted({m["req_id"] for m in daten["mapping"]
-                          if m["frage_id"] in z["fragen"] and m["wirkung"] == "löst aus"
-                          and m["req_id"] in anf},
-                         key=lambda r: (anf[r]["kapitel"], anf[r]["zeile"]))
-        if not req_ids:
-            fehler.append(f"Zeile {z['id']}: löst keine einzige Anforderung aus")
-            continue
+    baeume = []
+    for baum in modell.get("baeume") or []:
+        punkte = []
+        for punkt in baum.get("anknuepfungspunkte") or []:
+            rolle = punkt.get("rolle")
+            # Drei Fälle, nicht zwei: eigene Rolle (Pflichten), fremde Rolle
+            # (Ansprüche gegen die Gegenseite - so steht der Kunde zu Kap. VI),
+            # und gar keine Rolle (rollenunabhängig, etwa Kap. IV).
+            anspruch_gegen = punkt.get("anspruch_gegen")
+            sachverhalte = []
+            for sv in punkt.get("sachverhalte") or []:
+                getroffen = treffer(sv.get("fundstellen") or [])
+                if not getroffen:
+                    fehler.append(f"{baum['id']}/{punkt['id']}/{sv['id']}: "
+                                  f"kein Artikel aus "
+                                  f"{', '.join(sv.get('fundstellen') or [])} "
+                                  f"trifft eine Anforderung")
+                    continue
 
-        nach_kapitel = collections.Counter(anf[r]["kapitel"] for r in req_ids)
-        haupt = nach_kapitel.most_common(1)[0][0]
-        erwartet = z.get("folie_kapitel") or []
+                nach_kapitel = collections.Counter(a["kapitel"] for a in getroffen)
+                rechtsfolge = [k for k, _ in nach_kapitel.most_common()]
+                erwartet = sv.get("folie_kapitel") or []
+                if erwartet and not all(k in rechtsfolge for k in erwartet):
+                    meldung = (f"{baum['id']}/{punkt['id']}/{sv['id']} "
+                               f"({sv['name']}): Die Folie nennt Kapitel "
+                               f"{', '.join(erwartet)}, die Excel liefert "
+                               + ", ".join(f"{k}: {n}" for k, n in nach_kapitel.most_common()))
+                    if sv.get("abweichung_bekannt"):
+                        hinweise.append(meldung)
+                    else:
+                        fehler.append(meldung)
 
-        # Die Folie nennt eine Rechtsfolge, das Mapping streut: neben dem
-        # tragenden Kapitel stehen oft ein, zwei Randtreffer (Anwendungsbereich,
-        # Schlussbestimmungen). Als Rechtsfolge zählt, was die Folie nennt oder
-        # mindestens ein Fünftel der Anforderungen trägt; der Rest wird als
-        # "zusätzlich berührt" ausgewiesen, statt die Aussage zu verwässern.
-        schwelle = max(1, len(req_ids) // 5)
-        rechtsfolge = [k for k, n in nach_kapitel.most_common()
-                       if k in erwartet or n >= schwelle]
-        neben = [{"kapitel": k, "zahl": n} for k, n in nach_kapitel.most_common()
-                 if k not in rechtsfolge]
+                eintraege = []
+                for a in sorted(getroffen, key=lambda x: (x["kapitel"], x["zeile"])):
+                    # Trifft die Rolle des Anknüpfungspunkts den Adressaten, ist
+                    # es eine eigene Pflicht. Sonst ist es ein Anspruch gegen den
+                    # dort Genannten - für den Kunden ist Kapitel VI genau das.
+                    adressat = (a["adressat"] or "").lower()
+                    eigen = bool(rolle) and rolle.lower() in adressat
+                    anspruch = (not eigen and bool(anspruch_gegen)
+                                and anspruch_gegen.lower() in adressat)
+                    eintraege.append({
+                        "id": a["req_id"],
+                        "kapitel": a["kapitel"],
+                        "fundstelle": a["fundstelle"],
+                        "typ": a["typ"],
+                        "adressat": a["adressat"],
+                        "eigen": eigen,
+                        "anspruch": anspruch,
+                        "titel": _kurzzeile((erg.get(a["req_id"]) or {}).get("kurztitel"),
+                                            a["anforderung"], a["fundstelle"], a["typ"]),
+                    })
 
-        if erwartet and haupt not in erwartet:
-            meldung = (f"Zeile {z['id']} ({z['sachverhalt']}): Die Folie nennt "
-                       f"Kapitel {', '.join(erwartet)}, die Excel liefert "
-                       + ", ".join(f"{k}: {n}" for k, n in nach_kapitel.most_common()))
-            if z.get("abweichung_bekannt"):
-                hinweise.append(meldung)
-            else:
-                fehler.append(meldung + " - als 'abweichung_bekannt' vermerken "
-                              "oder die Zuordnung berichtigen")
-
-        eintraege = [{
-            "id": r,
-            "kapitel": anf[r]["kapitel"],
-            "fundstelle": anf[r]["fundstelle"],
-            "typ": anf[r]["typ"],
-            "titel": _kurzzeile((erg.get(r) or {}).get("kurztitel"),
-                                anf[r]["anforderung"], anf[r]["fundstelle"],
-                                anf[r]["typ"]),
-        } for r in req_ids]
-
-        zeilen.append(dict(z, **{
-            "kapitel": rechtsfolge,
-            "neben": neben,
-            "kapitel_zahl": dict(nach_kapitel),
-            "anforderungen": eintraege,
-            "zahl": {
-                "gesamt": len(eintraege),
-                "pflicht": sum(1 for e in eintraege if e["typ"] in PFLICHTTYPEN),
-                "recht": sum(1 for e in eintraege if e["typ"] == "Recht"),
-                "ausnahme": sum(1 for e in eintraege if e["typ"] == "Ausnahme"),
-            },
-        }))
+                pflichtig = [e for e in eintraege if e["typ"] in PFLICHTTYPEN]
+                sachverhalte.append(dict(sv, **{
+                    "kapitel": rechtsfolge,
+                    "anforderungen": eintraege,
+                    "zahl": {
+                        "gesamt": len(eintraege),
+                        "pflicht": sum(1 for e in pflichtig
+                                       if e["eigen"] or not (rolle or anspruch_gegen)),
+                        "anspruch": sum(1 for e in pflichtig if e["anspruch"]),
+                        "recht": sum(1 for e in eintraege if e["typ"] == "Recht"),
+                        "ausnahme": sum(1 for e in eintraege if e["typ"] == "Ausnahme"),
+                        # Pflichten, die weder die eigenen noch als Anspruch
+                        # durchsetzbar sind - Kapitel V etwa richtet 10 von 24
+                        # Anforderungen an die ersuchende Behörde.
+                        "gegenseite": sum(1 for e in pflichtig
+                                          if not e["eigen"] and not e["anspruch"]
+                                          and (rolle or anspruch_gegen)),
+                    },
+                }))
+            if sachverhalte:
+                punkte.append(dict(punkt, sachverhalte=sachverhalte))
+        if punkte:
+            baeume.append(dict(baum, anknuepfungspunkte=punkte))
 
     if fehler:
         sys.exit("dreiklang.json passt nicht zur Excel:\n  " + "\n  ".join(fehler))
     for h in hinweise:
         print("  Bekannte Abweichung: " + h)
+
+    blaetter = sum(len(p["sachverhalte"])
+                   for b in baeume for p in b["anknuepfungspunkte"])
+    print(f"  Dreiklang aufgelöst: {len(baeume)} Bäume, "
+          f"{sum(len(b['anknuepfungspunkte']) for b in baeume)} Anknüpfungspunkte, "
+          f"{blaetter} Sachverhalte")
 
     return {
         "meta": dict(daten["meta"], fassung="dreiklang"),
@@ -2358,7 +2392,8 @@ def loese_dreiklang_auf(daten: dict, modell: dict) -> dict:
         "formel": modell.get("formel") or [],
         "unternehmen": modell.get("unternehmen") or {},
         "marken": modell.get("marken") or {},
-        "zeilen": zeilen,
+        "nicht_abgedeckt": modell.get("nicht_abgedeckt") or None,
+        "baeume": baeume,
     }
 
 
@@ -2502,7 +2537,7 @@ def main(argv=None) -> int:
             args.dreiklang_html)
         print(f"{args.dreiklang_html} geschrieben: {info['bytes']/1024:.1f} KiB "
               f"(davon Daten {info['daten_bytes']/1024:.1f} KiB), "
-              f"{len(modell['zeilen'])} Zeilen der Vorgehensfolie")
+              f"{len(modell['baeume'])} Bäume der Vorgehensfolie")
 
     warnungen = warn.nach_schwere("warnung")
     print(f"\nWarnliste ({len(warnungen)} nicht eindeutig parsebare Stellen):")

@@ -65,7 +65,11 @@ button { font: inherit; color: inherit; }
 .formel__feld {
   border: 1px solid var(--linie); border-radius: 2px;
   background: var(--flaeche); padding: var(--a2) var(--a3); min-width: 0;
+  text-align: left; font: inherit; color: inherit;
 }
+button.formel__feld { cursor: pointer; }
+button.formel__feld:hover { border-color: var(--grau); }
+.formel__feld--voll { background: var(--papier); border-color: var(--tinte); }
 .formel__feld--ziel { background: var(--akzent); border-color: var(--akzent);
                       color: var(--papier); }
 .formel__marke {
@@ -77,44 +81,49 @@ button { font: inherit; color: inherit; }
 .formel__wert--leer { font-weight: 400; opacity: .45; }
 .formel__op { align-self: center; font-size: var(--t-gross); color: var(--grau); }
 
-/* --------------------------------------------------------------- Karte */
-.gegenstaende {
-  display: grid; gap: var(--a4);
-  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-  align-items: start;
+/* ------------------------------------------------------------- Spalten */
+/* Jede Ebene neben der vorigen: der ganze Weg bleibt sichtbar. */
+.spalten {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--a3); align-items: start; margin-bottom: var(--a5);
 }
-.gegenstand { border: 1px solid var(--linie); border-radius: 2px; }
-.gegenstand__kopf {
+.spalte { border: 1px solid var(--linie); border-radius: 2px; min-width: 0; }
+.spalte--leer { border-style: dashed; background: var(--flaeche); }
+.spalte__kopf {
+  display: flex; gap: var(--a2); align-items: center;
   background: var(--tinte); color: var(--papier);
-  padding: var(--a2) var(--a3); font-size: var(--t-klein); font-weight: 600;
+  padding: var(--a2) var(--a3); font-size: var(--t-mini);
+  text-transform: uppercase; letter-spacing: .05em;
 }
-.anknuepfung { padding: var(--a3); }
-.anknuepfung + .anknuepfung { border-top: 1px solid var(--linie); }
-.anknuepfung__name {
-  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
-  text-transform: uppercase; letter-spacing: .05em; margin-bottom: var(--a2);
+.spalte--leer .spalte__kopf { background: var(--grau); }
+.spalte__nr {
+  display: inline-grid; place-items: center; width: 1.2rem; height: 1.2rem;
+  border-radius: 2px; background: rgba(255,255,255,.2);
+  font-family: var(--tabellar); font-weight: 600;
 }
+.spalte__leer { padding: var(--a3); font-size: var(--t-meta); color: var(--grau); }
 
-.sv {
-  display: grid; grid-template-columns: 1fr auto; gap: var(--a2);
-  align-items: baseline; width: 100%; text-align: left;
-  background: none; border: 0; border-left: 3px solid var(--linie);
-  padding: var(--a2) var(--a3); cursor: pointer; border-radius: 2px;
+.knoten {
+  display: grid; gap: var(--a1); width: 100%; text-align: left;
+  background: none; border: 0; border-left: 3px solid transparent;
+  padding: var(--a3); cursor: pointer;
   transition: background-color .12s ease-out, border-color .12s ease-out;
 }
-.sv + .sv { margin-top: var(--a1); }
-.sv:hover { background: var(--flaeche); border-left-color: var(--grau); }
-.sv--an { background: var(--flaeche); border-left-color: var(--akzent); }
-.sv__name { font-size: var(--t-klein); }
-.sv--an .sv__name { font-weight: 600; }
-.sv__kap {
-  font-family: var(--tabellar); font-size: var(--t-mini);
+.knoten + .knoten { border-top: 1px solid var(--linie); }
+.knoten:hover { background: var(--flaeche); border-left-color: var(--grau); }
+.knoten--an { background: var(--flaeche); border-left-color: var(--akzent); }
+.knoten__name { font-size: var(--t-klein); }
+.knoten--an .knoten__name { font-weight: 600; }
+.knoten__erg { color: var(--akzent); font-weight: 600; }
+.knoten__kurz { font-size: var(--t-mini); color: var(--grau); }
+.knoten__kap {
+  justify-self: start; font-family: var(--tabellar); font-size: var(--t-mini);
   background: var(--tinte); color: var(--papier);
-  padding: .1rem var(--a2); border-radius: 2px; white-space: nowrap;
+  padding: .1rem var(--a2); border-radius: 2px;
 }
-.sv--an .sv__kap { background: var(--akzent); }
-.sv__marke { grid-column: 1 / -1; font-size: var(--t-mini); color: var(--grau); }
-.sv__marke--offen { color: var(--warn); }
+.knoten--an .knoten__kap { background: var(--akzent); }
+.knoten__marke { font-size: var(--t-mini); color: var(--grau); }
+.knoten__marke--offen { color: var(--warn); }
 
 /* ------------------------------------------------------------ Ergebnis */
 .ergebnis { margin-top: var(--a5); border-top: 2px solid var(--tinte);
@@ -128,35 +137,36 @@ button { font: inherit; color: inherit; }
 .ergebnis__zahl {
   font-family: var(--tabellar); font-size: var(--t-klein); color: var(--grau);
 }
-.ergebnis__zahl b { color: var(--tinte); }
-.ergebnis__grund {
+.ergebnis__artikel {
+  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
+  margin-left: auto;
+}
+.ergebnis__hinweis {
   font-size: var(--t-meta); color: var(--grau); margin-bottom: var(--a3);
   max-width: 62rem;
 }
-.ergebnis__neben {
-  font-size: var(--t-meta); color: var(--grau); margin-bottom: var(--a3);
+.ergebnis__hinweis--warn {
+  border-left: 3px solid var(--warn); padding-left: var(--a3); color: var(--tinte);
 }
-.ergebnis__abweichung {
-  border-left: 3px solid var(--warn); background: var(--flaeche);
-  padding: var(--a2) var(--a3); font-size: var(--t-meta); color: var(--tinte);
-  margin-bottom: var(--a3); max-width: 62rem;
-}
-.ergebnis__abweichung b { color: var(--warn); }
 
-.liste { display: grid; gap: 1px; background: var(--linie); border: 1px solid var(--linie); }
+.liste { display: grid; gap: 1px; background: var(--linie);
+         border: 1px solid var(--linie); }
 .req {
-  display: grid; grid-template-columns: 6.5rem 11rem 1fr auto; gap: var(--a3);
-  align-items: baseline; background: var(--papier);
+  display: grid; grid-template-columns: 6.5rem 10.5rem minmax(0, 1fr) 11rem 5.5rem;
+  gap: var(--a3); align-items: baseline; background: var(--papier);
   padding: var(--a2) var(--a3); font-size: var(--t-klein);
 }
+/* Richtet sich die Anforderung an jemand anderen, ist sie für die gewählte
+   Rolle keine eigene Pflicht - entweder ein durchsetzbarer Anspruch oder eine
+   Pflicht der Gegenseite. Beides gehört sichtbar unterschieden. */
+.req--fremd { background: var(--flaeche); }
+.req--fremd .req__titel { color: var(--grau); }
+.req--anspruch { border-left: 3px solid var(--akzent); }
 .req__id, .req__stelle {
   font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
 }
+.req__adressat { font-size: var(--t-mini); color: var(--grau); font-style: italic; }
 .req__typ { font-size: var(--t-mini); color: var(--grau); white-space: nowrap; }
-.kapitelband {
-  background: var(--flaeche); padding: var(--a1) var(--a3);
-  font-family: var(--tabellar); font-size: var(--t-mini); color: var(--grau);
-}
 
 /* --------------------------------------------------------------- Fuß */
 .fuss {
@@ -165,6 +175,11 @@ button { font: inherit; color: inherit; }
   font-size: var(--t-mini); color: var(--grau);
 }
 .fuss__stand { flex-basis: 100%; max-width: 62rem; }
+.fuss__luecke {
+  flex-basis: 100%; border-left: 3px solid var(--linie); padding-left: var(--a3);
+  margin-bottom: var(--a2); max-width: 62rem; color: var(--tinte);
+  font-size: var(--t-meta);
+}
 .tat {
   background: none; border: 0; padding: 0; color: var(--akzent);
   font-size: var(--t-mini); font-weight: 500; cursor: pointer;
@@ -176,6 +191,8 @@ button { font: inherit; color: inherit; }
   .formel { grid-template-columns: 1fr; }
   .formel__op { display: none; }
   .req { grid-template-columns: 1fr; gap: var(--a1); }
+  .req__titel { font-weight: 500; }
+  .spalten { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
@@ -184,8 +201,9 @@ button { font: inherit; color: inherit; }
   .tat { display: none !important; }
   body { font-size: 9pt; color: #000; }
   .seite { max-width: none; padding: 0; }
-  .gegenstand, .ergebnis, .req { break-inside: avoid; }
-  .sv { border-left-color: #999; }
+  .ergebnis, .req { break-inside: avoid; }
+  /* Der Formelstreifen bleibt ganz und bleibt bei seinem Ergebnis. */
+  .formel { break-inside: avoid; break-after: avoid; }
   @page { margin: 12mm; size: A4 portrait; }
 }
 

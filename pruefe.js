@@ -17,7 +17,7 @@ const DATEN = JSON.parse(datenTreffer[1]);
 /* Die Dreiklang-Fassung trägt keine Ablauflogik: sie zeigt nur, was der Build
    aus dem Mapping aufgelöst hat. Für sie gilt ein eigener Prüfzweig weiter
    unten; der Motor wird dort nicht gebraucht. */
-const istDreiklang = !!(DATEN.zeilen && DATEN.formel);
+const istDreiklang = !!(DATEN.baeume && DATEN.formel);
 
 const von = html.indexOf("/*ENGINE-START*/");
 const bis = html.indexOf("/*ENGINE-ENDE*/");
@@ -53,33 +53,59 @@ pruefe("localStorage nur in try/catch",
 
 /* --- 1b Dreiklang-Fassung: eigene Prüfungen, dann fertig ---------------- */
 if (istDreiklang) {
-  const Z = DATEN.zeilen;
-  pruefe(Z.length + " Zeilen der Vorgehensfolie", Z.length > 0);
+  const B = DATEN.baeume;
+  const blaetter = [];
+  B.forEach(baum => (baum.anknuepfungspunkte || []).forEach(p =>
+    (p.sachverhalte || []).forEach(sv =>
+      blaetter.push({ baum, punkt: p, sv }))));
 
-  const leer = Z.filter(z => !z.anforderungen || !z.anforderungen.length);
-  pruefe("jede Zeile löst mindestens eine Anforderung aus",
-         leer.length === 0, leer.map(z => z.id).join(", "));
+  pruefe(B.length + " Bäume mit " + blaetter.length + " Sachverhalten",
+         B.length > 0 && blaetter.length > 0);
 
-  /* Die Rechtsfolge muss das nennen, was die Folie sagt - oder die Abweichung
-     ist ausdrücklich vermerkt. Genau hier ist die Parallelnutzung aufgefallen. */
-  const abweichend = Z.filter(z =>
-    (z.folie_kapitel || []).length
-    && !(z.folie_kapitel || []).every(k => (z.kapitel || []).indexOf(k) >= 0)
-    && !z.abweichung_bekannt);
+  /* Ein Baum ohne Anknüpfungspunkt und ein Anknüpfungspunkt ohne Sachverhalt
+     wären Sackgassen - der Nutzer klickt und nichts passiert. */
+  const sackgassen = [];
+  B.forEach(baum => {
+    if (!(baum.anknuepfungspunkte || []).length) sackgassen.push(baum.id);
+    (baum.anknuepfungspunkte || []).forEach(p => {
+      if (!(p.sachverhalte || []).length) sackgassen.push(baum.id + "/" + p.id);
+    });
+  });
+  pruefe("kein Ast endet ohne Ergebnis", sackgassen.length === 0, sackgassen.join(", "));
+
+  const leer = blaetter.filter(x => !(x.sv.anforderungen || []).length);
+  pruefe("jeder Sachverhalt trägt Anforderungen", leer.length === 0,
+         leer.map(x => x.sv.id).join(", "));
+
+  /* Die Rechtsfolge muss das Kapitel der Folie enthalten. */
+  const abweichend = blaetter.filter(x =>
+    (x.sv.folie_kapitel || []).length
+    && !(x.sv.folie_kapitel || []).every(k => (x.sv.kapitel || []).indexOf(k) >= 0)
+    && !x.sv.abweichung_bekannt);
   pruefe("jede Rechtsfolge enthält das Kapitel der Folie",
          abweichend.length === 0,
-         abweichend.map(z => z.id + ": Folie " + z.folie_kapitel.join("+")
-                             + ", berechnet " + (z.kapitel || []).join("+")).join(" | "));
+         abweichend.map(x => x.sv.id + ": Folie " + x.sv.folie_kapitel.join("+")
+                             + ", berechnet " + (x.sv.kapitel || []).join("+")).join(" | "));
 
-  /* Zählung muss zur Liste passen - sonst steht eine Zahl da, die niemand
-     nachrechnen kann. */
-  const zahlFehler = Z.filter(z =>
-    z.zahl.gesamt !== z.anforderungen.length
-    || z.zahl.pflicht + z.zahl.recht + z.zahl.ausnahme !== z.anforderungen.length);
-  pruefe("die Zahlen decken sich mit der Liste darunter",
-         zahlFehler.length === 0, zahlFehler.map(z => z.id).join(", "));
+  /* Die Zahlen in der Kopfzeile müssen die Liste darunter vollständig
+     aufteilen - sonst steht eine Zahl da, die niemand nachrechnen kann. */
+  const zahlFehler = blaetter.filter(x => {
+    const n = x.sv.zahl, a = x.sv.anforderungen;
+    return n.gesamt !== a.length
+        || n.pflicht + n.anspruch + n.gegenseite + n.recht + n.ausnahme !== a.length;
+  });
+  pruefe("die Zahlen teilen die Liste vollständig auf",
+         zahlFehler.length === 0, zahlFehler.map(x => x.sv.id).join(", "));
 
-  /* Deckungsprobe: jede Req-ID muss im vollständigen Katalog stehen. */
+  /* Keine Anforderung darf innerhalb eines Sachverhalts doppelt stehen. */
+  const doppelt = blaetter.filter(x => {
+    const ids = x.sv.anforderungen.map(e => e.id);
+    return new Set(ids).size !== ids.length;
+  });
+  pruefe("keine Anforderung erscheint zweimal im selben Sachverhalt",
+         doppelt.length === 0, doppelt.map(x => x.sv.id).join(", "));
+
+  /* Deckungsprobe: jede Req-ID muss im vollständigen Katalog so stehen. */
   const vollDatei = "data-act-check.html";
   if (!fs.existsSync(vollDatei)) {
     console.log("  (übersprungen) Deckungsprobe - " + vollDatei + " fehlt");
@@ -87,18 +113,17 @@ if (istDreiklang) {
     const VOLL = JSON.parse(fs.readFileSync(vollDatei, "utf8").match(
       /<script id="daten" type="application\/json">([\s\S]*?)<\/script>/)[1]);
     const katalog = new Map(VOLL.anforderungen.map(a => [a.req_id, a]));
-    const fremd = [], falschesKapitel = [];
-    Z.forEach(z => z.anforderungen.forEach(e => {
+    const fremd = [], abweichung = [];
+    blaetter.forEach(x => x.sv.anforderungen.forEach(e => {
       const a = katalog.get(e.id);
-      if (!a) fremd.push(z.id + "/" + e.id);
-      else if (a.kapitel !== e.kapitel || a.fundstelle !== e.fundstelle) {
-        falschesKapitel.push(e.id);
-      }
+      if (!a) fremd.push(x.sv.id + "/" + e.id);
+      else if (a.kapitel !== e.kapitel || a.fundstelle !== e.fundstelle
+               || a.adressat !== e.adressat) abweichung.push(e.id);
     }));
-    pruefe("alle Req-IDs stehen so im vollständigen Katalog",
-           fremd.length === 0 && falschesKapitel.length === 0,
+    pruefe("alle Anforderungen stehen so im vollständigen Katalog",
+           fremd.length === 0 && abweichung.length === 0,
            (fremd.length ? "unbekannt: " + fremd.slice(0, 5).join(", ") + " " : "")
-           + (falschesKapitel.length ? "abweichend: " + falschesKapitel.slice(0, 5).join(", ") : ""));
+           + (abweichung.length ? "abweichend: " + abweichung.slice(0, 5).join(", ") : ""));
   }
 
   console.log("\n" + (fehler ? fehler + " von " + geprueft + " Prüfungen fehlgeschlagen"

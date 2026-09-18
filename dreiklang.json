@@ -1,88 +1,212 @@
 {
-  "_hinweis": "Der Dreiklang Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge ist ein Ordnungsrahmen der Vorgehensfolie, nicht der Excel. Die Excel kennt ihn nicht. Was hier steht, ist deshalb: welche Fragen der Excel zu welcher Zeile gehören, und was die Folie als Rechtsfolge angibt. WELCHE ANFORDERUNGEN herauskommen und in WELCHEM KAPITEL sie liegen, entscheidet allein das Mapping der Excel - der Build rechnet es aus und bricht ab, wenn es der Folie widerspricht.",
+  "_hinweis": "Drei Bäume nach dem Ordnungsrahmen der Vorgehensfolie: Bewertungsgegenstand -> Anknüpfungspunkt -> Sachverhalt -> Rechtsfolge. Der Dreiklang steht nicht in der Excel; er ist der Rahmen der Folie. Was hier steht, ist deshalb nur: welche Artikel einen Sachverhalt ausmachen und was die Folie als Rechtsfolge angibt. WELCHE Anforderungen das sind, in welchem Kapitel sie liegen und an wen sie sich richten, entscheidet allein die Excel - der Build rechnet es aus und bricht ab, wenn es der Folie widerspricht.",
   "titel": "EU Data Act — Ableitung von Rechtsfolgen",
-  "formel": ["Bewertungsgegenstand", "Anknüpfungspunkt", "Sachverhalt", "Rechtsfolge"],
+  "formel": [
+    "Bewertungsgegenstand",
+    "Anknüpfungspunkt",
+    "Sachverhalt",
+    "Rechtsfolge"
+  ],
   "unternehmen": {
     "name": "Inverso GmbH",
     "kurz": "IT-Dienstleister für Versicherungssoftware"
   },
   "marken": {
-    "ja":   "trifft zu",
+    "ja": "trifft zu",
     "offen": "noch offen",
     "nein": "trifft nicht zu"
   },
-  "zeilen": [
+  "nicht_abgedeckt": {
+    "titel": "Kapitel II — IoT-Datenzugang",
+    "text": "Kapitel II (Datenzugang bei vernetzten Produkten, 46 Anforderungen) bildet diese Übersicht nicht ab. Für die Inverso GmbH hat der Auftraggeber festgestellt, dass IoT nicht einschlägig ist. Wer vernetzte Produkte herstellt oder Daten daraus erhält, prüft das mit dem ausführlichen Werkzeug."
+  },
+  "baeume": [
     {
-      "id": "anbieter-wechsel",
+      "id": "dv-dienst",
       "gegenstand": "DV-Dienst",
-      "anknuepfung": "Anbieter",
-      "sachverhalt": "Anbieterwechsel",
-      "folie_kapitel": ["VI"],
-      "fragen": ["VI-01", "VI-02", "VI-03", "VI-04", "VI-05"],
+      "kurz": "Cloud-, Hosting- und Softwaredienste (IaaS, PaaS, SaaS)",
       "marke": "ja",
-      "grund": "Inverso bietet Cloud-, Hosting- und Anwendungsdienste an (EIN-01 D)."
+      "grund": "Inverso bietet solche Dienste an und nutzt selbst fremde.",
+      "anknuepfungspunkte": [
+        {
+          "id": "anbieter",
+          "name": "Anbieter",
+          "rolle": "Anbieter von Datenverarbeitungsdienst",
+          "hinweis": "Kapitel VI richtet sich fast vollständig an den Anbieter — hier stehen die eigenen Pflichten.",
+          "sachverhalte": [
+            {
+              "id": "a-wechsel",
+              "name": "Anbieterwechsel",
+              "fundstellen": [
+                "Art. 23",
+                "Art. 24",
+                "Art. 26",
+                "Art. 27",
+                "Art. 28",
+                "Art. 30",
+                "Art. 31"
+              ],
+              "folie_kapitel": [
+                "VI"
+              ]
+            },
+            {
+              "id": "a-entgelte",
+              "name": "Wechselentgelte",
+              "ergaenzt": true,
+              "fundstellen": [
+                "Art. 29"
+              ],
+              "folie_kapitel": [
+                "VI"
+              ]
+            },
+            {
+              "id": "a-parallel",
+              "name": "Parallelnutzung",
+              "fundstellen": [
+                "Art. 34"
+              ],
+              "folie_kapitel": [
+                "VIII"
+              ]
+            },
+            {
+              "id": "a-drittstaat",
+              "name": "Drittstaatenzugriff",
+              "fundstellen": [
+                "Art. 32"
+              ],
+              "folie_kapitel": [
+                "VII"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "kunde",
+          "name": "Kunde",
+          "rolle": null,
+          "hinweis": "Als Kunde treffen Sie hier keine eigenen Pflichten — Kapitel VI gibt Ihnen Ansprüche gegen Ihren Anbieter.",
+          "sachverhalte": [
+            {
+              "id": "k-wechsel",
+              "name": "Anbieterwechsel",
+              "fundstellen": [
+                "Art. 23",
+                "Art. 24",
+                "Art. 26",
+                "Art. 27",
+                "Art. 28",
+                "Art. 30",
+                "Art. 31"
+              ],
+              "folie_kapitel": [
+                "VI"
+              ]
+            },
+            {
+              "id": "k-parallel",
+              "name": "Parallelnutzung",
+              "ergaenzt": true,
+              "fundstellen": [
+                "Art. 34"
+              ],
+              "folie_kapitel": [
+                "VIII"
+              ]
+            }
+          ],
+          "anspruch_gegen": "Anbieter von Datenverarbeitungsdienst"
+        }
+      ]
     },
     {
-      "id": "anbieter-parallel",
-      "gegenstand": "DV-Dienst",
-      "anknuepfung": "Anbieter",
-      "sachverhalt": "Parallelnutzung",
-      "folie_kapitel": ["VIII"],
-      "fragen": ["VI-10"],
-      "abweichung_bekannt": true,
-      "abweichung": "Die Folie nennt nur Kapitel VIII. Die Excel erreicht die Parallelnutzungspflichten (Art. 34) aber nur über VI-10 — die Kundenfrage —, und dieselbe Frage löst auch die Wechselpflichten des Kapitels VI aus. Eine eigene Anbieterfrage zur Parallelnutzung gibt es nicht.",
-      "marke": "ja",
-      "grund": "Inverso ist zugleich Anbieter und Kunde von Datenverarbeitungsdiensten."
-    },
-    {
-      "id": "anbieter-drittstaat",
-      "gegenstand": "DV-Dienst",
-      "anknuepfung": "Anbieter",
-      "sachverhalt": "Drittstaatenzugriff",
-      "folie_kapitel": ["VII"],
-      "fragen": ["VI-06", "VI-07", "VI-08"],
-      "marke": "ja",
-      "grund": "Gilt für jeden Anbieter eines Datenverarbeitungsdienstes."
-    },
-    {
-      "id": "kunde-wechsel",
-      "gegenstand": "DV-Dienst",
-      "anknuepfung": "Kunde",
-      "sachverhalt": "Anbieterwechsel",
-      "folie_kapitel": ["VI"],
-      "fragen": ["VI-09", "VI-10"],
-      "marke": "ja",
-      "grund": "Inverso nutzt selbst Cloud- und SaaS-Dienste anderer Anbieter (EIN-01 E)."
-    },
-    {
-      "id": "dateninhaber-bereitstellung",
+      "id": "datenbestand",
       "gegenstand": "Datenbestand",
-      "anknuepfung": "Dateninhaber",
-      "sachverhalt": "Datenbereitstellung",
-      "folie_kapitel": ["III"],
-      "fragen": ["III-01", "III-02", "III-03", "III-04", "III-05"],
+      "kurz": "Daten, die Sie halten und bereitstellen müssen",
       "marke": "offen",
-      "grund": "Ob Inverso Dateninhaber i. S. v. Art. 2 Nr. 13 ist, ist die offene Kernfrage: Der Data Act knüpft an vernetzte Produkte und verbundene Dienste an, und nach EG 22 sind Auftragsverarbeiter keine Dateninhaber. Vor dem Anwaltsgespräch nicht zu entscheiden."
+      "grund": "Ob Inverso Dateninhaber i. S. v. Art. 2 Nr. 13 ist, ist die offene Kernfrage: Der Data Act knüpft an vernetzte Produkte und verbundene Dienste an, und nach EG 22 sind Auftragsverarbeiter keine Dateninhaber.",
+      "anknuepfungspunkte": [
+        {
+          "id": "dateninhaber",
+          "name": "Dateninhaber",
+          "rolle": "Dateninhaber",
+          "hinweis": "Kapitel III und V richten sich teils an Sie, teils an die Gegenseite — die Liste weist das je Zeile aus.",
+          "sachverhalte": [
+            {
+              "id": "d-bereitstellung",
+              "name": "Datenbereitstellung",
+              "fundstellen": [
+                "Art. 8",
+                "Art. 9",
+                "Art. 10",
+                "Art. 11",
+                "Art. 12"
+              ],
+              "folie_kapitel": [
+                "III"
+              ]
+            },
+            {
+              "id": "d-behoerden",
+              "name": "Behördenverlangen",
+              "fundstellen": [
+                "Art. 14",
+                "Art. 15",
+                "Art. 16",
+                "Art. 17",
+                "Art. 18",
+                "Art. 19",
+                "Art. 20",
+                "Art. 21",
+                "Art. 22"
+              ],
+              "folie_kapitel": [
+                "V"
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-      "id": "dateninhaber-behoerden",
-      "gegenstand": "Datenbestand",
-      "anknuepfung": "Dateninhaber",
-      "sachverhalt": "Behördenverlangen",
-      "folie_kapitel": ["V"],
-      "fragen": ["V-01", "V-02", "V-03", "V-04", "V-05", "V-06", "V-07"],
-      "marke": "offen",
-      "grund": "Setzt ebenfalls die Dateninhaberschaft voraus. Zusätzlich gilt: Kapitel V trifft nur juristische Personen außer öffentlichen Stellen (Art. 14)."
-    },
-    {
-      "id": "vertrag-klauseln",
+      "id": "vertrag",
       "gegenstand": "Vertrag",
-      "anknuepfung": "Rollenunabhängig",
-      "sachverhalt": "Einseitig auferlegte datenbezogene Klauseln",
-      "folie_kapitel": ["IV"],
-      "fragen": ["IV-01", "IV-02", "IV-03", "IV-04"],
+      "kurz": "B2B-Verträge mit datenbezogenen Klauseln",
       "marke": "ja",
-      "grund": "Gilt rollenunabhängig für jedes Unternehmen mit B2B-Verträgen, die Datenklauseln enthalten."
+      "grund": "Gilt rollenunabhängig für jedes Unternehmen mit solchen Verträgen.",
+      "anknuepfungspunkte": [
+        {
+          "id": "rollenunabhaengig",
+          "name": "Rollenunabhängig",
+          "rolle": null,
+          "hinweis": "Gilt unabhängig davon, welche Rolle Sie sonst einnehmen.",
+          "sachverhalte": [
+            {
+              "id": "v-klauseln",
+              "name": "Einseitig auferlegte datenbezogene Klauseln",
+              "fundstellen": [
+                "Art. 13"
+              ],
+              "folie_kapitel": [
+                "IV"
+              ]
+            },
+            {
+              "id": "v-wechselbedingungen",
+              "name": "Vertragliche Wechselbedingungen",
+              "ergaenzt": true,
+              "fundstellen": [
+                "Art. 25"
+              ],
+              "folie_kapitel": [
+                "VI"
+              ]
+            }
+          ]
+        }
+      ]
     }
   ]
 }

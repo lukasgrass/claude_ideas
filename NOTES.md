@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-18T12:18:10 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-18T12:42:38 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -184,6 +184,7 @@ Summe der Abweichungen: **0**
 - aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}; `VI-03` ∈ {Ja, Nein, Unsicher}; `VI-04` ∈ {A, B, Unsicher}; `VI-05` ∈ {Ja, Nein}; `VI-08` ∈ {Ja, Nein, Unsicher}
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-011, DA-V-012, DA-V-014, DA-V-018
 - verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Nein, `EIN-06`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=A, `VI-05`=Ja, `VI-06`=Ja, `VI-07`=Ja, `VI-08`=Nein
+
 <!-- TESTPROFILE:END -->
 
 ## 4 Inhaltliche Auffälligkeiten
@@ -523,50 +524,89 @@ deshalb ein Feld `begriff`; der Ankertitel bekommt den vorhandenen
 Begriffs-Hover, und die Karte zeigt die Abgrenzung gekürzt an. Kein neuer Text —
 nur verknüpft. Vorbelegt wird die Dateninhaberschaft bewusst **nicht**: das war
 schon einmal der Fehler.
-**20 – Dreiklang-Fassung: die Vorgehensfolie als Werkzeug (hoch)**
+**20 – Dreiklang-Fassung: drei Bäume statt einer Matrix (hoch)**
 `data-act-dreiklang.html` bildet die Folie „Ableitung von Rechtsfolgen" ab:
-Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge. Sieben
-Zeilen, alle gleichzeitig sichtbar, anklickbar, mit rudimentärer
-Anforderungsliste. **47 KB statt 871 KB**, weil die Zuordnung Zeile →
+Bewertungsgegenstand + Anknüpfungspunkt + Sachverhalt = Rechtsfolge. Eine erste
+Fassung stellte das als Tabelle dar — sieben fertige Zeilen, alle gleichzeitig
+sichtbar. Das war eine Nachschlageliste, keine Ableitung: der Weg fehlte. Jetzt
+sind es **drei Bäume**, einer je Bewertungsgegenstand, die man Ebene für Ebene
+hinabgeht. **58 KB statt 871 KB**, weil die Zuordnung Sachverhalt →
 Anforderungen beim Bauen aufgelöst wird: die Datei trägt keine Fragen, kein
 Mapping, keine Begriffe, nur die fertigen Listen.
 
+```
+Baum 1 — DV-Dienst              Baum 2 — Datenbestand      Baum 3 — Vertrag
+├── Anbieter (Pflichten)        └── Dateninhaber           └── Rollenunabhängig
+│   ├── Anbieterwechsel  → VI       ├── Datenbereit-           ├── Einseitige
+│   ├── Wechselentgelte⊕ → VI       │   stellung      → III    │   Klauseln  → IV
+│   ├── Parallelnutzung  → VIII     └── Behörden-              └── Vertragliche
+│   └── Drittstaaten-                   verlangen     → V          Wechsel-
+│       zugriff          → VII                                     bedingungen⊕→ VI
+└── Kunde (Ansprüche)
+    ├── Anbieterwechsel  → VI
+    └── Parallelnutzung⊕ → VIII
+```
+
 **Der Dreiklang steht nicht in der Excel.** Er ist der Ordnungsrahmen der Folie.
-`dreiklang.json` nennt deshalb nur, welche Fragen zu welcher Zeile gehören und
-was die Folie als Rechtsfolge angibt. Welche Anforderungen herauskommen und in
-welchem Kapitel sie liegen, rechnet der Build aus dem Mapping aus — und **bricht
-ab**, wenn das der Folie widerspricht, sofern die Abweichung nicht ausdrücklich
-als `abweichung_bekannt` vermerkt ist.
+`dreiklang.json` nennt deshalb nur die Baumstruktur, je Sachverhalt seine
+**Fundstellen** und was die Folie als Rechtsfolge angibt. Welche Anforderungen
+herauskommen und in welchem Kapitel sie liegen, rechnet der Build aus dem
+Anforderungskatalog aus — und **bricht ab**, wenn ein Fundstellenpräfix keine
+Anforderung trifft oder das Ergebnis dem Kapitel der Folie widerspricht.
 
-**Gegengeprüft: sechs von sieben Zeilen bestätigt die Excel exakt.**
+**20a – Auswahl über Fundstellen statt über Fragen (hoch)**
+Die erste Fassung wählte die Anforderungen über die Fragen des Mappings aus. Das
+zog Streuung mit: „Anbieter · Parallelnutzung" ergab Kap. VI: 13 **und** VIII: 2,
+weil die Excel die Parallelnutzungspflichten nur über `VI-10` erreicht — und
+dieselbe Frage nebenbei 13 Wechselpflichten auslöst. Juristisch ist ein
+Sachverhalt aber durch seine Artikel definiert, nicht durch den Fragebogenpfad.
+Über die Fundstelle ausgewählt (`Art. 34`) sind es genau die zwei Anforderungen
+des Kapitels VIII — **die Abweichung zur Folie verschwindet**. Damit deckt sich
+jeder der zehn Äste mit genau einem Kapitel:
 
-| Bewertungsgegenstand | Anknüpfung | Sachverhalt | Folie | Excel |
-|---|---|---|---|---|
-| DV-Dienst | Anbieter | Anbieterwechsel | VI | VI: 35 |
-| DV-Dienst | Anbieter | Parallelnutzung | VIII | **VI: 13**, VIII: 2 |
-| DV-Dienst | Anbieter | Drittstaatenzugriff | VII | VII: 6 |
-| DV-Dienst | Kunde | Anbieterwechsel | VI | VI: 20 |
-| Datenbestand | Dateninhaber | Datenbereitstellung | III | III: 20 |
-| Datenbestand | Dateninhaber | Behördenverlangen | V | V: 24 |
-| Vertrag | Rollenunabhängig | Einseitige Klauseln | IV | IV: 17 |
+| Sachverhalt | Artikel | Anforderungen | Kapitel |
+|---|---|---:|---|
+| Anbieterwechsel | Art. 23, 24, 26–28, 30, 31 | 17 | VI |
+| Wechselentgelte ⊕ | Art. 29 | 5 | VI |
+| Vertragliche Wechselbedingungen ⊕ | Art. 25 | 13 | VI |
+| Parallelnutzung | Art. 34 | 2 | VIII |
+| Drittstaatenzugriff | Art. 32 | 6 | VII |
+| Datenbereitstellung | Art. 8–12 | 25 | III |
+| Behördenverlangen | Art. 14–22 | 24 | V |
+| Einseitig auferlegte Klauseln | Art. 13 | 17 | IV |
 
-Die Abweichung: Die Excel erreicht die Parallelnutzungspflichten (`DA-VIII-003`,
-`DA-VIII-004`, Art. 34) nur über `VI-10` — und das ist die **Kundenfrage**. Eine
-eigene Anbieterfrage zur Parallelnutzung gibt es nicht; dieselbe Frage löst
-zusätzlich 13 Wechselpflichten des Kapitels VI aus. Die Zeile nennt deshalb
-beide Kapitel und erklärt den Unterschied, statt eines von beidem zu
-unterschlagen.
+Die Präfixe greifen auf Artikelgrenze (`Art. 3` fängt nicht `Art. 30` ein). Die
+mit ⊕ markierten Äste ergänzen die Folie; sie sind über ihre Fundstelle belegt.
 
-**20a – Haupt- und Nebenkapitel getrennt (mittel)**
-Eine erste Fassung zeigte als Rechtsfolge alles, was das Mapping hergab — bei
-„Anbieterwechsel" etwa „Kap. VI + VIII + I + III". Die Randkapitel sind
-Einzeltreffer (Anwendungsbereich, Schlussbestimmungen) und keine Rechtsfolge;
-die Aussage der Folie ging darin unter. Als Rechtsfolge zählt jetzt, was die
-Folie nennt **oder** mindestens ein Fünftel der Anforderungen der Zeile trägt.
-Der Rest steht als „Zusätzlich berührt: Kap. I (1), Kap. III (1)" darunter —
-nichts verschwindet, aber die Gleichung bleibt lesbar.
+**20b – Pflicht oder Anspruch: der Adressatenabgleich (hoch)**
+Kapitel VI richtet sich in 34 von 35 Anforderungen an den „Anbieter von
+Datenverarbeitungsdiensten"; nur Art. 27 nennt „alle Beteiligten". Der
+Anknüpfungspunkt **Kunde trägt damit keine eigenen Pflichten** — für ihn ist
+Kapitel VI ein Bündel von Ansprüchen gegen seinen Anbieter. Stünde dort „13
+Pflichten", läse der Mandant das Gegenteil dessen, was gilt.
 
-**20b – Kurzzeilen, die etwas sagen (gering)**
+Jeder Anknüpfungspunkt trägt deshalb eine `rolle` und, wo er die Gegenseite
+betrifft, ein `anspruch_gegen`. Der Build gleicht beides gegen das Adressatenfeld
+jeder Anforderung ab und unterscheidet drei Fälle: eigene Pflicht (Rolle trifft
+den Adressaten), Anspruch gegen den Genannten (`anspruch_gegen` trifft ihn),
+Pflicht der Gegenseite (weder noch — etwa der Datenempfänger in Kapitel III).
+Die Kopfzeile sagt dann „13 Ansprüche gegen den Anbieter" statt „13 Pflichten",
+und die Zeile selbst ist farblich abgesetzt. Der Adressat steht in jeder Zeile.
+
+Ein eigener Ast „Datenempfänger" entsteht daraus nicht: Kapitel III adressiert
+Dateninhaber und Empfänger in denselben Vorschriften, die Excel trennt sie nur
+über `KAP3_ROLLE` innerhalb einer Frage. Ein eigener Ast wäre dieselbe
+Anforderungsmenge unter anderem Namen.
+
+**20c – Kapitel II bleibt draußen — auf Feststellung des Auftraggebers**
+Die Folie ist als „Beispiel" überschrieben und lässt Kapitel II (Datenzugang bei
+vernetzten Produkten, 46 Anforderungen) aus. Der Auftraggeber hat festgestellt,
+dass IoT für die Inverso GmbH nicht einschlägig ist; die drei Bäume folgen dem.
+Das ist seine fachliche Entscheidung, keine Rechnung dieses Werkzeugs — damit die
+Datei für den nächsten Mandanten nicht stillschweigend lückenhaft ist, steht sie
+als eigener Absatz im Fuß, mit Verweis auf `data-act-check.html`.
+
+**20d – Kurzzeilen, die etwas sagen (gering)**
 Die Kurztitel der Excel tragen zweierlei Form. Meist sind sie brauchbar
 („Wechsel ermöglichen"), manchmal wiederholen sie nur Fundstelle, Typ und
 Adressat („Art. 13 Abs. 4 Buchst. a – Unterlassungspflicht (Verwender von
@@ -574,9 +614,18 @@ Vertragsklauseln)") — in Kapitel IV zehnmal hintereinander dasselbe. Da all da
 in der Liste ohnehin nebendran steht, nimmt der Build in diesem Fall den Anfang
 des Anforderungstextes, der den Inhalt nennt.
 
-**20c – Rollenverteilung der drei Fassungen**
-`data-act-dreiklang.html` ist die Mandantendatei fürs Gespräch: fünf bis zehn
-Minuten, sieben Zeilen, ein Bildschirm. `data-act-inverso.html` bleibt die
+**20e – Bedienung: Spaltennavigation**
+Jede Ebene erscheint neben der vorigen, der ganze Weg bleibt sichtbar. Kein
+Assistent, der Vorheriges versteckt; kein Raster, das alles auf einmal zeigt. Ein
+Klick auf eine höhere Ebene setzt die tieferen zurück; der Formelstreifen oben
+ist zugleich die Zurück-Navigation. Bäume mit nur einem Anknüpfungspunkt öffnen
+ihn selbst und lassen sich nicht zuklappen — sonst bricht der Weg nach Baum 1 ab.
+Im Druck erscheinen alle zehn Äste nacheinander (128 Zeilen, rund acht Seiten A4),
+jeder mit seinem Formelstreifen.
+
+**20f – Rollenverteilung der drei Fassungen**
+`data-act-dreiklang.html` ist die Mandantendatei fürs Gespräch: drei Bäume, ein
+Bildschirm, ein Weg in unter zwei Minuten. `data-act-inverso.html` bleibt die
 geführte Betroffenheitsprüfung mit den 49 Fragen. `data-act-check.html` ist das
 vollständige Werkzeug und der Nachweis, woher jede Zahl stammt — `pruefe.js`
 rechnet die Dreiklang-Fassung gegen dessen Katalog gegen.
