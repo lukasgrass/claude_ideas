@@ -1,6 +1,6 @@
 # NOTES – Data-Act-Entscheidungsbaum, Datengrundlage
 
-Erzeugt von `build_data.py` am 2026-09-17T18:34:49 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
+Erzeugt von `build_data.py` am 2026-09-18T06:19:09 aus `DataAct_Anforderungen.xlsx`. Diese Datei wird bei jedem Lauf neu geschrieben; der Abschnitt „Testprofile" stammt aus `verify_data.py` und bleibt dabei erhalten.
 
 ## 1 Umfang der erzeugten data.json
 
@@ -184,7 +184,6 @@ Summe der Abweichungen: **0**
 - aus der Excel nicht ableitbare Antworten: `EIN-07` ∈ {Ja, Nein}; `IV-02` ∈ {A, B, C}; `V-01` ∈ {A, D}; `VI-03` ∈ {Ja, Nein, Unsicher}; `VI-04` ∈ {A, B, Unsicher}; `VI-05` ∈ {Ja, Nein}; `VI-08` ∈ {Ja, Nein, Unsicher}
 - nur „schränkt ein“ – zählt in keiner der beiden Mengen: DA-V-011, DA-V-012, DA-V-014, DA-V-018
 - verwendeter Antwortsatz: `EIN-01`=D, `EIN-02`=Großunternehmen (darüber), `EIN-05`=Nein, `EIN-06`=Ja, `EIN-07`=Nein, `IV-01`=Ja, `IV-02`=A, `IV-03`=A, `V-01`=A, `V-02`=Nein, `VI-01`=Ja, `VI-02`=Nein, `VI-03`=Nein, `VI-04`=A, `VI-05`=Ja, `VI-06`=Ja, `VI-07`=Ja, `VI-08`=Nein
-
 <!-- TESTPROFILE:END -->
 
 ## 4 Inhaltliche Auffälligkeiten
@@ -472,6 +471,58 @@ Beim Wechsel vom Bandlayout auf die Schrittleiste fiel der gesamte
 seitdem unformatiert; ein zwischenzeitlicher „Fix" am Zeilenumbruch griff ins
 Leere, weil die Regel gar nicht existierte. Wiederhergestellt und um den
 Rechtshinweis erweitert. Review-Befund B-08.
+**19f – Anbieter und Kunde sind zwei Blöcke, ein Modul (behoben)**
+„Als Anbieter" und „Als Kunde" zeigen beide auf M-VI, dessen Startbedingung
+`ROLLE_CLOUD_ANBIETER = Ja oder ROLLE_CLOUD_KUNDE = Ja` lautet. Die Oberfläche
+prüfte nur diese Modulbedingung — also erschienen **immer beide Blöcke**, auch
+bei nur einer Rolle. Gemessen: `EIN-01 = D` zeigte anbieter *und* kunde, ebenso
+`= E`.
+
+Die Anknüpfungspunkte tragen jetzt eine eigene `bedingung`
+(`{variable, wert}`); `ankerGilt()` prüft Modul **und** Bedingung.
+`build_data.py` und `pruefe.js` brechen ab, wenn sich zwei Anknüpfungspunkte ein
+Modul teilen und einer keine eigene Bedingung hat — genau die Konstellation, die
+den Fehler erzeugt hat. `pruefe.js` prüft zusätzlich über alle 63
+Rollenkombinationen, dass kein Block ohne seine Rolle erscheint.
+
+Inhaltlich: **beides gleichzeitig ist richtig und vorgesehen.** `D` und `E`
+setzen unabhängige Variablen, beide Stränge laufen, und vier Anforderungen
+erscheinen begründet in beiden Säulen.
+
+**19g – „entfällt" hieß auch „noch nicht entschieden" (behoben)**
+Die Ausschlussreihe wertete die Modulbedingung streng aus. Kapitel III stand
+dadurch vom Start an als „entfällt", obwohl es sich erst bei `II-06` („Wo liegen
+die vom Produkt/Dienst erzeugten Daten?") entscheidet. Gezählt über alle
+M-II-Pfade bei Rolle A: **88 von 92** erreichen `II-06`, **72** machen M-III
+anwendbar. Das Kapitel fiel also nicht weg — die Karte sagte es nur zu früh.
+
+Die Karte ist jetzt dreistufig. Maßgeblich ist nicht mehr nur die strenge
+Auswertung, sondern zusätzlich `bewerte(..., offen = true)` und eine
+Erfüllbarkeitsprobe: Lässt sich die Bedingung über die **erreichbaren** Fragen
+noch wahr machen?
+
+- erfüllbar → „noch nicht entschieden — Entscheidet sich bei II-06, II-11,
+  EIN-02", mit Sprungknopf zur Frage, im Warnton statt gestrichelt-grau.
+- nicht erfüllbar, aber ungesetzte Variablen in einem gesperrten Modul →
+  „entfällt — Die entscheidende Frage steht in Kapitel II (IoT-Datenzugang) und
+  wird mit der jetzigen Rollenwahl nicht gestellt."
+- sonst → „entfällt" mit der Bedingung im Klartext, wie bisher.
+
+Die Erfüllbarkeitsprobe ist nötig, weil das bloße Aufzählen ungesetzter
+Variablen irreführt: Bei D+E stand `GROESSE` offen, doch der zugehörige Zweig
+verlangt zusätzlich `ROLLE_PRODUKT = Ja` — die Größe kann dort nichts mehr
+entscheiden. Eine erste Fassung nannte trotzdem `EIN-02` als Entscheider.
+
+**19h – Begriff am Anknüpfungspunkt (neu)**
+„Dateninhaber" meint im Data Act nicht jeden, der Daten speichert. Die Excel
+liefert die Abgrenzung im Blatt *Begriffe* selbst: *„EG 22: Auftragsverarbeiter
+i. S. d. DSGVO sind keine Dateninhaber, können aber vom Verantwortlichen
+beauftragt werden."* Für einen IT-Dienstleister, der Software für Versicherer
+betreibt, ist das der Satz, an dem die Frage hängt. Die Anknüpfungspunkte tragen
+deshalb ein Feld `begriff`; der Ankertitel bekommt den vorhandenen
+Begriffs-Hover, und die Karte zeigt die Abgrenzung gekürzt an. Kein neuer Text —
+nur verknüpft. Vorbelegt wird die Dateninhaberschaft bewusst **nicht**: das war
+schon einmal der Fehler.
 <!-- MANUELL:END -->
 
 ### 4b Maschinell abgeleitet

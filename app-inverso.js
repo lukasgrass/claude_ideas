@@ -313,6 +313,84 @@ function modulGilt(modulId) {
   return modulAnwendbar(m, zustandAus(S.antworten, idx), S.antworten);
 }
 
+/* Gilt ein Anknüpfungspunkt? "Als Anbieter" und "Als Kunde" teilen sich M-VI;
+   dessen Startbedingung ist bei beiden Rollen wahr. Ohne die eigene Bedingung
+   des Punktes erschienen deshalb immer beide Blöcke. */
+function ankerGilt(a) {
+  if (!modulGilt(a.modul)) return false;
+  if (!a.bedingung) return true;
+  return zustandAus(S.antworten, idx)[a.bedingung.variable] === a.bedingung.wert;
+}
+
+/* Variablennamen aus einem Bedingungsbaum einsammeln */
+function variablenIn(knoten, raus) {
+  raus = raus || [];
+  if (!knoten || typeof knoten !== "object") return raus;
+  if (knoten.variable && raus.indexOf(knoten.variable) < 0) raus.push(knoten.variable);
+  ["links", "rechts"].forEach(function (s) {
+    if (knoten[s]) variablenIn(knoten[s], raus);
+  });
+  return raus;
+}
+
+/* Welche Fragen entscheiden über ein noch offenes Modul?
+
+   Es genügt nicht, die ungesetzten Variablen der Bedingung aufzuzählen: Bei
+   D+E steht in M-III zwar GROESSE offen, aber der Zweig verlangt zusätzlich
+   ROLLE_PRODUKT = Ja - die Größe kann dort nichts mehr entscheiden. Geprüft
+   wird deshalb, ob sich die Bedingung mit den erreichbaren Fragen überhaupt
+   noch erfüllen lässt. */
+function offeneEntscheider(modul) {
+  var zustand = zustandAus(S.antworten, idx);
+  var ausdruck = modul.startbedingung && modul.startbedingung.ausdruck;
+  var leer = { fragen: [], gesperrteModule: [] };
+  if (!ausdruck) return leer;
+
+  var offen = [], gesperrt = [];
+  variablenIn(ausdruck).forEach(function (name) {
+    if (zustand[name] !== undefined) return;
+    var v = DATEN.variablen.filter(function (x) { return x.name === name; })[0];
+    if (!v || !v.gesetzt_durch || !v.gesetzt_durch.length) return;
+    var erreichbar = v.gesetzt_durch.filter(function (fid) {
+      var f = idx.fragen.get(fid);
+      return f && modulGilt(f.modul);
+    });
+    if (erreichbar.length) offen.push({ name: name, werte: v.werte || [], fragen: erreichbar });
+    else v.gesetzt_durch.forEach(function (fid) {
+      var f = idx.fragen.get(fid);
+      if (f && gesperrt.indexOf(f.modul) < 0) gesperrt.push(f.modul);
+    });
+  });
+
+  /* Lässt sich die Bedingung allein über die erreichbaren Fragen erfüllen?
+     Wenige Variablen mit wenigen Werten - vollständig durchprobierbar. */
+  var loesung = null;
+  (function probiere(i, belegung) {
+    if (loesung) return;
+    if (i >= offen.length) {
+      var hyp = Object.assign({}, zustand);
+      Object.keys(belegung).forEach(function (k) { hyp[k] = belegung[k]; });
+      if (bewerte(ausdruck, hyp, idx, true) === true) loesung = Object.assign({}, belegung);
+      return;
+    }
+    for (var j = 0; j < offen[i].werte.length; j++) {
+      belegung[offen[i].name] = offen[i].werte[j];
+      probiere(i + 1, belegung);
+      if (loesung) return;
+    }
+    delete belegung[offen[i].name];
+    probiere(i + 1, belegung);
+  })(0, {});
+
+  if (!loesung) return { fragen: [], gesperrteModule: gesperrt };
+  var fragen = [];
+  offen.forEach(function (o) {
+    if (!(o.name in loesung)) return;
+    o.fragen.forEach(function (fid) { if (fragen.indexOf(fid) < 0) fragen.push(fid); });
+  });
+  return { fragen: fragen, gesperrteModule: gesperrt };
+}
+
 /* Die nächste offene Frage über alle geltenden Module - das ist der eine
    Punkt, an dem es weitergeht. */
 function naechsteFrage() {
@@ -452,22 +530,65 @@ function zeichneAusgangslage() {
    berechnet - und wieder da, sobald die Rolle gesetzt wird. */
 function zeichneAusschluesse() {
   var zeile = el("div", { class: "zeile", id: "zeile-ausschluss" });
-  var offen = 0;
+  var zustand = zustandAus(S.antworten, idx);
+  var gezeigt = 0;
+
   idx.module.forEach(function (m) {
     if (m.modul === "EIN" || m.modul === "Ergebnis") return;
     if (modulGilt(m.modul)) return;
-    offen++;
-    zeile.appendChild(el("div", { class: "karte karte--aus", id: "k-aus-" + m.modul }, [
+    gezeigt++;
+
+    /* Dreiwertig auswerten: "false" ist ein echter Ausschluss, "null" heißt,
+       dass die entscheidende Frage noch nicht beantwortet ist. Bisher stand in
+       beiden Fällen "entfällt" - Kapitel III war deshalb vom Start an
+       abgeschrieben, obwohl es sich erst bei II-06 entscheidet. */
+    var ausdruck = m.startbedingung && m.startbedingung.ausdruck;
+    var dreiwertig = ausdruck ? bewerte(ausdruck, zustand, idx, true) : false;
+    var entscheider = dreiwertig === null ? offeneEntscheider(m)
+                                          : { fragen: [], gesperrteModule: [] };
+    var nochOffen = dreiwertig === null && entscheider.fragen.length > 0;
+
+    var kopfRechts, grund;
+    if (nochOffen) {
+      kopfRechts = "noch nicht entschieden";
+      grund = "Entscheidet sich bei " + entscheider.fragen.join(", ") + ".";
+    } else if (dreiwertig === null && entscheider.gesperrteModule.length) {
+      kopfRechts = "entfällt";
+      var wo = entscheider.gesperrteModule.map(function (mid) {
+        var g = idx.module.filter(function (x) { return x.modul === mid; })[0];
+        var kap = kapitelVonModul(mid);
+        return g ? (kap ? kap + " (" + g.kurztitel + ")" : g.kurztitel) : mid;
+      });
+      grund = "Die entscheidende Frage steht in " + wo.join(" bzw. ")
+            + " und wird mit der jetzigen Rollenwahl nicht gestellt. "
+            + "Öffnet sich über die Tätigkeiten in EIN-01.";
+    } else {
+      kopfRechts = "entfällt";
+      grund = "Setzt voraus: " + m.startbedingung.roh;
+    }
+
+    var karte = el("div", {
+      class: "karte " + (nochOffen ? "karte--schwebend" : "karte--aus"),
+      id: "k-aus-" + m.modul
+    }, [
       el("div", { class: "karte__kopf" }, [
         el("span", { text: kapitelVonModul(m.modul) || m.modul }),
-        el("span", { text: "entfällt" })
+        el("span", { text: kopfRechts })
       ]),
       el("div", { class: "karte__titel", text: m.kurztitel }),
-      el("div", { class: "karte__grund",
-                  text: "Setzt voraus: " + m.startbedingung.roh })
-    ]));
+      el("div", { class: "karte__grund", text: grund })
+    ]);
+    if (nochOffen) {
+      karte.appendChild(el("button", {
+        class: "tat", type: "button",
+        text: "Zu " + entscheider.fragen[0] + " →",
+        onclick: function () { springeZuKnoten(entscheider.fragen[0]); }
+      }));
+    }
+    zeile.appendChild(karte);
   });
-  if (!offen) {
+
+  if (!gezeigt) {
     zeile.appendChild(el("div", { class: "karte karte--fest" }, [
       el("div", { class: "karte__kopf" }, [el("span", { text: "Stand" })]),
       el("div", { class: "karte__titel", text: "Kein Kapitel entfällt" })
@@ -501,17 +622,31 @@ function zeichneGitter(erg) {
   var gitter = el("div", { class: "gitter" });
   var erste = true;
   MODELL.anknuepfungspunkte.forEach(function (a) {
-    if (!modulGilt(a.modul)) return;
+    if (!ankerGilt(a)) return;
     var meine = MODELL.straenge.filter(function (s) { return s.anknuepfung === a.id; });
     if (!meine.length) return;
     var block = el("div", { class: "block", id: "k-ank-" + a.id,
                             style: "--spalten:" + meine.length });
-    block.appendChild(el("div", { class: "anker" }, [
+    var ankerTitel = el("div", { class: "anker__titel", text: a.kurz });
+    var anker = el("div", { class: "anker" }, [
       el("div", { class: "anker__kopf" }, [
         el("span", { text: a.kapitel }), el("span", { text: a.modul })
       ]),
-      el("div", { class: "anker__titel", text: a.kurz })
-    ]));
+      ankerTitel
+    ]);
+    /* "Dateninhaber" meint im Data Act nicht jeden, der Daten speichert.
+       Definition und Abgrenzung stehen im Blatt Begriffe - verknüpfen statt
+       neu formulieren. */
+    var b = a.begriff ? idx.begriffe.get(a.begriff) : null;
+    if (b) {
+      ankerTitel.classList.add("anker__titel--begriff");
+      haengeErklAn(ankerTitel, function () { return erklBegriff(a.begriff); });
+      var kern = b.abgrenzung && b.abgrenzung !== "—" ? b.abgrenzung : b.definition;
+      anker.appendChild(el("div", { class: "anker__grund",
+                                    text: a.begriff + " (" + b.fundstelle + "): "
+                                          + kurz(kern, 150) }));
+    }
+    block.appendChild(anker);
     var spalten = el("div", { class: "block__spalten" });
     meine.forEach(function (strang) {
       spalten.appendChild(zeichneSaeule(strang, erg, erste));

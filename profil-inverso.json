@@ -85,13 +85,15 @@
         "id": "produkt",
         "kurz": "Vernetzte Produkte",
         "kapitel": "Kapitel II",
-        "modul": "M-II"
+        "modul": "M-II",
+        "begriff": "Vernetztes Produkt"
       },
       {
         "id": "dateninhaber",
         "kurz": "Dateninhaber",
         "kapitel": "Kapitel III",
-        "modul": "M-III"
+        "modul": "M-III",
+        "begriff": "Dateninhaber"
       },
       {
         "id": "vertraege",
@@ -109,13 +111,23 @@
         "id": "anbieter",
         "kurz": "Als Anbieter",
         "kapitel": "Kapitel VI, VII",
-        "modul": "M-VI"
+        "modul": "M-VI",
+        "begriff": "Datenverarbeitungsdienst",
+        "bedingung": {
+          "variable": "ROLLE_CLOUD_ANBIETER",
+          "wert": "Ja"
+        }
       },
       {
         "id": "kunde",
         "kurz": "Als Kunde",
         "kapitel": "Kapitel VI",
-        "modul": "M-VI"
+        "modul": "M-VI",
+        "begriff": "Datenverarbeitungsdienst",
+        "bedingung": {
+          "variable": "ROLLE_CLOUD_KUNDE",
+          "wert": "Ja"
+        }
       },
       {
         "id": "datenraum",

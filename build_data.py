@@ -2078,12 +2078,40 @@ def pruefe_profil(daten: dict, profil: dict):
 
     # Jeder Anknüpfungspunkt benennt sein Modul - daraus berechnet die
     # Oberfläche, ob er gilt und was sonst in der Reihe "entfällt" steht.
+    bekannte_variablen = {v["name"]: v for v in daten["variablen"]}
+    bekannte_begriffe = {b["begriff"] for b in daten.get("begriffe") or []}
     anknuepfungen = {}
     for a in modell.get("anknuepfungspunkte") or []:
         if a.get("modul") not in module:
             fehler.append(f"Anknüpfungspunkt {a.get('id')}: Modul "
                           f"{a.get('modul')} gibt es nicht")
         anknuepfungen[a["id"]] = a.get("modul")
+        # Zwei Anknüpfungspunkte dürfen auf dasselbe Modul zeigen (Anbieter und
+        # Kunde teilen sich M-VI). Dann entscheidet die Startbedingung des
+        # Moduls nicht mehr, welcher Block gilt - dafür ist "bedingung" da.
+        bed = a.get("bedingung")
+        if bed:
+            v = bekannte_variablen.get(bed.get("variable"))
+            if not v:
+                fehler.append(f"Anknüpfungspunkt {a.get('id')}: Variable "
+                              f"{bed.get('variable')} gibt es nicht")
+            elif v.get("werte") and bed.get("wert") not in v["werte"]:
+                fehler.append(f"Anknüpfungspunkt {a.get('id')}: '{bed.get('wert')}' "
+                              f"ist kein Wert von {bed['variable']} "
+                              f"(gültig: {', '.join(v['werte'])})")
+        if a.get("begriff") and a["begriff"] not in bekannte_begriffe:
+            fehler.append(f"Anknüpfungspunkt {a.get('id')}: Begriff "
+                          f"'{a['begriff']}' steht nicht im Blatt Begriffe")
+
+    # Zeigen zwei Anknüpfungspunkte auf dasselbe Modul, braucht jeder eine
+    # eigene Bedingung - sonst erscheinen sie immer gemeinsam.
+    from collections import Counter as _Counter
+    je_modul = _Counter(a.get("modul") for a in modell.get("anknuepfungspunkte") or [])
+    for a in modell.get("anknuepfungspunkte") or []:
+        if je_modul[a.get("modul")] > 1 and not a.get("bedingung"):
+            fehler.append(f"Anknüpfungspunkt {a.get('id')}: teilt sich Modul "
+                          f"{a.get('modul')} mit einem anderen und braucht "
+                          f"deshalb eine eigene Bedingung")
 
     je_frage = {}
     for strang in modell.get("straenge") or []:

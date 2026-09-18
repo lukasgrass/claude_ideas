@@ -431,6 +431,63 @@ if (DATEN.profil) {
   pruefe((M.straenge || []).length + " Stränge liegen im Modul ihres Anknüpfungspunkts",
          falschesModul.length === 0, falschesModul.join(" | "));
 
+  /* Zwei Anknüpfungspunkte dürfen sich ein Modul teilen (Anbieter und Kunde
+     beide M-VI). Dann entscheidet die Modulbedingung nicht mehr, welcher Block
+     gilt - ohne eigene Bedingung erschienen immer beide. */
+  const ankerFehler = [];
+  const jeModul = {};
+  (M.anknuepfungspunkte || []).forEach(a => {
+    jeModul[a.modul] = (jeModul[a.modul] || 0) + 1;
+  });
+  (M.anknuepfungspunkte || []).forEach(a => {
+    if (jeModul[a.modul] > 1 && !a.bedingung) {
+      ankerFehler.push(a.id + ": teilt Modul " + a.modul + " ohne eigene Bedingung");
+    }
+    if (a.bedingung) {
+      const v = DATEN.variablen.filter(x => x.name === a.bedingung.variable)[0];
+      if (!v) ankerFehler.push(a.id + ": Variable " + a.bedingung.variable + " fehlt");
+      else if (v.werte && v.werte.indexOf(a.bedingung.wert) < 0) {
+        ankerFehler.push(a.id + ": '" + a.bedingung.wert + "' ist kein Wert von " + v.name);
+      }
+    }
+    if (a.begriff && !idx.begriffe.get(a.begriff)) {
+      ankerFehler.push(a.id + ": Begriff '" + a.begriff + "' fehlt im Blatt Begriffe");
+    }
+  });
+  pruefe((M.anknuepfungspunkte || []).length
+         + " Anknüpfungspunkte: Bedingung und Begriff sind gültig",
+         ankerFehler.length === 0, ankerFehler.join(" | "));
+
+  /* Ein Block darf nur erscheinen, wenn seine eigene Bedingung zutrifft -
+     über alle Rollenkombinationen geprüft. */
+  const rollenOpt = rollenfrage.antwortoptionen.map(o => o.schluessel)
+    .filter(k => rollenfrage.gesetzte_variablen.some(
+      gv => gv.zuordnung.some(z => z.antwort === k)));
+  const blockFehler = [];
+  for (let maske = 1; maske < (1 << rollenOpt.length); maske++) {
+    const wahl = rollenOpt.filter((_, i) => maske & (1 << i));
+    const antworten = { [rollenfrage.id]: wahl };
+    const zustand = E.zustandAus(antworten, idx);
+    (M.anknuepfungspunkte || []).forEach(a => {
+      const m = idx.module.filter(x => x.modul === a.modul)[0];
+      const modulGilt = m && E.modulAnwendbar(m, zustand, antworten);
+      const eigen = !a.bedingung || zustand[a.bedingung.variable] === a.bedingung.wert;
+      const sichtbar = modulGilt && eigen;
+      if (sichtbar && a.bedingung
+          && zustand[a.bedingung.variable] !== a.bedingung.wert) {
+        blockFehler.push(wahl.join("+") + "/" + a.id);
+      }
+      /* Die Kernprobe: Anbieter nur bei seiner Rolle, Kunde nur bei seiner */
+      if (a.bedingung && modulGilt) {
+        const soll = zustand[a.bedingung.variable] === a.bedingung.wert;
+        if (sichtbar !== soll) blockFehler.push(wahl.join("+") + "/" + a.id);
+      }
+    });
+  }
+  pruefe("kein Block erscheint ohne seine eigene Rolle ("
+         + ((1 << rollenOpt.length) - 1) + " Rollenkombinationen)",
+         blockFehler.length === 0, [...new Set(blockFehler)].slice(0, 8).join(", "));
+
   /* Deckungsprobe gegen das vollständige Werkzeug, über mehrere Rollensätze:
      bei offener Rollenfrage hängt alles daran, welche Module gelten. */
   const vollDatei = "data-act-check.html";
